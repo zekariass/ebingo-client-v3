@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bingo Number TTS Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+    input, select, button {
+      font-size: 16px;
+      margin: 5px 0;
+      padding: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Bingo Number TTS Test</h1>
+
+  <label for="number">Enter number:</label>
+  <input type="number" id="number" min="1" max="90" value="23">
+
+  <br>
+
+  <label for="language">Select language:</label>
+  <select id="language">
+    <option value="en-US">English</option>
+    <option value="am-ET">Amharic</option>
+    <option value="so-SO">Somali</option>
+    <option value="ti-ET">Tigrigna</option>
+    <option value="om-ET">Oromifa</option>
+  </select>
+
+  <br>
+
+  <button id="speakBtn">Speak Number</button>
+
+  <script>
+    const speakBtn = document.getElementById("speakBtn");
+    const numberInput = document.getElementById("number");
+    const languageSelect = document.getElementById("language");
+
+    speakBtn.addEventListener("click", () => {
+      const number = numberInput.value;
+      const lang = languageSelect.value;
+
+      if (!number) {
+        alert("Please enter a number.");
+        return;
+      }
+
+      // Create a new utterance
+      const utterance = new SpeechSynthesisUtterance(`Number ${number}`);
+      utterance.lang = lang;
+
+      // Optional: change voice (depends on browser)
+      const voices = window.speechSynthesis.getVoices();
+      const voice = voices.find(v => v.lang === lang) || voices[0];
+      utterance.voice = voice;
+
+      // Speak
+      window.speechSynthesis.speak(utterance);
+    });
+
+    // Load voices (needed in some browsers)
+    window.speechSynthesis.onvoiceschanged = () => {
+      console.log("Available voices:", window.speechSynthesis.getVoices());
+    };
+
+    window.speechSynthesis.onvoiceschanged = () => {
+  const voices = window.speechSynthesis.getVoices();
+  voices.forEach(v => console.log(v.name, v.lang));
+};
+  </script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "dashboard": {
+    "title": "Gabatee Bulchiinsaa",
+    "overview": "Ilaalcha Waliigalaa",
+    "stats": "Lakkoofsa"
+  },
+  "rooms": {
+    "title": "Bulchiinsa Kutaalee",
+    "create": "Kutaa Haaraa Uumi",
+    "edit": "Kutaa Fooyyessi",
+    "name": "Maqaa",
+    "fee": "Kaffaltii",
+    "capacity": "Dandeettii",
+    "pattern": "Akkaataa"
+  },
+  "players": {
+    "title": "Bulchiinsa Taphattoota",
+    "search": "Taphattoota Barbaadi",
+    "ban": "Dhorkii",
+    "unban": "Dhorkii Kaasi"
+  },
+  "games": {
+    "title": "Bulchiinsa Taphoota",
+    "active": "Ka'umsa qaban",
+    "completed": "Xumuraman",
+    "manual_calling": "Waamichaa Harkaan"
+  }
+}

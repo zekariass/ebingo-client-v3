@@ -1,0 +1,28 @@
+{
+  "languages": {
+    "en": "English",
+    "am": "ትግርኛ",
+    "or": "Afaan Oromoo",
+    "ti": "ትግርኛ",
+    "so": "Somali"
+  },
+  "navigation": {
+    "home": "ገዛ",
+    "rooms": "ክፍልታት",
+    "history": "ታሪኽ",
+    "admin": "ምሕደራ"
+  },
+  "common": {
+    "loading": "ይጽዕን ኣሎ...",
+    "error": "ጌጋ",
+    "success": "ዓወት",
+    "cancel": "ሰርዝ",
+    "save": "ዓቅብ",
+    "delete": "ደምስስ",
+    "edit": "ኣርም",
+    "create": "ፍጠር",
+    "search": "ደሊ",
+    "filter": "ፍልተር",
+    "close": "ዓጽፍ"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "languages": {
+    "en": "English",
+    "am": "Afaan Oromoo",
+    "or": "Afaan Oromoo",
+    "ti": "Tigrigna",
+    "so": "Somali"
+  },
+  "navigation": {
+    "home": "Mana",
+    "rooms": "Kutaalee",
+    "history": "Seenaa",
+    "admin": "Bulchiinsa"
+  },
+  "common": {
+    "loading": "Fe'aa jira...",
+    "error": "Dogoggora",
+    "success": "Milkaa'ina",
+    "cancel": "Dhiisi",
+    "save": "Olkaa'i",
+    "delete": "Balleessi",
+    "edit": "Fooyyessi",
+    "create": "Uumi",
+    "search": "Barbaadi",
+    "filter": "Gingilchi",
+    "close": "Cufii"
+  }
+}

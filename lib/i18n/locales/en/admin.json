@@ -1,0 +1,53 @@
+{
+  "title": "Admin Dashboard",
+  "rooms": {
+    "title": "Room Management",
+    "create": "Create Room",
+    "edit": "Edit Room",
+    "name": "Room Name",
+    "fee": "Entry Fee",
+    "capacity": "Capacity",
+    "pattern": "Pattern",
+    "status": "Status",
+    "actions": "Actions",
+    "active": "Active",
+    "inactive": "Inactive",
+    "full": "Full",
+    "available": "Available"
+  },
+  "players": {
+    "title": "Player Management",
+    "search": "Search Players",
+    "username": "Username",
+    "email": "Email",
+    "balance": "Balance",
+    "status": "Status",
+    "joinDate": "Join Date",
+    "lastActive": "Last Active",
+    "ban": "Ban Player",
+    "unban": "Unban Player",
+    "banned": "Banned",
+    "active": "Active"
+  },
+  "games": {
+    "title": "Game Management",
+    "manualCalling": "Manual Number Calling",
+    "callNumber": "Call Number",
+    "currentGame": "Current Game",
+    "gameHistory": "Game History",
+    "winner": "Winner",
+    "prize": "Prize",
+    "duration": "Duration",
+    "participants": "Participants"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "totalRevenue": "Total Revenue",
+    "activeUsers": "Active Users",
+    "gamesPlayed": "Games Played",
+    "averageGameDuration": "Average Game Duration",
+    "topPlayers": "Top Players",
+    "revenueChart": "Revenue Chart",
+    "userGrowth": "User Growth"
+  }
+}

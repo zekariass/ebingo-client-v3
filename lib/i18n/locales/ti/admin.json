@@ -1,0 +1,28 @@
+{
+  "dashboard": {
+    "title": "ሰሌዳ ምሕደራ",
+    "overview": "ሓፈሻዊ ትንተና",
+    "stats": "ስታትስቲክስ"
+  },
+  "rooms": {
+    "title": "ምሕደራ ክፍልታት",
+    "create": "ሓድሽ ክፍሊ ፍጠር",
+    "edit": "ክፍሊ ኣርም",
+    "name": "ስም",
+    "fee": "ክፍሊት",
+    "capacity": "ዓቕሚ",
+    "pattern": "ቅዲ"
+  },
+  "players": {
+    "title": "ምሕደራ ተጻወትቲ",
+    "search": "ተጻወትቲ ደሊ",
+    "ban": "ኣግድ",
+    "unban": "ገደብ ኣልግስ"
+  },
+  "games": {
+    "title": "ምሕደራ ጸወታታት",
+    "active": "ንቡር",
+    "completed": "ዝተዛዘሙ",
+    "manual_calling": "ብኢድ ጻውዒት"
+  }
+}

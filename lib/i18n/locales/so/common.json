@@ -1,0 +1,28 @@
+{
+  "languages": {
+    "en": "English",
+    "am": "Amharic",
+    "or": "Afaan Oromoo",
+    "ti": "Tigrigna",
+    "so": "Soomaali"
+  },
+  "navigation": {
+    "home": "Guriga",
+    "rooms": "Qolalka",
+    "history": "Taariikhda",
+    "admin": "Maamulka"
+  },
+  "common": {
+    "loading": "Waa la rarayo...",
+    "error": "Qalad",
+    "success": "Guul",
+    "cancel": "Jooji",
+    "save": "Kaydi",
+    "delete": "Tirtir",
+    "edit": "Wax ka beddel",
+    "create": "Samee",
+    "search": "Raadi",
+    "filter": "Kala saar",
+    "close": "Xir"
+  }
+}

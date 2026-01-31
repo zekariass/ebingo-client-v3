@@ -1,0 +1,28 @@
+{
+  "dashboard": {
+    "title": "Shabakadda Maamulka",
+    "overview": "Dulmar Guud",
+    "stats": "Tirakoobyo"
+  },
+  "rooms": {
+    "title": "Maamulka Qolalka",
+    "create": "Qol Cusub Samee",
+    "edit": "Qolka Wax ka beddel",
+    "name": "Magaca",
+    "fee": "Lacagta",
+    "capacity": "Awoodda",
+    "pattern": "Qaabka"
+  },
+  "players": {
+    "title": "Maamulka Ciyaartoyda",
+    "search": "Ciyaartoyda Raadi",
+    "ban": "Mamnuuc",
+    "unban": "Mamnuuca Ka saar"
+  },
+  "games": {
+    "title": "Maamulka Ciyaaraha",
+    "active": "Firfircoon",
+    "completed": "Dhammaaday",
+    "manual_calling": "Wicitaanka Gacanta"
+  }
+}

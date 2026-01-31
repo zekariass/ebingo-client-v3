@@ -1,0 +1,53 @@
+{
+  "title": "የአስተዳዳሪ ዳሽቦርድ",
+  "rooms": {
+    "title": "የክፍል አስተዳደር",
+    "create": "ክፍል ፍጠር",
+    "edit": "ክፍል አርም",
+    "name": "የክፍል ስም",
+    "fee": "የመግቢያ ክፍያ",
+    "capacity": "አቅም",
+    "pattern": "ንድፍ",
+    "status": "ሁኔታ",
+    "actions": "ተግባራት",
+    "active": "ንቁ",
+    "inactive": "ንቁ ያልሆነ",
+    "full": "ሙሉ",
+    "available": "ዝግጁ"
+  },
+  "players": {
+    "title": "የተጫዋቾች አስተዳደር",
+    "search": "ተጫዋቾችን ፈልግ",
+    "username": "የተጠቃሚ ስም",
+    "email": "ኢሜይል",
+    "balance": "ሂሳብ",
+    "status": "ሁኔታ",
+    "joinDate": "የመቀላቀል ቀን",
+    "lastActive": "መጨረሻ ንቁ",
+    "ban": "ተጫዋች አግድ",
+    "unban": "ማገጃ አንሳ",
+    "banned": "የተገደበ",
+    "active": "ንቁ"
+  },
+  "games": {
+    "title": "የጨዋታ አስተዳደር",
+    "manualCalling": "በእጅ ቁጥር መጥራት",
+    "callNumber": "ቁጥር ጥራ",
+    "currentGame": "አሁን ያለ ጨዋታ",
+    "gameHistory": "የጨዋታ ታሪክ",
+    "winner": "አሸናፊ",
+    "prize": "ሽልማት",
+    "duration": "ጊዜ",
+    "participants": "ተሳታፊዎች"
+  },
+  "analytics": {
+    "title": "ትንታኔ",
+    "totalRevenue": "አጠቃላይ ገቢ",
+    "activeUsers": "ንቁ ተጠቃሚዎች",
+    "gamesPlayed": "የተጫወቱ ጨዋታዎች",
+    "averageGameDuration": "አማካይ የጨዋታ ጊዜ",
+    "topPlayers": "ምርጥ ተጫዋቾች",
+    "revenueChart": "የገቢ ቻርት",
+    "userGrowth": "የተጠቃሚ እድገት"
+  }
+}
