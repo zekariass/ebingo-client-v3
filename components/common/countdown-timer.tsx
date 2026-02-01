@@ -236,7 +236,7 @@ export function CountdownTimer({ label, gamePage = true }: CountdownTimerProps) 
   useEffect(() => {
     if (status === GameStatus.PLAYING && currentDrawnNumber) {
       setCurrentLetter(getCurrentLetter(Number(currentDrawnNumber)))
-      if (voiceOn && agentDetails?.isMaster) playNumberSound(currentDrawnNumber)
+      if (voiceOn) playNumberSound(currentDrawnNumber)
     }
   }, [currentDrawnNumber, status, voiceOn])
 

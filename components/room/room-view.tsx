@@ -23,9 +23,10 @@ interface RoomViewProps {
 export function RoomView({ roomId, agentId }: RoomViewProps) {
   useTelegramInit()
 
-  const { setActiveAgentId } = useAgentStore();
+  const { setActiveAgentId, fetchAgentDetails } = useAgentStore();
   useEffect(() => {
     if (agentId !== undefined) {
+      fetchAgentDetails(agentId)
       setActiveAgentId(agentId);
     } else {
       setActiveAgentId(null);

@@ -172,7 +172,7 @@ export default function WalletDetailsPage() {
 
             {/* ACTION BUTTONS */}
             <div className="flex gap-4 pt-4">
-              {!agentDetails?.isMaster && (
+              {agentDetails?.isMaster && (
                 <button
                   onClick={() => setShowPromoModal(true)}
                   className="px-4 py-2 rounded-lg bg-[var(--btn-default-bg)] hover:bg-blue-500"

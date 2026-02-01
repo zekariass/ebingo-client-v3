@@ -493,7 +493,7 @@ export function registerBroadcastHandler(bot: Telegraf<Context>, agentId: number
     const progressMsg = await ctx.reply(
       `📊 <b>Broadcast Progress</b>\n\n` +
         `Agent: <b>${escapeTelegramHtml(agentName)}</b>\n` +
-        `Target (active users): <b>${targetCount}</b>\n` +
+        `Target (total users): <b>${targetCount}</b>\n` +
         `Sent: <b>0</b>\n` +
         `Failed: <b>0</b>`,
       { parse_mode: "HTML" }
@@ -566,7 +566,7 @@ export function registerBroadcastHandler(bot: Telegraf<Context>, agentId: number
     await ctx.reply(
       `✅ <b>Broadcast complete</b>\n\n` +
         `Agent: <b>${escapeTelegramHtml(agentName)}</b>\n` +
-        `Targeted (active users): <b>${targetCount}</b>\n` +
+        `Targeted (total users): <b>${targetCount}</b>\n` +
         `Messages sent: <b>${sent}</b>\n` +
         `Failed: <b>${failed}</b>`,
       { parse_mode: "HTML" }

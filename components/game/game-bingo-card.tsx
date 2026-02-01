@@ -10,7 +10,6 @@ import { userStore } from "@/lib/stores/user-store"
 import { cn } from "@/lib/utils"
 import { Star } from "lucide-react"
 import { useRoomSocket } from "@/lib/hooks/websockets/use-room-socket"
-import { Card } from "../ui/card"
 
 const COLUMN_HEADERS = ["B", "I", "N", "G", "O"]
 

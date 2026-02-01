@@ -130,7 +130,7 @@ const top3BgColors = ["bg-yellow-900/40", "bg-gray-700/40", "bg-orange-900/40"];
                       <div className="premium-card">
                         <div className="icon-wrap">📞</div>
                         <div className="label">Phone</div>
-                        <div className="value">
+                        <div className="value !text-xs">
                           {player.userProfile.phoneNumber || "-"}
                         </div>
                       </div>

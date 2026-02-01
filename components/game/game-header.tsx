@@ -72,7 +72,7 @@ export function GameHeader({ room, connected }: GameHeaderProps) {
         </div>
 
         {/* Voice Toggle */}
-        {agentDetails?.isMaster && 
+        {/* {agentDetails?.isMaster &&  */}
               <div className="px-2 sm:px-3 py-1 rounded-md flex items-center justify-center bg-[var(--voice-toggle-bg)]">
                 <button
                   onClick={() => setVoiceOn(!voiceOn)}
@@ -91,7 +91,7 @@ export function GameHeader({ room, connected }: GameHeaderProps) {
                   )}
                 </button>
             </div>
-        }
+        {/* } */}
       </div>
     </header>
   )
