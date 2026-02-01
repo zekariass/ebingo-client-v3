@@ -1,8 +1,8 @@
 const userLanguageMap = new Map<number, string>()
 
 export function getUserLang(userId?: number) {
-  if (!userId) return "en"
-  return userLanguageMap.get(userId) || "en"
+  if (!userId) return "am"
+  return userLanguageMap.get(userId) || "am"
   // return "en"
 }
 

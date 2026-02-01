@@ -1,5 +1,3 @@
-import { changeLanguage } from "i18next"
-
 export const allowedPaymentHours = 96
 
 export const availableLanguages = ["en", "am"]

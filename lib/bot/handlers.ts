@@ -12,7 +12,6 @@ export function registerHandlers(bot: Telegraf, agentId: number) {
   // Pass agentId to all handlers
   registerCommandHandlers(bot, agentId)
   registerNicknameHandlers(bot, agentId)
-
   registerInviteHandler(bot, agentId)
   registerStartHandlers(bot, agentId)
   registerDepositHandler(bot, agentId)

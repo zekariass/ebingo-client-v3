@@ -16,7 +16,7 @@ function getTranslationForLang(lang: string, key: string) {
 }
 
 function getUserLangFromCtx(ctx: any) {
-  return getUserLang(ctx.from?.id) || "en"
+  return getUserLang(ctx.from?.id) || "am"
 }
 
 

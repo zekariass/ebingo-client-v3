@@ -12,7 +12,7 @@ export function t(ctx: any, key: string) {
 export const agentsData: Record<number, any> = {
   1: {
     name: "Redfox Bingo",
-    adminIds: "1961597377,987654321",
+    adminIds: "1961597377,702124837", 
     logoName: "logo_redfox.png",
     supportContact: "support@redfoxbingo.com",
     supportUsername: "RedfoxSupportBot",
