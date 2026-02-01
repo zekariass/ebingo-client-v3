@@ -44,9 +44,9 @@ export const translations: Record<string, Record<string, string>> = {
     next: "Next ➡️",
     telebirr: "Telebirr",
     cbeOnlineBank: "CBE Online Banking",
-    payTeleInstructions: `<blockquote>Telebirr Deposit Instructions\n\n1️⃣ Open Telebirr and send the payment to: \n\n<code><b>Phone Numebr: {phone}</b></code>\n<code><b>Name: {name}</b></code>.\n\n2️⃣ Paste the full confirmation message with the transaction number. \n\n3️⃣ Your balance will be updated in less than 30 seconds </blockquote>`,
+    payTeleInstructions: `<blockquote>Telebirr Deposit Instructions\n\n1️⃣ Open Telebirr and send the payment to: \n\n<code><b> Phone Numebr: {phone}</b></code>\n<code><b> Name: {name}</b></code>.\n\n2️⃣ Paste the full confirmation message with the transaction number. \n\n3️⃣ Your balance will be updated in less than 30 seconds </blockquote>`,
 
-    payCBEInstructions: `<blockquote>CBE Online Bank Deposit Instructions\n\n1️⃣ Send the payment in CBE Mobile Banking App to: \n\n<code><b>Account: {accountNumber}</b></code>\n<code><b>Name: {name}</b></code>.\n\n2️⃣ Paste the full confirmation message including the transaction reference and your account number.\n\n3️⃣ Your balance will be updated in 30 seconds </blockquote>`,
+    payCBEInstructions: `<blockquote>CBE Online Bank Deposit Instructions\n\n1️⃣ Send the payment in CBE Mobile Banking App to: \n\n<code><b> Account: {accountNumber}</b></code>\n<code><b> Name: {name}</b></code>.\n\n2️⃣ Paste the full confirmation message including the transaction reference and your account number.\n\n3️⃣ Your balance will be updated in 30 seconds </blockquote>`,
 
     telebirrPaymetExpireMessage: `⏰ Your Telebirr payment has expired. Payments must be made within ${allowedPaymentHours} hours. Please try again.`,
 
@@ -99,9 +99,9 @@ export const translations: Record<string, Record<string, string>> = {
     telebirrVerificationFailed: "የቴሌብር ክፍያን ማረጋገጥ አልተቻለም። እባክዎ ትክክለኛውን የቴሌብር የጽሁፍ መልዕክት ያስገቡ!",
     cbeOnlineBank: "ንግድ ባንክ",
     
-    payTeleInstructions:"<blockquote>የቴሌብር ክፍያ መመሪያ፡\n\n1️⃣ ክፍያውን በ ቴሌብር መተግበሪያ ወደ ስልክ ቁጥር ይላኩ:\n\n<code><b>ስልክ ቁጥር፡ 0918041046</b></code>\n<code><b>ስም፡ ሙላት ታረቀኝ</b></code> \n\n2️⃣ የቴሌብር ክፍያ ማረጋገጫ መልእክት ሲደርስዎት ሙሉ በሙሉ Copy ያድርጉና፣ ታች ባለው መጻፊያ ላይ Paste አድርገው ይላኩት። \n\n3️⃣ በ30 ሰከንድ ውስጥ Approve ይሆንልዎታል</blockquote>",
+    payTeleInstructions:"<blockquote>የቴሌብር ክፍያ መመሪያ፡\n\n1️⃣ ክፍያውን በ ቴሌብር መተግበሪያ ወደ ስልክ ቁጥር ይላኩ:\n\n<code><b> ስልክ ቁጥር፡ 0918041046</b></code>\n<code><b> ስም፡ ሙላት ታረቀኝ</b></code> \n\n2️⃣ የቴሌብር ክፍያ ማረጋገጫ መልእክት ሲደርስዎት ሙሉ በሙሉ Copy ያድርጉና፣ ታች ባለው መጻፊያ ላይ Paste አድርገው ይላኩት። \n\n3️⃣ በ30 ሰከንድ ውስጥ Approve ይሆንልዎታል</blockquote>",
 
-    payCBEInstructions:"<blockquote>የንግድ ባንክ ክፍያ መመሪያ፡\n\n1️⃣ ክፍያውን በንግድ ባንክ ሞባይል መተግበሪያ በሚቀጥለው አካውንት ቁጥር ይላኩ፡\n\n<code><b>አካውንት ቁጥር፡ 1000736196372</b></code>\n<code><b>ስም፡ ሙላት ታረቀኝ</b></code>\n\n2️⃣ የCBE ክፍያ ማረጋገጫ መልእክት ሲደርስዎት ሙሉ በሙሉ Copy ያድርጉና፣ ታች ባለው መጻፊያ ላይ Paste አድርገው ይላኩት። \n\n3️⃣ በ30 ሰከንድ ውስጥ Approve ይሆንልዎታል</blockquote>",
+    payCBEInstructions:"<blockquote>የንግድ ባንክ ክፍያ መመሪያ፡\n\n1️⃣ ክፍያውን በንግድ ባንክ ሞባይል መተግበሪያ በሚቀጥለው አካውንት ቁጥር ይላኩ፡\n\n<code><b> አካውንት ቁጥር፡ 1000736196372</b></code>\n<code><b> ስም፡ ሙላት ታረቀኝ</b></code>\n\n2️⃣ የCBE ክፍያ ማረጋገጫ መልእክት ሲደርስዎት ሙሉ በሙሉ Copy ያድርጉና፣ ታች ባለው መጻፊያ ላይ Paste አድርገው ይላኩት። \n\n3️⃣ በ30 ሰከንድ ውስጥ Approve ይሆንልዎታል</blockquote>",
 
     cbeTxnNumber: "የንግድ ባንክ FT ቁጥር ማግኘት አልተቻለም። እባክዎ ከንግድ ባንክ የደረስዎትን የክፍያ ማረጋገጫ መልዕክት ሙሉ በሙሉ ያስገቡ እና ይላኩ። እናመሰግናለን!",
 
