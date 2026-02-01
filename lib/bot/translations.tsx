@@ -99,9 +99,32 @@ export const translations: Record<string, Record<string, string>> = {
     telebirrVerificationFailed: "የቴሌብር ክፍያን ማረጋገጥ አልተቻለም። እባክዎ ትክክለኛውን የቴሌብር የጽሁፍ መልዕክት ያስገቡ!",
     cbeOnlineBank: "ንግድ ባንክ",
     
-    payTeleInstructions:"<blockquote>የቴሌብር ክፍያ መመሪያ፡\n\n1️⃣ ክፍያውን በ ቴሌብር መተግበሪያ ወደ ስልክ ቁጥር ይላኩ:\n\n<code><b> ስልክ ቁጥር፡ 0918041046</b></code>\n<code><b> ስም፡ ሙላት ታረቀኝ</b></code> \n\n2️⃣ የቴሌብር ክፍያ ማረጋገጫ መልእክት ሲደርስዎት ሙሉ በሙሉ Copy ያድርጉና፣ ታች ባለው መጻፊያ ላይ Paste አድርገው ይላኩት። \n\n3️⃣ በ30 ሰከንድ ውስጥ Approve ይሆንልዎታል</blockquote>",
+    // payTeleInstructions:"<blockquote>የቴሌብር ክፍያ መመሪያ፡\n\n1️⃣ ክፍያውን በ ቴሌብር መተግበሪያ ወደ ስልክ ቁጥር ይላኩ:\n\n<code><b> ስልክ ቁጥር፡ 0918041046</b></code>\n<code><b> ስም፡ ሙላት ታረቀኝ</b></code> \n\n2️⃣ የቴሌብር ክፍያ ማረጋገጫ መልእክት ሲደርስዎት ሙሉ በሙሉ Copy ያድርጉና፣ ታች ባለው መጻፊያ ላይ Paste አድርገው ይላኩት። \n\n3️⃣ በ30 ሰከንድ ውስጥ Approve ይሆንልዎታል</blockquote>",
 
-    payCBEInstructions:"<blockquote>የንግድ ባንክ ክፍያ መመሪያ፡\n\n1️⃣ ክፍያውን በንግድ ባንክ ሞባይል መተግበሪያ በሚቀጥለው አካውንት ቁጥር ይላኩ፡\n\n<code><b> አካውንት ቁጥር፡ 1000736196372</b></code>\n<code><b> ስም፡ ሙላት ታረቀኝ</b></code>\n\n2️⃣ የCBE ክፍያ ማረጋገጫ መልእክት ሲደርስዎት ሙሉ በሙሉ Copy ያድርጉና፣ ታች ባለው መጻፊያ ላይ Paste አድርገው ይላኩት። \n\n3️⃣ በ30 ሰከንድ ውስጥ Approve ይሆንልዎታል</blockquote>",
+    // payCBEInstructions:"<blockquote>የንግድ ባንክ ክፍያ መመሪያ፡\n\n1️⃣ ክፍያውን በንግድ ባንክ ሞባይል መተግበሪያ በሚቀጥለው አካውንት ቁጥር ይላኩ፡\n\n<code><b> አካውንት ቁጥር፡ 1000736196372</b></code>\n<code><b> ስም፡ ሙላት ታረቀኝ</b></code>\n\n2️⃣ የCBE ክፍያ ማረጋገጫ መልእክት ሲደርስዎት ሙሉ በሙሉ Copy ያድርጉና፣ ታች ባለው መጻፊያ ላይ Paste አድርገው ይላኩት። \n\n3️⃣ በ30 ሰከንድ ውስጥ Approve ይሆንልዎታል</blockquote>",
+    payTeleInstructions: `<blockquote>የቴሌብር ክፍያ መመሪያ፡
+
+      1️⃣ ክፍያውን በቴሌብር መተግበሪያ ወደሚከተለው ስልክ ቁጥር ይላኩ፡
+
+      <code><b> ስልክ ቁጥር፡ {phone}</b></code>
+      <code><b> ስም፡ {name}</b></code>
+
+      2️⃣ የቴሌብር ክፍያ ማረጋገጫ መልእክቱን ሙሉ በሙሉ Copy ያድርጉና ከታች ባለው መጻፊያ ላይ Paste አድርገው ይላኩ።
+
+      3️⃣ በ30 ሰከንድ ውስጥ Approve ይሆንልዎታል</blockquote>`,
+
+
+    payCBEInstructions: `<blockquote>የንግድ ባንክ (CBE) ክፍያ መመሪያ፡
+
+      1️⃣ ክፍያውን በCBE ሞባይል ባንክ መተግበሪያ ወደሚከተለው አካውንት ቁጥር ይላኩ፡
+
+      <code><b> አካውንት ቁጥር፡ {accountNumber}</b></code>
+      <code><b> ስም፡ {name}</b></code>
+
+      2️⃣ የCBE ክፍያ ማረጋገጫ መልእክቱን (transaction reference እና የእርስዎን አካውንት ቁጥር የያዘ) ሙሉ በሙሉ Copy ያድርጉና ከታች ባለው መጻፊያ ላይ Paste አድርገው ይላኩ።
+
+      3️⃣ በ30 ሰከንድ ውስጥ Approve ይሆንልዎታል</blockquote>`,
+
 
     cbeTxnNumber: "የንግድ ባንክ FT ቁጥር ማግኘት አልተቻለም። እባክዎ ከንግድ ባንክ የደረስዎትን የክፍያ ማረጋገጫ መልዕክት ሙሉ በሙሉ ያስገቡ እና ይላኩ። እናመሰግናለን!",
 

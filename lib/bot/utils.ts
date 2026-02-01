@@ -38,7 +38,7 @@ export const agentsData: Record<number, any> = {
     supportChannel: "abexbingo",
     bankDetails: {
       telebirr: { 
-        "recieverName": "Bezawite Tadele",
+        "recieverName": "bezawite tadele zenebe",
         "phoneNumber": "251902493104",
       },
       cbeonline: {
