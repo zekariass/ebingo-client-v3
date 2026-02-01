@@ -30,8 +30,8 @@ export const agentsData: Record<number, any> = {
     translations: {},
   },
   2: {
-    name: "Abex Bingo",
-    adminIds: "1961597377,6655443322",
+    name: "Awash Bingo",
+    adminIds: "1961597377,312661397",
     logoName: "logo_abex.png",
     supportContact: "",
     supportUsername: "AbexSupportBot",
