@@ -31,11 +31,11 @@ export const agentsData: Record<number, any> = {
   },
   2: {
     name: "Awash Bingo",
-    adminIds: "1961597377,312661397",
+    adminIds: "1342999830,312661397",
     logoName: "logo_abex.png",
     supportContact: "",
-    supportUsername: "AbexSupportBot",
-    supportChannel: "abexbingo",
+    supportUsername: "awashbingo",
+    supportChannel: "awashbingo",
     bankDetails: {
       telebirr: { 
         "recieverName": "bezawite tadele zenebe",
