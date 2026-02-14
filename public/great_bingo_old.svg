@@ -1,0 +1,115 @@
+<svg width="500" height="500" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6D28D9;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4C1D95;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="cardGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F3F4F6;stop-opacity:1" />
+    </linearGradient>
+    
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-opacity="0.3"/>
+    </filter>
+    
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="500" height="500" fill="url(#bgGradient)"/>
+  
+  <!-- Decorative circles -->
+  <circle cx="50" cy="50" r="80" fill="#7C3AED" opacity="0.1"/>
+  <circle cx="450" cy="450" r="100" fill="#A78BFA" opacity="0.1"/>
+  <circle cx="420" cy="80" r="60" fill="#C4B5FD" opacity="0.15"/>
+  
+  <!-- Title -->
+  <text x="250" y="70" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#FFFFFF" text-anchor="middle" filter="url(#glow)">GREAT</text>
+  <text x="250" y="115" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#A3E635" text-anchor="middle" filter="url(#glow)">BINGO</text>
+  
+  <!-- Bingo Card Container -->
+  <rect x="100" y="160" width="300" height="300" rx="12" fill="url(#cardGradient)" filter="url(#shadow)"/>
+  <rect x="100" y="160" width="300" height="300" rx="12" fill="none" stroke="#7C3AED" stroke-width="4"/>
+  
+  <!-- BINGO Header Letters -->
+  <g font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle">
+    <rect x="100" y="160" width="60" height="40" fill="#7C3AED"/>
+    <text x="130" y="188" fill="#FFFFFF">B</text>
+    
+    <rect x="160" y="160" width="60" height="40" fill="#84CC16"/>
+    <text x="190" y="188" fill="#1A2E05">I</text>
+    
+    <rect x="220" y="160" width="60" height="40" fill="#EC4899"/>
+    <text x="250" y="188" fill="#FFFFFF">N</text>
+    
+    <rect x="280" y="160" width="60" height="40" fill="#06B6D4"/>
+    <text x="310" y="188" fill="#FFFFFF">G</text>
+    
+    <rect x="340" y="160" width="60" height="40" fill="#F59E0B"/>
+    <text x="370" y="188" fill="#FFFFFF">O</text>
+  </g>
+  
+  <!-- Bingo Numbers Grid (5x5) -->
+  <g font-family="Arial, sans-serif" font-size="20" font-weight="600" text-anchor="middle" fill="#1F2937">
+    <!-- Row 1 -->
+    <text x="130" y="233">12</text>
+    <text x="190" y="233">28</text>
+    <text x="250" y="233">34</text>
+    <text x="310" y="233">52</text>
+    <text x="370" y="233">68</text>
+    
+    <!-- Row 2 -->
+    <text x="130" y="281">7</text>
+    <text x="190" y="281">19</text>
+    <text x="250" y="281">41</text>
+    <text x="310" y="281">58</text>
+    <text x="370" y="281">73</text>
+    
+    <!-- Row 3 (with FREE space) -->
+    <text x="130" y="329">3</text>
+    <text x="190" y="329">24</text>
+    <rect x="220" y="302" width="60" height="48" fill="#A78BFA" rx="4"/>
+    <text x="250" y="329" fill="#FFFFFF" font-size="16" font-weight="bold">FREE</text>
+    <text x="310" y="329">47</text>
+    <text x="370" y="329">65</text>
+    
+    <!-- Row 4 -->
+    <text x="130" y="377">14</text>
+    <text x="190" y="377">30</text>
+    <text x="250" y="377">38</text>
+    <text x="310" y="377">60</text>
+    <text x="370" y="377">71</text>
+    
+    <!-- Row 5 -->
+    <text x="130" y="425">9</text>
+    <text x="190" y="425">16</text>
+    <text x="250" y="425">45</text>
+    <text x="310" y="425">49</text>
+    <text x="370" y="425">75</text>
+  </g>
+  
+  <!-- Grid lines -->
+  <g stroke="#D1D5DB" stroke-width="1.5" opacity="0.5">
+    <!-- Horizontal lines -->
+    <line x1="100" y1="200" x2="400" y2="200"/>
+    <line x1="100" y1="248" x2="400" y2="248"/>
+    <line x1="100" y1="302" x2="400" y2="302"/>
+    <line x1="100" y1="350" x2="400" y2="350"/>
+    <line x1="100" y1="398" x2="400" y2="398"/>
+    
+    <!-- Vertical lines -->
+    <line x1="160" y1="200" x2="160" y2="460"/>
+    <line x1="220" y1="200" x2="220" y2="460"/>
+    <line x1="280" y1="200" x2="280" y2="460"/>
+    <line x1="340" y1="200" x2="340" y2="460"/>
+  </g>
+</svg>
