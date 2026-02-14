@@ -161,8 +161,8 @@ export const agentsData: Record<number, any> = {
     adminIds: "7579293471",
     logoName: "logo_abex.png",
     supportContact: "",
-    supportUsername: "greatbingo",
-    supportChannel: "greatbingo",
+    supportUsername: "Great_BING",
+    supportChannel: "Great_BING",
     bankDetails: {
       telebirr: { 
         "recieverName": "Andargachew Awoke Demeke",
