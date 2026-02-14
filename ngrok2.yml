@@ -1,7 +1,7 @@
 version: 3
 
 agent:
-  authtoken: 34f7fNT5WWe2EaVOKk1OAXepmUn_7nn5Ao2XbUcnVLR8k7wsw
+  authtoken: 39X3dVrNezXt0nfJs5YUyBOD7SQ_2UcKqMYmyDoKPV9ay49MW
 
 tunnels:
   frontend:

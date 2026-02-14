@@ -9,10 +9,8 @@ import { GameStatus } from "@/lib/types"
 import { RoomHeader } from "./room-header"
 import { CardSelectionGrid } from "./card-selection-grid"
 import { SelectedCardsPanel } from "./selected-cards-panel"
-import { GameControls } from "./game-controls"
 import { useTelegramInit } from "@/lib/hooks/use-telegram-init"
 import { useRoomSocket } from "@/lib/hooks/websockets/use-room-socket"
-import { use } from "i18next"
 import { useAgentStore } from "@/lib/stores/agent-store"
 
 interface RoomViewProps {

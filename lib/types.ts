@@ -1103,3 +1103,60 @@ export interface SystemConfig {
   value: string;
   possibleValues?: string;
 }
+
+export interface GoldenEggsTotalAccounting {
+  agentId: number;
+  totalBetsCount: number;
+  totalBetsAmount: number;
+  totalWinsAmount: number;
+  totalLossAmount: number;
+  totalNetProfitAmount: number;
+  totalRollbackCount: number;
+  totalRollbackAmount: number;
+}
+
+export interface GoldenEggsDailyAccounting {
+  id: number;
+  agentId: number;
+  accountingDate: string;
+  dailyBetsCount: number;
+  dailyBetsAmount: number;
+  dailyWinsAmount: number;
+  dailyLossAmount: number;
+  dailyNetProfitAmount: number;
+  dailyRollbackCount: number;
+  dailyRollbackAmount: number;
+  isSettled: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AgentGameResponse {
+  id: number;
+  agentId: number;
+  gameCategory: string;
+  gameTypes: string[];
+  isEnabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAgentGameRequest {
+  agentId: number;
+  gameCategory: string;
+  gameTypes: string[];
+  isEnabled?: boolean;
+}
+
+export interface AgentGameSettingDto {
+  id: number;
+  agentId: number;
+  gameModes: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateAgentGameModesRequest {
+  agentId: number;
+  gameModes: string[];
+}

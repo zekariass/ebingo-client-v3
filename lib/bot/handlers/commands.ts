@@ -41,7 +41,7 @@ export async function showStartMenu(ctx: any, agentId: number) {
       [
           Markup.button.callback(getTranslationForLang(lang, "btnStartGame"), 'cmd_gamerooms'),
           // Markup.button.callback(tr.btnGameRooms, 'cmd_gamerooms'),
-          Markup.button.webApp(getTranslationForLang(lang, "btnWebview"), `${process.env.APP_URL}/en?agentId=${agentId}`),
+          Markup.button.webApp(getTranslationForLang(lang, "btnWebview"), `${process.env.APP_URL}/en/game-options?agentId=${agentId}`),
         ],
     
         // Row 3 (three buttons)
@@ -70,7 +70,7 @@ export async function showStartMenu(ctx: any, agentId: number) {
         ],
         [
           // Markup.button.url(tr.btnSupport, 'https://t.me/M104610'),
-          Markup.button.url(getTranslationForLang(lang, "btnSupport"), 'https://t.me/redfoxbingo?direct'),
+          Markup.button.url(getTranslationForLang(lang, "btnSupport"), `https://t.me/${agentsData[agentId].supportChannel}?direct`),
         ],
 
         [Markup.button.url("🔔 Join Channel For Notification", `https://t.me/${agentsData[agentId].supportChannel}`)],

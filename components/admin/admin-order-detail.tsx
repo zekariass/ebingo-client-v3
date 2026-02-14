@@ -54,10 +54,10 @@ function BankDetails({ data }: { data: BankMetaData }) {
     <div className="rounded-lg border bg-[var(--background)] p-3 space-y-2">
       {Object.entries(data).map(([key, value]) => (
         <div key={key} className="flex justify-between gap-4">
-          <span className="text-sm text-gray-600">
+          <span className="text-xs text-[var(--foreground)]">
             {formatLabel(key)}
           </span>
-          <span className="text-sm font-medium text-gray-900">
+          <span className="text-xs font-medium text-[var(--foreground)]">
             {value ?? "-"}
           </span>
         </div>

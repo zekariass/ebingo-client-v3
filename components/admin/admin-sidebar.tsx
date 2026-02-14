@@ -117,6 +117,8 @@ import {
   DollarSign,
   ArrowUpToLineIcon,
   Trophy,
+  Egg,
+  Gamepad2,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -173,6 +175,12 @@ export function AdminSidebar({ isMobile = false, onLinkClick }: AdminSidebarProp
       // Accounting (admin only)
       { title: "Daily Accountings (Admin)", href: `/admin/accountings/daily?agentId=${activeAgentId}`, icon: BarChart3, adminOnly: true },
       { title: "Total Accountings (Admin)", href: `/admin/accountings/total?agentId=${activeAgentId}`, icon: DollarSign, adminOnly: true },
+
+      // Golden Eggs
+      { title: "Golden Eggs", href: `/admin/golden-eggs?agentId=${activeAgentId}`, icon: Egg, agentOrAdminOnly: true },
+
+      // Game Settings
+      { title: "Games", href: `/admin/games?agentId=${activeAgentId}`, icon: Gamepad2, agentOrAdminOnly: true },
 
       // Admin / System
       { title: "Agents", href: `/admin/agents?agentId=${activeAgentId}`, icon: Users, adminOnly: true },

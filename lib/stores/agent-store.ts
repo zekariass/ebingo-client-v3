@@ -176,11 +176,15 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
         agentDetails: data,
         loading: false,
         })
+        
+        return data
     } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error"
         set({
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: errorMessage,
         loading: false,
         })
+        throw error
     }
   },
   

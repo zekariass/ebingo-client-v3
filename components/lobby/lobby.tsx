@@ -11,6 +11,7 @@ import { useTelegramInit } from "@/lib/hooks/use-telegram-init"
 import { useSystemStore } from "@/lib/stores/system-store"
 import { useRoomSocket } from "@/lib/hooks/websockets/use-room-socket"
 import { useAgentStore } from "@/lib/stores/agent-store"
+import Link from "next/link"
 
 export function Lobby({agentId}: {agentId?: number}) {
   useTelegramInit();
@@ -63,9 +64,6 @@ export function Lobby({agentId}: {agentId?: number}) {
   }
 
 useEffect(() => {
-    //   const initData = tg.initData;
-    //   const initDataUnsafe = tg.initDataUnsafe;
-    //   console.log("Sending init data:", { initData, initDataUnsafe });
       fetchPaymentData();
   }, []);
 

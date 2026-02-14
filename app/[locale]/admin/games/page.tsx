@@ -1,5 +1,5 @@
-// import { AdminGames } from "@/components/admin/admin-games"
+import { AdminGames } from "@/components/admin/admin-games"
 
-// export default function AdminGamesPage() {
-//   return <AdminGames />
-// }
+export default function AdminGamesPage() {
+  return <AdminGames />
+}
