@@ -159,7 +159,7 @@ export const agentsData: Record<number, any> = {
   3: {
     name: "Great Bingo",
     adminIds: "7579293471",
-    logoName: "logo_abex.png",
+    logoName: "great_bingo.svg",
     supportContact: "",
     supportUsername: "Great_BING",
     supportChannel: "Great_BING",
