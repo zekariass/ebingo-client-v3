@@ -40,24 +40,23 @@ export function GameOptionsGrid({ gameModes, agentId }: GameOptionsGridProps) {
     }
   }, [agentId, agentGameSettings, getAgentGameSettings])
 
-  // Filter games based on agent's enabled game modes
-  const allGames = useMemo(() => {
-    // Always include bingo game
-    const games = [bingoGame]
+  // Separate bingo game from external games
+  const { bingoGames, externalGames } = useMemo(() => {
+    const bingo = [bingoGame]
+    let external: GameModeDto[] = []
     
     // If agent game settings are loaded, filter external games
     if (agentGameSettings && agentGameSettings.gameModes) {
       const enabledGameModes = agentGameSettings.gameModes
-      const filteredGames = gameModes.filter(game => 
+      external = gameModes.filter(game => 
         enabledGameModes.includes(game.gameMode)
       )
-      games.push(...filteredGames)
     } else {
-      // If settings not loaded yet, show all games (or show none except bingo)
-      games.push(...gameModes)
+      // If settings not loaded yet, show all games
+      external = gameModes
     }
     
-    return games
+    return { bingoGames: bingo, externalGames: external }
   }, [gameModes, agentGameSettings])
 
   const container = {
@@ -104,29 +103,69 @@ export function GameOptionsGrid({ gameModes, agentId }: GameOptionsGridProps) {
   }
 
   return (
-    <div className="pb-8">
-      <motion.div
-        variants={container}
-        initial="hidden"
-        animate="show"
-        className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3"
-      >
-        {allGames.map((game, index) => (
+    <div className="pb-8 space-y-8">
+      {/* Bingo Game Section */}
+      <div>
+        <motion.div
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3"
+        >
+          {bingoGames.map((game, index) => (
+            <motion.div
+              key={game.gameMode}
+              variants={item}
+              onHoverStart={() => setHoveredCard(game.gameMode)}
+              onHoverEnd={() => setHoveredCard(null)}
+            >
+              <GameCard
+                game={game}
+                isHovered={hoveredCard === game.gameMode}
+                onSelect={handleGameSelect}
+                index={index}
+              />
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+
+      {/* External Games Demo Section */}
+      {externalGames.length > 0 && (
+        <div>
+          <div className="mb-4 p-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-lg">
+            <h2 className="text-lg font-bold text-amber-600 dark:text-amber-400 mb-1">
+              🎮 Demo Games - Coming Soon!
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Try these games in demo mode. Real money play will start soon!
+            </p>
+          </div>
+          
           <motion.div
-            key={game.gameMode}
-            variants={item}
-            onHoverStart={() => setHoveredCard(game.gameMode)}
-            onHoverEnd={() => setHoveredCard(null)}
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3"
           >
-            <GameCard
-              game={game}
-              isHovered={hoveredCard === game.gameMode}
-              onSelect={handleGameSelect}
-              index={index}
-            />
+            {externalGames.map((game, index) => (
+              <motion.div
+                key={game.gameMode}
+                variants={item}
+                onHoverStart={() => setHoveredCard(game.gameMode)}
+                onHoverEnd={() => setHoveredCard(null)}
+              >
+                <GameCard
+                  game={game}
+                  isHovered={hoveredCard === game.gameMode}
+                  onSelect={handleGameSelect}
+                  index={index}
+                />
+              </motion.div>
+            ))}
           </motion.div>
-        ))}
-      </motion.div>
+        </div>
+      )}
     </div>
   )
 }
