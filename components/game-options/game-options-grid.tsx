@@ -11,25 +11,26 @@ interface GameOptionsGridProps {
   agentId: number | null
 }
 
-const bingoGame: GameModeDto = {
-  gameMode: "bingo",
-  title: "ቢንጎ ጨዋታ",
-  description: "Classic Bingo Game - Play with friends and win big!",
-  category: "bingo",
-  iconsUrls: {
-    url: "/bingo-icon.svg",
-    url_200_200: "/bingo-icon.svg",
-    url_600_600: "/bingo-icon.svg",
-  },
-  multiplayer: true,
-  rtp: "95",
-  bonusTypes: ["JACKPOT", "BONUS_ROUNDS"],
-}
-
 export function GameOptionsGrid({ gameModes, agentId }: GameOptionsGridProps) {
   const router = useRouter()
   const { setSelectedGameMode, agentGameSettings, getAgentGameSettings } = useExternalGameStore()
   const [hoveredCard, setHoveredCard] = useState<string | null>(null)
+
+
+  const bingoGame: GameModeDto = {
+    gameMode: "bingo",
+    title: "ቢንጎ ጨዋታ",
+    description: "Classic Bingo Game - Play with friends and win big!",
+    category: "bingo",
+    iconsUrls: {
+      url: `/icons/bingo-${agentId}-icon.svg`,
+      url_200_200: `/icons/bingo-${agentId}-icon.svg`,
+      url_600_600: `/icons/bingo-${agentId}-icon.svg`,
+    },
+    multiplayer: true,
+    rtp: "95",
+    bonusTypes: ["JACKPOT", "BONUS_ROUNDS"],
+  }
 
   // Fetch agent game settings when component mounts
   useEffect(() => {

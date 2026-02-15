@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <defs>
+    <linearGradient id="bg17">
+      <stop offset="0%" stop-color="#ffc107"/>
+      <stop offset="100%" stop-color="#ff6f00"/>
+    </linearGradient>
+    <filter id="shad17"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-opacity="0.4"/></filter>
+  </defs>
+  <rect width="500" height="500" fill="url(#bg17)"/>
+  <circle cx="80" cy="100" r="25" fill="#ffffff" opacity="0.1"/>
+  <circle cx="420" cy="120" r="30" fill="#ffffff" opacity="0.1"/>
+  <g transform="translate(270, 275) rotate(8)" filter="url(#shad17)">
+    <rect x="-68" y="-88" width="136" height="176" rx="10" fill="#ffd54f" stroke="#000" stroke-width="3"/>
+  </g>
+  <g transform="translate(245, 270) rotate(3)" filter="url(#shad17)">
+    <rect x="-68" y="-88" width="136" height="176" rx="10" fill="#ffe082" stroke="#000" stroke-width="3"/>
+  </g>
+  <g transform="translate(220, 265) rotate(-5)" filter="url(#shad17)">
+    <rect x="-68" y="-88" width="136" height="176" rx="10" fill="#ffffff" stroke="#000" stroke-width="4"/>
+    <rect x="-65" y="-85" width="130" height="25" rx="5" fill="#ffc107"/>
+    <text x="-48" y="-65" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#fff" text-anchor="middle">B</text>
+    <text x="-24" y="-65" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#fff" text-anchor="middle">I</text>
+    <text x="0" y="-65" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#fff" text-anchor="middle">N</text>
+    <text x="24" y="-65" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#fff" text-anchor="middle">G</text>
+    <text x="48" y="-65" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#fff" text-anchor="middle">O</text>
+    <circle cx="-48" cy="-36" r="10" fill="#ffc107"/><text x="-48" y="-32" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">7</text>
+    <circle cx="-24" cy="-36" r="10" fill="#ffc107"/><text x="-24" y="-32" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">22</text>
+    <circle cx="0" cy="-36" r="10" fill="#ffc107"/><text x="0" y="-32" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">38</text>
+    <circle cx="24" cy="-36" r="10" fill="#ffc107"/><text x="24" y="-32" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">54</text>
+    <circle cx="48" cy="-36" r="10" fill="#ffc107"/><text x="48" y="-32" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">71</text>
+    <circle cx="-48" cy="-11" r="10" fill="#ffca28"/><text x="-48" y="-7" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">12</text>
+    <circle cx="-24" cy="-11" r="10" fill="#ffca28"/><text x="-24" y="-7" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">19</text>
+    <circle cx="0" cy="-11" r="10" fill="#ffca28"/><text x="0" y="-7" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">44</text>
+    <circle cx="24" cy="-11" r="10" fill="#ffca28"/><text x="24" y="-7" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">60</text>
+    <circle cx="48" cy="-11" r="10" fill="#ffca28"/><text x="48" y="-7" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">65</text>
+    <circle cx="-48" cy="14" r="10" fill="#ffd54f"/><text x="-48" y="18" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">3</text>
+    <circle cx="-24" cy="14" r="10" fill="#ffd54f"/><text x="-24" y="18" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">28</text>
+    <circle cx="0" cy="14" r="12" fill="#ffd700" stroke="#f57f17" stroke-width="2"/><text x="0" y="12" font-size="6" font-weight="bold" fill="#000" text-anchor="middle">FREE</text><text x="0" y="20" font-size="9" font-weight="bold" fill="#000" text-anchor="middle">★</text>
+    <circle cx="24" cy="14" r="10" fill="#ffd54f"/><text x="24" y="18" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">47</text>
+    <circle cx="48" cy="14" r="10" fill="#ffd54f"/><text x="48" y="18" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">75</text>
+    <circle cx="-48" cy="39" r="10" fill="#ffe082"/><text x="-48" y="43" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">15</text>
+    <circle cx="-24" cy="39" r="10" fill="#ffe082"/><text x="-24" y="43" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">24</text>
+    <circle cx="0" cy="39" r="10" fill="#ffe082"/><text x="0" y="43" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">31</text>
+    <circle cx="24" cy="39" r="10" fill="#ffe082"/><text x="24" y="43" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">59</text>
+    <circle cx="48" cy="39" r="10" fill="#ffe082"/><text x="48" y="43" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">68</text>
+    <circle cx="-48" cy="64" r="10" fill="#ffecb3"/><text x="-48" y="68" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">9</text>
+    <circle cx="-24" cy="64" r="10" fill="#ffecb3"/><text x="-24" y="68" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">16</text>
+    <circle cx="0" cy="64" r="10" fill="#ffecb3"/><text x="0" y="68" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">42</text>
+    <circle cx="24" cy="64" r="10" fill="#ffecb3"/><text x="24" y="68" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">52</text>
+    <circle cx="48" cy="64" r="10" fill="#ffecb3"/><text x="48" y="68" font-size="10" font-weight="bold" fill="#333" text-anchor="middle">70</text>
+  </g>
+  <text x="250" y="75" font-family="Arial, sans-serif" font-size="56" font-weight="bold" fill="#ffffff" text-anchor="middle" filter="url(#shad17)">BINGO</text>
+  <text x="250" y="462" font-family="Arial, sans-serif" font-size="68" font-weight="bold" fill="#ffd700" text-anchor="middle" filter="url(#shad17)">75</text>
+</svg>
