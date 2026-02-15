@@ -138,7 +138,7 @@ export function GameOptionsGrid({ gameModes, agentId }: GameOptionsGridProps) {
               🎮 የሙከራ (Demo) ጨዋታዎች - በቅርብ ቀን!
             </h2>
             <p className="text-sm text-muted-foreground">
-             እነዚህን ጨዋታዎች ለሙከራ ይጫወቱ። በእውነተኛ ገንዘብ መጫወት በቅርቡ ይጀምራል!
+             👇 ከዚህ በታች ያሉትን ጨዋታዎች ለሙከራ ይጫወቱ። በትክክለኛ ገንዘብ መጫወት በቅርቡ ይጀምራል!
             </p>
           </div>
           
