@@ -16,6 +16,8 @@ export function GameOptionsGrid({ gameModes, agentId }: GameOptionsGridProps) {
   const { setSelectedGameMode, agentGameSettings, getAgentGameSettings } = useExternalGameStore()
   const [hoveredCard, setHoveredCard] = useState<string | null>(null)
 
+  alert(`Agent ID: ${agentId}`)
+
 
   const bingoGame: GameModeDto = {
     gameMode: "bingo",
@@ -23,9 +25,9 @@ export function GameOptionsGrid({ gameModes, agentId }: GameOptionsGridProps) {
     description: "Classic Bingo Game - Play with friends and win big!",
     category: "bingo",
     iconsUrls: {
-      url: `/icons/bingo-${agentId}-icon.svg`,
-      url_200_200: `/icons/bingo-${agentId}-icon.svg`,
-      url_600_600: `/icons/bingo-${agentId}-icon.svg`,
+      url: `/icons/bingo_v${agentId}.svg`,
+      url_200_200: `/icons/bingo_v${agentId}.svg`,
+      url_600_600: `/icons/bingo_v${agentId}.svg`,
     },
     multiplayer: true,
     rtp: "95",
