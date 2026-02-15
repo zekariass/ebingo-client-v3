@@ -16,12 +16,9 @@ export function GameOptionsGrid({ gameModes, agentId }: GameOptionsGridProps) {
   const { setSelectedGameMode, agentGameSettings, getAgentGameSettings } = useExternalGameStore()
   const [hoveredCard, setHoveredCard] = useState<string | null>(null)
 
-  alert(`Agent ID: ${agentId}`)
-
-
   const bingoGame: GameModeDto = {
     gameMode: "bingo",
-    title: "ቢንጎ ጨዋታ",
+    title: "",
     description: "Classic Bingo Game - Play with friends and win big!",
     category: "bingo",
     iconsUrls: {

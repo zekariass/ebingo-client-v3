@@ -27,13 +27,13 @@ export function GameCard({ game, isHovered, onSelect, index }: GameCardProps) {
         className="relative aspect-square overflow-hidden rounded-xl cursor-pointer border-2 border-transparent hover:border-purple-400 dark:hover:border-purple-600 transition-all duration-300 shadow-md hover:shadow-xl bg-white dark:bg-gray-800"
         onClick={() => onSelect(game)}
       >
-        {isBingo && (
-          <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-purple-600/90 to-transparent py-2 px-3">
+        {/* {isBingo && (
+          <div className="absolute top-0 left-0 right-0 z-10">
             <h3 className="text-white font-bold text-sm sm:text-base text-center">
               {game.title}
             </h3>
           </div>
-        )}
+        )} */}
         <motion.div
           animate={isHovered ? { scale: 1.1 } : { scale: 1 }}
           transition={{ duration: 0.3 }}
