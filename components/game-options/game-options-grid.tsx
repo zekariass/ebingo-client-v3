@@ -135,10 +135,10 @@ export function GameOptionsGrid({ gameModes, agentId }: GameOptionsGridProps) {
         <div>
           <div className="mb-4 p-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-lg">
             <h2 className="text-lg font-bold text-amber-600 dark:text-amber-400 mb-1">
-              🎮 Demo Games - Coming Soon!
+              🎮 የሙከራ (Demo) ጨዋታዎች - በቅርብ ቀን!
             </h2>
             <p className="text-sm text-muted-foreground">
-              Try these games in demo mode. Real money play will start soon!
+             እነዚህን ጨዋታዎች ለሙከራ ይጫወቱ። በእውነተኛ ገንዘብ መጫወት በቅርቡ ይጀምራል!
             </p>
           </div>
           
