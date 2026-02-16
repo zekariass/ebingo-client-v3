@@ -153,12 +153,12 @@ return (
           }
         }}
       >
-        <DialogTrigger asChild>
+        {user?.role === "ADMIN" && <DialogTrigger asChild>
           <Button disabled={isLoading} className="w-full sm:w-auto">
             <Plus className="h-4 w-4 mr-2" />
             {editingRoom ? "Edit Room" : "Create Room"}
           </Button>
-        </DialogTrigger>
+        </DialogTrigger>}
         <DialogContent className="w-[95vw] max-w-md mx-auto">
           <DialogHeader>
             <DialogTitle>{editingRoom ? "Edit Room" : "Create New Room"}</DialogTitle>
