@@ -23,6 +23,8 @@ import { InputField, SelectField } from "@/components/ui/form-fields"
 import { roomPatterns, roomSchema, roomStatuses, type RoomFormData } from "@/lib/schemas/admin-schemas"
 import { useGameStore } from "@/lib/stores/game-store"
 import { useTelegramInit } from "@/lib/hooks/use-telegram-init"
+import { useAgentStore } from "@/lib/stores/agent-store"
+import { userStore } from "@/lib/stores/user-store"
 
 export function AdminRooms({agentId}: {agentId: number | undefined}) {
 const { rooms, isLoading, error, createRoom, updateRoom, deleteRoom, loadRooms } = useAdminStore()
@@ -32,6 +34,7 @@ useTelegramInit()
 
 const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
 const [editingRoom, setEditingRoom] = useState<any>(null)
+const {user} = userStore()
 
 const {
   register,
@@ -89,8 +92,11 @@ const onSubmit = async (data: RoomFormData) => {
       if (editingRoom) {
         await updateRoom(editingRoom.id, agentId, payload)
         setEditingRoom(null)
-      } else {
+      } else if (!editingRoom && user?.role === "ADMIN"){
         await createRoom(payload, agentId)
+      } else {
+        alert("You don't have permission to create rooms. Request the ADMIN to create for you.")
+        return
       }
 
       reset()

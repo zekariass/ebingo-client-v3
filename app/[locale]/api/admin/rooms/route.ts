@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const telegramId = searchParams.get("telegramId")
 
-    if (role !== "ADMIN" && role !== "AGENT") {
+    if (role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden: Admins only" }, { status: 403 });
     }
 

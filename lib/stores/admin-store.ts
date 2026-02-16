@@ -295,7 +295,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      if (!role || (role !== "ADMIN" && role !== "AGENT")) {
+      if (!role || (role !== "ADMIN")) {
         set({ error: "Access denied: Admins only", isLoading: false });
         return;
       }
