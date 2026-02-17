@@ -113,7 +113,7 @@ export default function ExternalGamePage() {
           brandName: "Awash Games",//agentData.name, 
           lang,
           adaptive: true,
-          isDemoPlay: false,
+          isDemoPlay: true,
         }
 
         await launchGame(request)
