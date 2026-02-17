@@ -108,12 +108,12 @@ export default function ExternalGamePage() {
           gameMode,
           currency: "ETB", 
           initData,
-          subId: "redfoxgames",//agentIdNum.toString(), 
+          subId: "redfoxgames", 
           lobbyUrl, 
-          brandName: "RedFox Games",//agentData.name, 
+          brandName: "Awash Games",//agentData.name, 
           lang,
           adaptive: true,
-          isDemoPlay: true,
+          isDemoPlay: false,
         }
 
         await launchGame(request)
