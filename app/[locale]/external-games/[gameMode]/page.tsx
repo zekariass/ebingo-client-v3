@@ -113,7 +113,7 @@ export default function ExternalGamePage() {
           initData,
           subId: agentSubId, 
           lobbyUrl, 
-          brandName: agentData.name, 
+          brandName: "Redfox Games", 
           lang,
           adaptive: true,
           isDemoPlay: false,
