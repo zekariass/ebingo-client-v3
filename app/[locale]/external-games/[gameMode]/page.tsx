@@ -116,7 +116,7 @@ export default function ExternalGamePage() {
           brandName: "Redfox Games", 
           lang,
           adaptive: true,
-          isDemoPlay: false,
+          isDemoPlay: true,
         }
 
         await launchGame(request)
