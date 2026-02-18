@@ -54,6 +54,7 @@ const {
   botAllowed: false,
   minBots: 0,
   maxBots: 0,
+  maxCards: 1,
   commissionRate: 0,
   },            
 })
@@ -119,6 +120,7 @@ const handleEdit = (room: any) => {
   botAllowed: room.botAllowed,
   minBots: room.minBots,
   maxBots: room.maxBots,
+  maxCards: room.maxCards,
   commissionRate: room.commissionRate,
   })
   setIsCreateDialogOpen(true)
@@ -282,9 +284,20 @@ return (
               label="Maximum Bots"
               type="number"
               min="0"
+              max="100"
               placeholder="0"
               {...register("maxBots", { valueAsNumber: true })}
               error={errors.maxBots?.message}
+            />
+
+            <InputField
+              label="Maximum Cards"
+              type="number"
+              min="1"
+              max="2"
+              placeholder="1"
+              {...register("maxCards", { valueAsNumber: true })}
+              error={errors.maxCards?.message}
             />
 
             <InputField
@@ -336,6 +349,7 @@ return (
                   <TableHead className="min-w-[80px]">Min Bots</TableHead>
                   <TableHead className="min-w-[80px]">Max Bots</TableHead>
                   <TableHead className="min-w-[100px]">Commission</TableHead>
+                  <TableHead className="min-w-[100px]">Max Cards</TableHead>
                   <TableHead className="min-w-[100px]">Status</TableHead>
                   <TableHead className="min-w-[100px]">Pattern</TableHead>
                   <TableHead className="min-w-[140px]">Actions</TableHead>
@@ -364,6 +378,8 @@ return (
                       <TableCell>{room.minBots}</TableCell>
                       <TableCell>{room.maxBots}</TableCell>
                       <TableCell>{room.commissionRate}</TableCell>
+                      <TableCell>{room.maxCards}</TableCell>
+
                       <TableCell>
                         <Badge
                           variant={room.status === "OPEN" ? "default" : "secondary"}

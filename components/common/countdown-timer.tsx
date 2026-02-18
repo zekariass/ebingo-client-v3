@@ -257,17 +257,17 @@ export function CountdownTimer({ label, gamePage = true }: CountdownTimerProps) 
     return (
       <div className="text-center space-y-1">
         {label && (
-          <div className="text-xs text-[var(--countdown-label-fg)]">
+          <div className="text-xs text-center text-[var(--countdown-label-fg)]">
             {label}
           </div>
         )}
 
         {timeLeft >= 0 ? (
-          <div className={`font-bold text-md px-3 py-1 ${getBadgeTextClass()}`}>
+          <div className={`font-bold text-center text-md px-3 py-1 ${getBadgeTextClass()}`}>
             Starts In: {formatTime(timeLeft)}
           </div>
         ) : (
-          <div className="font-bold text-md px-3 py-1 text-[var(--countdown-text-starting)]">
+          <div className="font-bold text-md text-center px-3 py-1 text-[var(--countdown-text-starting)]">
             Starting...
           </div>
         )}
@@ -294,7 +294,7 @@ export function CountdownTimer({ label, gamePage = true }: CountdownTimerProps) 
             {currentDrawnNumber}
           </motion.div>
         ) : (
-          <div className="font-bold text-md px-3 py-1 text-[var(--countdown-text-starting)]">
+          <div className="font-bold text-md px-3 py-1 text-center text-[var(--countdown-text-starting)]">
             Calling...
           </div>
         )}
@@ -311,7 +311,7 @@ export function CountdownTimer({ label, gamePage = true }: CountdownTimerProps) 
             {label}
           </div>
         )}
-        <div className="font-bold text-md px-3 py-1 text-[var(--countdown-text-warning)]">
+        <div className="font-bold text-md text-center px-3 py-1 text-[var(--countdown-text-warning)]">
           Starting Soon...
         </div>
       </div>

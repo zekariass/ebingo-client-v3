@@ -39,6 +39,7 @@ export type Room = {
   minBots: number;
   maxBots: number;
   commissionRate: number;
+  maxCards: number;
   createdBy: number;            // Long -> number
   createdAt: string;            // LocalDateTime -> ISO string
   updatedAt: string;            // LocalDateTime -> ISO string

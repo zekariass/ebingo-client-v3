@@ -49,6 +49,9 @@ export default function ExternalGamePage() {
     }
   }, [setGameUrl])
 
+  const agentSubId = agentDetails?.name?.toLowerCase().replace(" ", "");
+  // alert(agentSubId);
+
   useEffect(() => {
     let isMounted = true
     
@@ -108,12 +111,12 @@ export default function ExternalGamePage() {
           gameMode,
           currency: "ETB", 
           initData,
-          subId: "redfoxgames", 
+          subId: "mygames",//"redfoxgames", 
           lobbyUrl, 
-          brandName: "Awash Games",//agentData.name, 
+          brandName: "My Games",//agentData.name, 
           lang,
           adaptive: true,
-          isDemoPlay: true,
+          isDemoPlay: false,
         }
 
         await launchGame(request)

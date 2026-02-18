@@ -119,6 +119,7 @@ import {
   Trophy,
   Egg,
   Gamepad2,
+  Search,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -157,7 +158,7 @@ export function AdminSidebar({ isMobile = false, onLinkClick }: AdminSidebarProp
 
   const allSidebarItems: SidebarItem[] = [
       // Core
-      { title: "Home", href: `/${i18n.language}?agentId=${activeAgentId}`, icon: Home },
+      { title: "Home", href: `/${i18n.language}/game-options?agentId=${activeAgentId}`, icon: Home },
       { title: "Rooms", href: `/admin/rooms?agentId=${activeAgentId}`, icon: GamepadIcon },
 
       // Money / Ops
@@ -180,7 +181,8 @@ export function AdminSidebar({ isMobile = false, onLinkClick }: AdminSidebarProp
       { title: "Golden Eggs", href: `/admin/golden-eggs?agentId=${activeAgentId}`, icon: Egg, agentOrAdminOnly: true },
 
       // Game Settings
-      { title: "Games", href: `/admin/games?agentId=${activeAgentId}`, icon: Gamepad2, agentOrAdminOnly: true },
+      { title: "Games", href: `/admin/games?agentId=${activeAgentId}`, icon: Gamepad2, adminOnly: true },
+      { title: "Agent Games Config", href: `/admin/agent-games-config?agentId=${activeAgentId}`, icon: Search, adminOnly: true },
 
       // Admin / System
       { title: "Agents", href: `/admin/agents?agentId=${activeAgentId}`, icon: Users, adminOnly: true },

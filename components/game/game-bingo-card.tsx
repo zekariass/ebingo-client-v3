@@ -51,6 +51,11 @@ export function GameBingoCard({ cardInfoId, index }: GameBingoCardProps) {
   // const { markNumber: markNumberInBackend, unmarkNumber: unMarkNumberInBackend, claimBingo } =
   //   useWebSocketEvents({ roomId, enabled: true })
 
+   // Do not show more than one card
+  const maxCards = room?.maxCards ?? 1;
+  if (index > maxCards - 1) return;
+
+
   const {markNumber: markNumberInBackend, unmarkNumber: unMarkNumberInBackend, claimBingo, connected: isConnected} = useRoomSocket({roomId, enabled: !!roomId})
 
   const currentCard = useGameStore((state) =>

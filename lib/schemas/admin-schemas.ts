@@ -16,6 +16,7 @@ export const roomSchema = z.object({
   botAllowed: z.boolean().optional(),
   minBots: z.number().min(0, "Minimum bots cannot be negative").optional(),
   maxBots: z.number().min(0, "Maximum bots cannot be negative").optional(),
+  maxCards: z.number().min(1, "Maximum cards cannot be less than 1").max(2, "Maximum cards cannot exceed 2").optional(),
   commissionRate: z.number().min(0, "Commission rate cannot be negative").max(1, "Commission rate cannot exceed 1").optional(),
 })
 

@@ -12,8 +12,8 @@ import { userStore } from "@/lib/stores/user-store"
 import { CountdownTimer } from "../common/countdown-timer"
 import { useRouter } from "next/navigation"
 import i18n from "@/i18n"
-import { useSystemStore } from "@/lib/stores/system-store"
-import { motion } from "framer-motion";
+// import { useSystemStore } from "@/lib/stores/system-store"
+// import { motion } from "framer-motion";
 import { useRoomSocket } from "@/lib/hooks/websockets/use-room-socket"
 import { useAgentStore } from "@/lib/stores/agent-store"
 
@@ -24,14 +24,14 @@ interface GameViewProps {
 export function GameView({ roomId }: GameViewProps) {
   const {activeAgentId} = useAgentStore();
   const gameId = useGameStore(state => state.game.gameId)
-  const [currentLetter, setCurrentLetter] = useState<string>("")
+  // const [currentLetter, setCurrentLetter] = useState<string>("")
   const selectedCardIds = useGameStore(state => state.game.userSelectedCardsIds)
   // const countdownEndTime = useGameStore(state => state.game.countdownEndTime)
-  const status = useGameStore(state => state.game.status)
-  const currentDrawnNumber = useGameStore(state => state.game.currentDrawnNumber)
+  // const status = useGameStore(state => state.game.status)
+  // const currentDrawnNumber = useGameStore(state => state.game.currentDrawnNumber)
   // const voiceOn = useSystemStore(state => state.voiceOn)
-  const setLocaleChanged = useSystemStore(state => state.setLocaleChanged)
-  const localeChanged = useSystemStore(state => state.localeChanged)
+  // const setLocaleChanged = useSystemStore(state => state.setLocaleChanged)
+  // const localeChanged = useSystemStore(state => state.localeChanged)
 
   const telegramId = userStore(state => state.user?.telegramId)
   // const { leaveGame, connected, connect } = useWebSocketEvents({ roomId, enabled: true })
@@ -44,6 +44,7 @@ export function GameView({ roomId }: GameViewProps) {
   const [isLeaving, setLeaving] = useState(false)
 
   const { room, loading, fetchRoom } = useRoomStore()
+  const maxCards = room?.maxCards || 1
 
   // const getCurrentLetter = (number: number): string => {
   //   if (number < 1 || number > 75) throw new Error("Number must be between 1 and 75");

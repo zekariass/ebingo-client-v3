@@ -9,7 +9,7 @@ import { DialogTitle } from "@radix-ui/react-dialog"
 import { userStore } from "@/lib/stores/user-store"
 import { UserRole } from "@/lib/types"
 import { GameTransactionHistory } from "../payment/game-transaction-history"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { useState } from "react"
 import {
   ChevronDown,
@@ -18,6 +18,8 @@ import {
   Settings,
   Wallet,
   Gamepad2,
+  ArrowBigLeft,
+  ArrowLeft,
 } from "lucide-react"
 import { Badge } from "../ui/badge"
 import {
@@ -39,6 +41,7 @@ export function LobbyHeader() {
   const user = userStore((state) => state.user)
 
   const router = useRouter()
+  const pathName = usePathname()
 
   return (
     <header className="border-b bg-card">
@@ -111,6 +114,11 @@ export function LobbyHeader() {
           <div className="flex flex-wrap items-center gap-2 sm:gap-4">
             {user && (
               <>
+                {!pathName.includes("game-options") && <Link
+                    href={`/${i18n.language}/game-options?agentId=${activeAgentId}`}
+                  >
+                    <ArrowBigLeft className="h-4 w-8 mr-0 lg:mr-2" />
+                  </Link>}
                 <Button variant="secondary" size="sm" asChild>
                   <Link
                     href={`/${i18n.language}/game-options?agentId=${activeAgentId}`}

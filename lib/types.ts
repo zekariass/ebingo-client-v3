@@ -449,6 +449,7 @@ export interface Room {
   botsEnabled?: boolean;
   maxBots?: number;
   minBots?: number;
+  maxCards?: number;
   commissionRate: number;
 }
 
@@ -1159,4 +1160,21 @@ export interface AgentGameSettingDto {
 export interface UpdateAgentGameModesRequest {
   agentId: number;
   gameModes: string[];
+}
+
+export interface AgentDto {
+  id: number;
+  name: string;
+  code: string;
+  phoneNumber: string;
+  email: string;
+  contactName: string;
+  isMaster: boolean;
+  isActive: boolean;
+  commissionRate: number;
+  botToken: string;
+  botUsername: string;
+  contactAddress: string;
+  createdAt: string;
+  updatedAt: string;
 }

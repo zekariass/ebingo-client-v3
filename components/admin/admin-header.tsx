@@ -7,6 +7,8 @@ import { Bell, RefreshCw, Menu } from "lucide-react"
 import { useAdminStore } from "@/lib/stores/admin-store"
 import { useTranslation } from "react-i18next"
 import { useAgentStore } from "@/lib/stores/agent-store"
+import Link from "next/link"
+import i18n from "@/i18n"
 
 interface AdminHeaderProps {
   onMenuToggle?: () => void
@@ -39,6 +41,13 @@ export function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
             {t(`status.${systemStatus}`, systemStatus)}
           </Badge> */}
         </div>
+
+        <Link
+          href={`/${i18n.language}/game-options?agentId=${activeAgentId}`}
+          className="mx-4 p-1 text-primary hover:text-primary/80 border border-[var(--btn-default-bg)]"
+        >
+          Game Options
+        </Link>
 
         <div className="flex items-center gap-1 sm:gap-2">
           <Button variant="outline" size="sm" onClick={() => refreshData(activeAgentId!)} className="hidden sm:flex bg-transparent">
