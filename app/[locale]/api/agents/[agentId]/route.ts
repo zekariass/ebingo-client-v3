@@ -26,7 +26,7 @@ export async function GET(
     }
     const { data } = await backendRes.json()
 
-    console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>Agent data:", data)
+    // console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>Agent data:", data)
 
     if (!data) {
       const response: ApiResponse = {
