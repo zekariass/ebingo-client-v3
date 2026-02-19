@@ -583,19 +583,45 @@ const API_BASE_URL = process.env.BACKEND_BASE_URL!;
 
 type SendType = "text" | "photo" | "video" | "voice";
 
+// ─── Pending state (awaiting admin confirmation) ──────────────────────────────
 type PendingBroadcast = {
   agentId: number;
   adminId: number;
   promptMessageId: number;
   createdAt: number;
   sendType?: SendType;
-  text?: string;   // text or caption (HTML)
-  fileId?: string; // file_id for photo/video/voice
+  text?: string;
+  fileId?: string;
 };
 
-const pending = new Map<string, PendingBroadcast>(); // key = `${agentId}:${adminId}`
+// ─── Active partition job (broadcast in progress) ────────────────────────────
+type PartitionJob = {
+  agentId: number;
+  adminId: number;
+  sendType: SendType;
+  text: string;
+  fileId?: string;
+  allUserIds: number[];   // full list (excluding admin — admin gets it last)
+  adminIsUser: boolean;   // whether admin was in the original user list
+  partitionIndex: number; // which partition we're currently on (0-based)
+  totalSent: number;      // cumulative across all partitions
+  totalFailed: number;
+  progressChatId: number;
+  progressMessageId: number;
+};
+
+const pending = new Map<string, PendingBroadcast>();   // key = `${agentId}:${adminId}`
+const activeJobs = new Map<string, PartitionJob>();    // key = `${agentId}:${adminId}`
+
 const keyOf = (agentId: number, adminId: number) => `${agentId}:${adminId}`;
 
+// ─── Tuning ───────────────────────────────────────────────────────────────────
+const PARTITION_SIZE      = 100;    // users per serverless invocation
+const CONCURRENT_SENDS    = 10;     // parallel sends within a partition
+const INTER_BATCH_DELAY   = 200;    // ms between concurrent batches inside a partition
+const INTER_PARTITION_GAP = 10_000; // ms pause between partitions (10s)
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function escapeTelegramHtml(value: unknown) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -611,11 +637,18 @@ function parseAdminIds(agentId: number): number[] {
     .filter((n: number) => Number.isFinite(n));
 }
 
+function chunkArray<T>(arr: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) chunks.push(arr.slice(i, i + size));
+  return chunks;
+}
+
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
 async function getActiveAgentUserIds(adminTelegramId: number, agentId: number): Promise<number[]> {
   const url =
     `${API_BASE_URL}/api/v1/secured/user-profile/user-telegram-ids` +
     `?adminTelegramId=${adminTelegramId}&agentId=${agentId}&activeOnly=true`;
-
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Backend error: ${res.status}`);
   const json = await res.json();
@@ -623,8 +656,7 @@ async function getActiveAgentUserIds(adminTelegramId: number, agentId: number): 
 }
 
 /**
- * Retry a send function, respecting Telegram's retry_after header on 429s.
- * Falls back to exponential backoff if retry_after is not provided.
+ * Retry with Telegram's own retry_after value on 429s.
  */
 async function retrySend(fn: () => Promise<unknown>, retries = 5): Promise<unknown> {
   for (let i = 0; i < retries; i++) {
@@ -633,44 +665,200 @@ async function retrySend(fn: () => Promise<unknown>, retries = 5): Promise<unkno
     } catch (err: any) {
       const isRateLimit =
         err?.code === 429 || String(err?.description || "").includes("Too Many Requests");
-
       if (!isRateLimit || i === retries - 1) throw err;
-
-      // Telegram tells us exactly how long to wait — use it
-      const retryAfterMs = err?.parameters?.retry_after
+      const waitMs = err?.parameters?.retry_after
         ? err.parameters.retry_after * 1000
-        : Math.min(1000 * 2 ** i, 30_000); // exponential fallback, cap at 30s
-
-      console.warn(
-        `[Broadcast] Rate limited (attempt ${i + 1}/${retries}). Waiting ${retryAfterMs}ms…`
-      );
-      await new Promise((r) => setTimeout(r, retryAfterMs));
+        : Math.min(1000 * 2 ** i, 30_000);
+      console.warn(`[Broadcast] 429 — waiting ${waitMs}ms (attempt ${i + 1}/${retries})`);
+      await sleep(waitMs);
     }
   }
-  throw new Error("retrySend exhausted all retries");
+  throw new Error("retrySend exhausted");
 }
 
-/**
- * Sleep helper
- */
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+// ─── Core send function ───────────────────────────────────────────────────────
+function makeSendFn(
+  bot: Telegraf<Context>,
+  id: number,
+  sendType: SendType,
+  text: string,
+  fileId?: string
+): () => Promise<unknown> {
+  switch (sendType) {
+    case "text":
+      return () => bot.telegram.sendMessage(id, text, { parse_mode: "HTML" });
+    case "photo":
+      return () => bot.telegram.sendPhoto(id, fileId!, { caption: text, parse_mode: "HTML" });
+    case "video":
+      return () => bot.telegram.sendVideo(id, fileId!, { caption: text, parse_mode: "HTML" });
+    case "voice":
+      return () => bot.telegram.sendVoice(id, fileId!);
+    default:
+      return () => Promise.reject(new Error(`Unsupported sendType: ${String(sendType)}`));
+  }
+}
 
+// ─── Send one partition (up to PARTITION_SIZE users) ─────────────────────────
+async function sendPartition(
+  bot: Telegraf<Context>,
+  job: PartitionJob
+): Promise<{ sent: number; failed: number }> {
+  const start = job.partitionIndex * PARTITION_SIZE;
+  const slice = job.allUserIds.slice(start, start + PARTITION_SIZE);
+
+  let sent = 0;
+  let failed = 0;
+
+  for (const batch of chunkArray(slice, CONCURRENT_SENDS)) {
+    const results = await Promise.allSettled(
+      batch.map((id) =>
+        retrySend(makeSendFn(bot, id, job.sendType, job.text, job.fileId))
+      )
+    );
+    results.forEach((r) => (r.status === "fulfilled" ? sent++ : failed++));
+    await sleep(INTER_BATCH_DELAY);
+  }
+
+  return { sent, failed };
+}
+
+// ─── Update the pinned progress message ──────────────────────────────────────
+async function updateProgressMessage(
+  bot: Telegraf<Context>,
+  job: PartitionJob,
+  agentName: string,
+  status: string
+) {
+  const totalUsers = job.allUserIds.length + (job.adminIsUser ? 1 : 0);
+  const done = job.totalSent + job.totalFailed;
+  const pct = totalUsers > 0 ? Math.floor((done / totalUsers) * 100) : 0;
+  const totalPartitions = Math.ceil(job.allUserIds.length / PARTITION_SIZE);
+  const currentPartition = Math.min(job.partitionIndex + 1, totalPartitions);
+
+  await retrySend(() =>
+    bot.telegram.editMessageText(
+      job.progressChatId,
+      job.progressMessageId,
+      undefined,
+      `📊 <b>Broadcast Progress</b>\n\n` +
+        `Agent: <b>${escapeTelegramHtml(agentName)}</b>\n` +
+        `Status: <b>${escapeTelegramHtml(status)}</b>\n` +
+        `Partition: <b>${currentPartition} / ${totalPartitions}</b>\n` +
+        `Total users: <b>${totalUsers}</b>\n` +
+        `Done: <b>${done}</b> (${pct}%)\n` +
+        `✅ Sent: <b>${job.totalSent}</b>\n` +
+        `❌ Failed: <b>${job.totalFailed}</b>`,
+      { parse_mode: "HTML" }
+    )
+  ).catch(() => {});
+}
+
+// ─── Orchestrator: runs all partitions, then sends to admin last ──────────────
+async function runBroadcast(
+  bot: Telegraf<Context>,
+  job: PartitionJob,
+  agentName: string,
+  adminId: number
+) {
+  const k = keyOf(job.agentId, adminId);
+  const totalPartitions = Math.ceil(job.allUserIds.length / PARTITION_SIZE);
+
+  for (let i = job.partitionIndex; i < totalPartitions; i++) {
+    // Check if admin cancelled mid-broadcast
+    if (!activeJobs.has(k)) {
+      console.log(`[Broadcast] Job ${k} was cancelled at partition ${i}`);
+      return;
+    }
+
+    job.partitionIndex = i;
+
+    await updateProgressMessage(
+      bot, job, agentName,
+      `Sending partition ${i + 1} / ${totalPartitions}…`
+    );
+
+    const { sent, failed } = await sendPartition(bot, job);
+    job.totalSent += sent;
+    job.totalFailed += failed;
+
+    await updateProgressMessage(
+      bot, job, agentName,
+      `Partition ${i + 1} / ${totalPartitions} done`
+    );
+
+    // Pause between partitions (skip after the last one)
+    if (i < totalPartitions - 1) {
+      await updateProgressMessage(
+        bot, job, agentName,
+        `Pausing ${INTER_PARTITION_GAP / 1000}s before next partition…`
+      );
+      await sleep(INTER_PARTITION_GAP);
+    }
+  }
+
+  // Check again before sending to admin (in case cancelled during last pause)
+  if (!activeJobs.has(k)) return;
+
+  // ── Send to admin last — acts as a delivery receipt ──────────────────────
+  if (job.adminIsUser) {
+    try {
+      await retrySend(makeSendFn(bot, adminId, job.sendType, job.text, job.fileId));
+      job.totalSent++;
+    } catch {
+      job.totalFailed++;
+    }
+  }
+
+  // ── Final summary (edit progress message + send summary) ─────────────────
+  const totalUsers = job.allUserIds.length + (job.adminIsUser ? 1 : 0);
+
+  await retrySend(() =>
+    bot.telegram.editMessageText(
+      job.progressChatId,
+      job.progressMessageId,
+      undefined,
+      `📊 <b>Broadcast Complete</b>\n\n` +
+        `Agent: <b>${escapeTelegramHtml(agentName)}</b>\n` +
+        `Status: <b>✅ Finished</b>\n` +
+        `Partitions: <b>${totalPartitions}</b>\n` +
+        `Total users: <b>${totalUsers}</b>\n` +
+        `✅ Sent: <b>${job.totalSent}</b>\n` +
+        `❌ Failed: <b>${job.totalFailed}</b>`,
+      { parse_mode: "HTML" }
+    )
+  ).catch(() => {});
+
+  await bot.telegram.sendMessage(
+    adminId,
+    `✅ <b>Broadcast complete</b>\n\n` +
+      `Agent: <b>${escapeTelegramHtml(agentName)}</b>\n` +
+      `Total users: <b>${totalUsers}</b>\n` +
+      `Messages sent: <b>${job.totalSent}</b>\n` +
+      `Failed: <b>${job.totalFailed}</b>`,
+    { parse_mode: "HTML" }
+  );
+
+  activeJobs.delete(k);
+}
+
+// ─── Main export ──────────────────────────────────────────────────────────────
 export function registerBroadcastHandler(bot: Telegraf<Context>, agentId: number) {
   console.log(`[Broadcast] registered for agent ${agentId}`);
 
   const agentName = agentsData[agentId]?.name ?? `Agent ${agentId}`;
   const ADMIN_IDS = parseAdminIds(agentId);
-
   const isAuthorized = (adminId?: number) => !!adminId && ADMIN_IDS.includes(adminId);
 
-  // ──────────────────────────────────────────────
-  // /broadcast
-  // ──────────────────────────────────────────────
+  // ── /broadcast ──────────────────────────────────────────────────────────────
   bot.command("broadcast", async (ctx) => {
     const adminId = ctx.from?.id;
     if (!isAuthorized(adminId)) return ctx.reply("🚫 You are not authorized.");
 
     const k = keyOf(agentId, adminId!);
+
+    if (activeJobs.has(k)) {
+      return ctx.reply("⚠️ A broadcast is already running. Wait for it to finish or /cancel it.");
+    }
     if (pending.has(k)) {
       return ctx.reply(
         "⚠️ You already have a broadcast in progress. Reply to the prompt or type /cancel."
@@ -686,10 +874,7 @@ export function registerBroadcastHandler(bot: Telegraf<Context>, agentId: number
         "• Video (caption optional)\n" +
         "• Voice message\n\n" +
         "Cancel: /cancel or reply <code>cancel</code> to this message.",
-      {
-        parse_mode: "HTML",
-        reply_markup: { force_reply: true, selective: true },
-      }
+      { parse_mode: "HTML", reply_markup: { force_reply: true, selective: true } }
     );
 
     pending.set(k, {
@@ -700,14 +885,17 @@ export function registerBroadcastHandler(bot: Telegraf<Context>, agentId: number
     });
   });
 
-  // ──────────────────────────────────────────────
-  // /cancel
-  // ──────────────────────────────────────────────
+  // ── /cancel ─────────────────────────────────────────────────────────────────
   bot.command("cancel", async (ctx) => {
     const adminId = ctx.from?.id;
     if (!isAuthorized(adminId)) return ctx.reply("🚫 You are not authorized.");
 
     const k = keyOf(agentId, adminId!);
+
+    if (activeJobs.has(k)) {
+      activeJobs.delete(k); // runBroadcast checks this map and will stop
+      return ctx.reply("🛑 Broadcast cancelled — current partition will finish, then stop.");
+    }
     if (pending.has(k)) {
       pending.delete(k);
       return ctx.reply("❌ Broadcast cancelled.");
@@ -715,9 +903,7 @@ export function registerBroadcastHandler(bot: Telegraf<Context>, agentId: number
     return ctx.reply("ℹ️ No broadcast in progress.");
   });
 
-  // ──────────────────────────────────────────────
-  // Capture admin reply to the prompt
-  // ──────────────────────────────────────────────
+  // ── Capture admin reply to prompt ───────────────────────────────────────────
   bot.on("message", async (ctx) => {
     const adminId = ctx.from?.id;
     if (!isAuthorized(adminId)) return;
@@ -728,17 +914,13 @@ export function registerBroadcastHandler(bot: Telegraf<Context>, agentId: number
 
     const msg = ctx.message;
     const replyTo = (msg as any).reply_to_message;
-
-    // Must be a reply to our prompt message
     if (!replyTo || replyTo.message_id !== state.promptMessageId) return;
 
-    // Allow cancelling by replying "cancel"
     if ("text" in msg && msg.text?.trim().toLowerCase() === "cancel") {
       pending.delete(k);
       return ctx.reply("❌ Broadcast cancelled.");
     }
 
-    // Detect content type
     let sendType: SendType | undefined;
     let text = "";
     let fileId: string | undefined;
@@ -763,7 +945,6 @@ export function registerBroadcastHandler(bot: Telegraf<Context>, agentId: number
       return ctx.reply("⚠️ Unsupported type. Please reply with text/photo/video/voice.");
     }
 
-    // Store content, waiting for confirmation
     state.sendType = sendType;
     state.text = text;
     state.fileId = fileId;
@@ -772,9 +953,10 @@ export function registerBroadcastHandler(bot: Telegraf<Context>, agentId: number
     const actionSend = `bc_send:${agentId}:${adminId}`;
     const actionCancel = `bc_cancel:${agentId}:${adminId}`;
 
-    // Show preview controls
     await ctx.reply(
-      `✅ <b>Preview</b>\n\nPress <b>Send</b> to broadcast, or <b>Cancel</b>.`,
+      `✅ <b>Preview</b>\n\n` +
+        `Will broadcast in partitions of <b>${PARTITION_SIZE} users</b> with a <b>${INTER_PARTITION_GAP / 1000}s pause</b> between each.\n\n` +
+        `Press <b>Send</b> to start or <b>Cancel</b> to abort.`,
       {
         parse_mode: "HTML",
         reply_markup: {
@@ -786,26 +968,15 @@ export function registerBroadcastHandler(bot: Telegraf<Context>, agentId: number
       }
     );
 
-    // Show exact preview of what will be sent
     switch (sendType) {
-      case "text":
-        await ctx.reply(text, { parse_mode: "HTML" });
-        break;
-      case "photo":
-        await ctx.replyWithPhoto(fileId!, { caption: text, parse_mode: "HTML" });
-        break;
-      case "video":
-        await ctx.replyWithVideo(fileId!, { caption: text, parse_mode: "HTML" });
-        break;
-      case "voice":
-        await ctx.replyWithVoice(fileId!);
-        break;
+      case "text":  await ctx.reply(text, { parse_mode: "HTML" }); break;
+      case "photo": await ctx.replyWithPhoto(fileId!, { caption: text, parse_mode: "HTML" }); break;
+      case "video": await ctx.replyWithVideo(fileId!, { caption: text, parse_mode: "HTML" }); break;
+      case "voice": await ctx.replyWithVoice(fileId!); break;
     }
   });
 
-  // ──────────────────────────────────────────────
-  // Cancel button
-  // ──────────────────────────────────────────────
+  // ── Cancel button ───────────────────────────────────────────────────────────
   bot.action(new RegExp(`^bc_cancel:${agentId}:(\\d+)$`), async (ctx) => {
     const adminId = Number((ctx.match as any)[1]);
     if (ctx.from?.id !== adminId) return ctx.answerCbQuery("Not allowed.");
@@ -816,9 +987,7 @@ export function registerBroadcastHandler(bot: Telegraf<Context>, agentId: number
     await ctx.reply("❌ Broadcast cancelled.");
   });
 
-  // ──────────────────────────────────────────────
-  // Send button — main broadcast logic
-  // ──────────────────────────────────────────────
+  // ── Send button ─────────────────────────────────────────────────────────────
   bot.action(new RegExp(`^bc_send:${agentId}:(\\d+)$`), async (ctx) => {
     const adminId = Number((ctx.match as any)[1]);
     if (ctx.from?.id !== adminId) return ctx.answerCbQuery("Not allowed.");
@@ -832,136 +1001,71 @@ export function registerBroadcastHandler(bot: Telegraf<Context>, agentId: number
       return ctx.reply("⚠️ No broadcast content found. Use /broadcast again.");
     }
 
+    // !! Answer the callback IMMEDIATELY before doing any async work.
+    // This is critical — if we don't answer within ~10s Telegraf will
+    // consider the handler timed out on serverless.
     await ctx.answerCbQuery("Starting…");
+    pending.delete(k);
 
-    // ── Fetch recipients ──────────────────────────
+    // ── Fetch recipients ────────────────────────────────────────────────────
     let userIds: number[] = [];
     try {
       userIds = await getActiveAgentUserIds(adminId, agentId);
     } catch (e) {
       console.error(e);
-      pending.delete(k);
       return ctx.reply("❌ Failed to load agent users.");
     }
 
-    // Remove the sending admin from regular recipients list — they will get
-    // the message last, after everyone else, as a delivery confirmation.
+    // Admin goes last — remove from regular list so they get it as receipt
     const regularUserIds = userIds.filter((id) => id !== adminId);
     const adminIsUser = userIds.includes(adminId);
+    const totalUsers = regularUserIds.length + (adminIsUser ? 1 : 0);
 
-    const targetCount = regularUserIds.length + (adminIsUser ? 1 : 0);
-
-    if (targetCount === 0) {
-      pending.delete(k);
+    if (totalUsers === 0) {
       return ctx.reply("⚠️ No active users found to broadcast.");
     }
 
-    // ── Progress message ──────────────────────────
+    const totalPartitions = Math.ceil(regularUserIds.length / PARTITION_SIZE);
+
+    // ── Create live progress message ────────────────────────────────────────
     const progressMsg = await ctx.reply(
       `📊 <b>Broadcast Progress</b>\n\n` +
         `Agent: <b>${escapeTelegramHtml(agentName)}</b>\n` +
-        `Target (active users): <b>${targetCount}</b>\n` +
-        `Sent: <b>0</b>\n` +
-        `Failed: <b>0</b>`,
+        `Status: <b>Starting…</b>\n` +
+        `Partition: <b>1 / ${totalPartitions}</b>\n` +
+        `Total users: <b>${totalUsers}</b>\n` +
+        `Done: <b>0</b> (0%)\n` +
+        `✅ Sent: <b>0</b>\n` +
+        `❌ Failed: <b>0</b>`,
       { parse_mode: "HTML" }
     );
 
-    // ── Rate-limit safe settings ──────────────────
-    // Telegram allows ~30 msg/s globally; we stay well under at ~20/s
-    // by sending sequentially with a 50ms gap between each message.
-    const INTER_MESSAGE_DELAY_MS = 50;    // ~20 msg/s — safe ceiling
-    const PROGRESS_UPDATE_EVERY = 25;     // update progress bar every N messages
-
-    let sent = 0;
-    let failed = 0;
-
-    // Returns a zero-arg async function that sends to the given user id
-    const makeSendFn = (id: number): (() => Promise<unknown>) => {
-      switch (state.sendType) {
-        case "text":
-          return () => bot.telegram.sendMessage(id, state.text || "", { parse_mode: "HTML" });
-        case "photo":
-          return () =>
-            bot.telegram.sendPhoto(id, state.fileId!, {
-              caption: state.text || "",
-              parse_mode: "HTML",
-            });
-        case "video":
-          return () =>
-            bot.telegram.sendVideo(id, state.fileId!, {
-              caption: state.text || "",
-              parse_mode: "HTML",
-            });
-        case "voice":
-          return () => bot.telegram.sendVoice(id, state.fileId!);
-        default:
-          return () => Promise.reject(new Error(`Unsupported sendType: ${String(state.sendType)}`));
-      }
+    const job: PartitionJob = {
+      agentId,
+      adminId,
+      sendType: state.sendType,
+      text: state.text || "",
+      fileId: state.fileId,
+      allUserIds: regularUserIds,
+      adminIsUser,
+      partitionIndex: 0,
+      totalSent: 0,
+      totalFailed: 0,
+      progressChatId: progressMsg.chat.id,
+      progressMessageId: progressMsg.message_id,
     };
 
-    const updateProgress = async (total: number) => {
-      const done = sent + failed;
-      const pct = Math.floor((done / total) * 100);
-      await retrySend(() =>
-        bot.telegram.editMessageText(
-          progressMsg.chat.id,
-          progressMsg.message_id,
-          undefined,
-          `📊 <b>Broadcast Progress</b>\n\n` +
-            `Agent: <b>${escapeTelegramHtml(agentName)}</b>\n` +
-            `Target (active users): <b>${total}</b>\n` +
-            `Done: <b>${done}</b> (${pct}%)\n` +
-            `Sent: <b>${sent}</b>\n` +
-            `Failed: <b>${failed}</b>`,
-          { parse_mode: "HTML" }
-        )
-      ).catch(() => {});
-    };
+    activeJobs.set(k, job);
 
-    // ── Sequential send to regular users ─────────
-    for (let i = 0; i < regularUserIds.length; i++) {
-      const id = regularUserIds[i];
-      try {
-        await retrySend(makeSendFn(id));
-        sent++;
-      } catch (err) {
-        // console.error(`[Broadcast] Failed to send to user ${id}:`, err);
-        failed++;
-      }
-
-      // Update progress periodically (not every message to avoid hitting edit rate limits)
-      if ((i + 1) % PROGRESS_UPDATE_EVERY === 0) {
-        await updateProgress(targetCount);
-      }
-
-      // Respect Telegram rate limit: wait between each message
-      await sleep(INTER_MESSAGE_DELAY_MS);
-    }
-
-    // ── Send to admin last (acts as delivery receipt) ──
-    if (adminIsUser) {
-      try {
-        await retrySend(makeSendFn(adminId));
-        sent++;
-      } catch (err) {
-        console.error(`[Broadcast] Failed to send to admin ${adminId}:`, err);
-        failed++;
-      }
-      await sleep(INTER_MESSAGE_DELAY_MS);
-    }
-
-    // ── Final progress update ─────────────────────
-    await updateProgress(targetCount);
-
-    pending.delete(k);
-
-    await ctx.reply(
-      `✅ <b>Broadcast complete</b>\n\n` +
-        `Agent: <b>${escapeTelegramHtml(agentName)}</b>\n` +
-        `Targeted (active users): <b>${targetCount}</b>\n` +
-        `Messages sent: <b>${sent}</b>\n` +
-        `Failed: <b>${failed}</b>`,
-      { parse_mode: "HTML" }
-    );
+    // ── Fire-and-forget — NOT awaited ───────────────────────────────────────
+    // The action handler returns here immediately. runBroadcast runs in the
+    // background independently of the serverless request lifecycle.
+    runBroadcast(bot, job, agentName, adminId).catch((err) => {
+      console.error("[Broadcast] Fatal error:", err);
+      activeJobs.delete(k);
+      bot.telegram
+        .sendMessage(adminId, "❌ Broadcast crashed unexpectedly. Check server logs.")
+        .catch(() => {});
+    });
   });
 }
