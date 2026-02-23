@@ -178,7 +178,7 @@ export const agentsData: Record<number, any> = {
   4: {
     name: "Gift Bingo",
     adminIds: "52504489",
-    logoName: "gift_bingo.png",
+    logoName: "bot_hero.png",
     supportContact: "",
     supportUsername: "GiftBingo",
     supportChannel: "GiftBingo",
