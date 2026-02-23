@@ -180,8 +180,8 @@ export const agentsData: Record<number, any> = {
     adminIds: "52504489",
     logoName: "bot_hero.png",
     supportContact: "",
-    supportUsername: "GiftBingo",
-    supportChannel: "GiftBingo",
+    supportUsername: "gift_bingo",
+    supportChannel: "gift_bingo",
     bankDetails: {
       telebirr: { 
         "recieverName": "Eyerus Engdaw",
