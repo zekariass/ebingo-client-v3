@@ -1092,6 +1092,363 @@
 
 
 
+/* ================================================================== */
+
+/* =========================================================
+   AGENT 4 — THEME (LIGHT)  [PART 1: base]
+   Palette vibe: deep ocean + bioluminescent cyan & coral accents
+   ========================================================= */
+
+.agent-4 {
+  --background: #F0F8FF;           /* alice blue */
+  --foreground: #0D1B2A;
+
+  --card: #F0F8FF;
+  --card-foreground: #0D1B2A;
+
+  --popover: #F0F8FF;
+  --popover-foreground: #0D1B2A;
+
+  --primary: #0077A8;              /* deep cyan-700 */
+  --primary-foreground: #F0F8FF;
+
+  --secondary: #D6EEF8;            /* pale ocean */
+  --secondary-foreground: #0077A8;
+
+  --muted: #D6EEF8;
+  --muted-foreground: #5A7A8A;
+
+  --accent: #FFE0D6;               /* coral blush */
+  --accent-foreground: #0077A8;
+
+  --destructive: #E63946;          /* reef red */
+  --destructive-foreground: #FFFFFF;
+
+  --border: #B8D8E8;
+  --badge-border: #B8D8E8;
+
+  --input: #B8D8E8;
+  --ring: #00B4D8;                 /* cyan-500 */
+
+  --chart-1: #0077A8;              /* deep cyan */
+  --chart-2: #FF6B6B;              /* coral */
+  --chart-3: #F7B731;              /* gold */
+  --chart-4: #26C485;              /* seafoam */
+  --chart-5: #9B59B6;              /* anemone purple */
+
+  --radius: 0.5rem;
+
+  --sidebar: #F0F8FF;
+  --sidebar-foreground: #0D1B2A;
+  --sidebar-primary: #0077A8;
+  --sidebar-primary-foreground: #F0F8FF;
+  --sidebar-accent: #FFE0D6;
+  --sidebar-accent-foreground: #0077A8;
+  --sidebar-border: #B8D8E8;
+  --sidebar-ring: #00B4D8;
+}
+
+
+/* =========================================================
+   AGENT 4 — THEME (DARK)  [PART 2: core]
+   ========================================================= */
+
+.dark.agent-4 {
+  --background: oklch(0.17 0.04 220);
+  --foreground: oklch(0.95 0.01 210);
+
+  --card: oklch(0.12 0.04 220);
+  --card-foreground: oklch(0.95 0.01 210);
+
+  --popover: oklch(0.17 0.04 220);
+  --popover-foreground: oklch(0.95 0.01 210);
+
+  --primary: oklch(0.72 0.16 210);          /* bright ocean cyan */
+  --primary-foreground: oklch(0.17 0.04 220);
+
+  --secondary: oklch(0.32 0.04 220);
+  --secondary-foreground: oklch(0.95 0.01 210);
+
+  --muted: oklch(0.32 0.04 220);
+  --muted-foreground: oklch(0.78 0.02 210);
+
+  --accent: oklch(0.50 0.14 20);            /* bioluminescent coral */
+  --accent-foreground: oklch(0.97 0.01 210);
+
+  --destructive: oklch(0.60 0.20 15);
+  --destructive-foreground: oklch(0.94 0.04 15);
+
+  --border: oklch(0.32 0.04 220);
+  --badge-border: oklch(0.32 0.04 220);
+
+  --input: oklch(0.32 0.04 220);
+  --ring: oklch(0.65 0.14 210);
+
+  --chart-1: oklch(0.72 0.16 210);          /* cyan */
+  --chart-2: oklch(0.70 0.18 25);           /* coral */
+  --chart-3: oklch(0.78 0.14 85);           /* gold */
+  --chart-4: oklch(0.72 0.14 160);          /* seafoam */
+  --chart-5: oklch(0.68 0.18 305);          /* anemone */
+
+  --sidebar: oklch(0.17 0.04 220);
+  --sidebar-foreground: oklch(0.95 0.01 210);
+  --sidebar-primary: oklch(0.72 0.16 210);
+  --sidebar-primary-foreground: oklch(0.95 0.01 210);
+  --sidebar-accent: oklch(0.50 0.14 20);
+  --sidebar-accent-foreground: oklch(0.97 0.01 210);
+  --sidebar-border: oklch(0.32 0.04 220);
+  --sidebar-ring: oklch(0.65 0.14 210);
+}
+
+
+/* =========================================================
+   AGENT 4 — EXTRA TOKENS (LIGHT)  [PART 3: extras]
+   ========================================================= */
+
+.agent-4 {
+  /* Premium card tokens */
+  --premium-bg: rgba(0, 119, 168, 0.14);          /* cyan tint */
+  --premium-border: rgba(0, 119, 168, 0.20);
+  --premium-icon-bg: rgba(255, 107, 107, 0.18);   /* coral tint */
+  --premium-label: rgba(13, 27, 42, 0.60);
+  --premium-value: #0D1B2A;
+
+  /* Table */
+  --card-table-row: #0077A8;
+  --card-table-row-hover: #005F85;
+
+  /* Buttons */
+  --bingo-start-game-btn-bg: #FF6B6B;          /* coral */
+  --bingo-start-game-btn-bg-hover: #E63946;    /* coral-dark */
+  --btn-default-bg: #FF6B6B;
+  --btn-default-fg: #ffffff;
+
+  --btn-game-join-bg: #FF6B6B;
+  --btn-game-join-bg-hover: #E63946;
+
+  /* Header key colors */
+  --bingo-card-header-key1-bg: #0077A8; /* deep cyan */
+  --bingo-card-header-key2-bg: #F7B731; /* gold */
+  --bingo-card-header-key3-bg: #E63946; /* reef red */
+  --bingo-card-header-key4-bg: #26C485; /* seafoam */
+  --bingo-card-header-key5-bg: #9B59B6; /* anemone purple */
+
+  /* Card selection grid */
+  --bingo-key-bg: #0077A8;             /* deep cyan base */
+  --bingo-key-bg-hover: #005F85;       /* deep cyan hover */
+
+  --bingo-key-bg-free: var(--bingo-key-bg);
+  --bingo-key-bg-free-hover: var(--bingo-key-bg-hover);
+  --bingo-key-fg-free: #ffffff;
+
+  --bingo-key-bg-selected: #FF6B6B;       /* coral */
+  --bingo-key-bg-selected-hover: #E63946; /* coral-dark */
+  --bingo-key-fg-selected: #FFF0EE;
+
+  --bingo-key-bg-taken: #E63946;        /* reef red */
+  --bingo-key-bg-taken-hover: #C0303B;  /* reef red dark */
+  --bingo-key-fg-taken: #ffffff;
+
+  --bingo-key-ring-selected: #FF6B6B;
+
+  /* 75 number grid */
+  --bingo-75-number-before-call-bg: #005F85;              /* deep ocean */
+  --bingo-75-number-before-call-fg: #ffffff;
+  --bingo-75-number-before-call-border: rgba(255,255,255,0.15);
+
+  --bingo-75-number-after-call-bg: #E63946;               /* reef red */
+  --bingo-75-number-after-call-fg: #ffffff;
+  --bingo-75-number-after-call-border: #0077A8;           /* cyan border */
+
+  --bingo-75-number-called-current-bg: #FF6B6B;           /* coral */
+  --bingo-75-number-called-current-fg: #ffffff;
+  --bingo-75-number-called-current-border: #ffffff;
+
+  /* Playing card grid */
+  --playing-card-key-before-call-bg: #0077A8;        /* deep cyan */
+  --playing-card-key-before-call-fg: #ffffff;
+  --playing-card-key-before-call-border: #9CA3AF;    /* gray-400 */
+
+  --playing-card-key-after-call-unmarked-bg: #0077A8;
+  --playing-card-key-after-call-unmarked-fg: #ffffff;
+
+  --playing-card-key-after-call-marked-bg: #FF6B6B;  /* coral */
+  --playing-card-key-after-call-marked-fg: #ffffff;
+  --playing-card-key-after-call-marked-border: #ffffff;
+
+  --playing-card-key-free-bg: #F7B731;               /* gold */
+  --playing-card-key-free-border: #F9CC5A;
+
+  /* Legend */
+  --bingo-card-key-legend-before-call-bg: var(--playing-card-key-before-call-bg);
+  --bingo-card-key-legend-before-call-fg: #ffffff;
+  --bingo-card-key-legend-before-call-border: rgba(255,255,255,0.40);
+
+  --bingo-card-key-legend-after-call-unmarked-bg: var(--playing-card-key-after-call-unmarked-bg);
+  --bingo-card-key-legend-after-call-unmarked-fg: #ffffff;
+
+  --bingo-card-key-legend-after-call-marked-bg: var(--playing-card-key-after-call-marked-bg);
+  --bingo-card-key-legend-after-call-marked-fg: #ffffff;
+
+  /* Game header border states */
+  --game-header-border-connected: #26C485;     /* seafoam green */
+  --game-header-border-disconnected: #E63946;  /* reef red */
+
+  /* Game stat chips */
+  --game-stat-1-bg: #0077A8; /* deep cyan */
+  --game-stat-2-bg: #E63946; /* reef red */
+  --game-stat-3-bg: #26C485; /* seafoam */
+  --game-stat-4-bg: #F7B731; /* gold */
+  --game-stat-fg: #ffffff;
+
+  /* Voice toggle */
+  --voice-toggle-bg: #F7B731; /* gold */
+  --voice-toggle-muted-fg: #0077A8;   /* deep cyan */
+  --voice-toggle-unmuted-fg: #E63946; /* reef red */
+
+  /* Countdown area */
+  --game-countdown-and-call-area-bg: #020D18;
+  --game-countdown-and-call-area-border: #ffffff;
+
+  /* Countdown text */
+  --countdown-text-normal: #00B4D8;   /* cyan-400 */
+  --countdown-text-warning: #F7B731;  /* gold */
+  --countdown-text-danger: #FF6B6B;   /* coral */
+  --countdown-text-starting: #26C485; /* seafoam */
+
+  --playing-letter-fg: #26C485;       /* seafoam */
+  --playing-separator-fg: #FF6B6B;    /* coral */
+  --playing-number-fg: #F7B731;       /* gold */
+
+  --countdown-label-fg: #ffffff;
+
+  --playing-number-glow: rgba(247, 183, 49, 0.55);
+
+  /* User menu / inputs */
+  --user-menu-bg: #0077A8;
+  --user-menu-border: #B8D8E8;
+  --user-menu-fg: #F0F8FF;
+  --input-soft-bg: #ffffff;
+}
+
+
+/* =========================================================
+   AGENT 4 — EXTRA TOKENS (DARK)
+   ========================================================= */
+
+.dark.agent-4 {
+  --premium-bg: rgba(0, 60, 90, 0.65);
+  --premium-border: rgba(0, 180, 216, 0.20);
+  --premium-icon-bg: rgba(255, 107, 107, 0.24);
+  --premium-label: rgba(224, 242, 254, 0.65);
+  --premium-value: #ffffff;
+
+  --card-table-row: oklch(0.17 0.04 220);
+  --card-table-row-hover: oklch(0.13 0.04 220);
+
+  --bingo-start-game-btn-bg: #FF6B6B;
+  --bingo-start-game-btn-bg-hover: #E63946;
+  --btn-default-bg: #FF6B6B;
+  --btn-default-fg: #ffffff;
+
+  --btn-game-join-bg: #FF6B6B;
+  --btn-game-join-bg-hover: #E63946;
+
+  --bingo-card-header-key1-bg: #00B4D8;
+  --bingo-card-header-key2-bg: #F7B731;
+  --bingo-card-header-key3-bg: #FF6B6B;
+  --bingo-card-header-key4-bg: #26C485;
+  --bingo-card-header-key5-bg: #C084FC;
+
+  --bingo-key-bg: rgba(0, 180, 216, 0.75);
+  --bingo-key-bg-hover: rgba(0, 150, 190, 0.88);
+
+  --bingo-key-bg-free: var(--bingo-key-bg);
+  --bingo-key-bg-free-hover: var(--bingo-key-bg-hover);
+  --bingo-key-fg-free: #ffffff;
+
+  --bingo-key-bg-selected: #FF6B6B;
+  --bingo-key-bg-selected-hover: #E63946;
+  --bingo-key-fg-selected: #FFF0EE;
+
+  --bingo-key-bg-taken: #FF6B6B;
+  --bingo-key-bg-taken-hover: #E63946;
+  --bingo-key-fg-taken: #ffffff;
+
+  --bingo-key-ring-selected: #FF6B6B;
+
+  --bingo-75-number-before-call-bg: rgba(0, 95, 133, 0.55);
+  --bingo-75-number-before-call-fg: #ffffff;
+  --bingo-75-number-before-call-border: rgba(255,255,255,0.18);
+
+  --bingo-75-number-after-call-bg: #FF6B6B;
+  --bingo-75-number-after-call-fg: #ffffff;
+  --bingo-75-number-after-call-border: #00B4D8;
+
+  --bingo-75-number-called-current-bg: #F7B731;
+  --bingo-75-number-called-current-fg: #0D1B2A;
+  --bingo-75-number-called-current-border: #0D1B2A;
+
+  --playing-card-key-before-call-bg: #00B4D8;
+  --playing-card-key-before-call-fg: #ffffff;
+  --playing-card-key-before-call-border: #9ca3af;
+
+  --playing-card-key-after-call-unmarked-bg: #00B4D8;
+  --playing-card-key-after-call-unmarked-fg: #ffffff;
+
+  --playing-card-key-after-call-marked-bg: #FF6B6B;
+  --playing-card-key-after-call-marked-fg: #ffffff;
+  --playing-card-key-after-call-marked-border: #ffffff;
+
+  --playing-card-key-free-bg: #F7B731;
+  --playing-card-key-free-border: #F9CC5A;
+
+  --bingo-card-key-legend-before-call-bg: var(--playing-card-key-before-call-bg);
+  --bingo-card-key-legend-before-call-fg: #ffffff;
+  --bingo-card-key-legend-before-call-border: rgba(255,255,255,0.40);
+
+  --bingo-card-key-legend-after-call-unmarked-bg: var(--playing-card-key-after-call-unmarked-bg);
+  --bingo-card-key-legend-after-call-unmarked-fg: #ffffff;
+
+  --bingo-card-key-legend-after-call-marked-bg: var(--playing-card-key-after-call-marked-bg);
+  --bingo-card-key-legend-after-call-marked-fg: #ffffff;
+
+  --game-header-border-connected: #26C485;
+  --game-header-border-disconnected: #FF6B6B;
+
+  --game-stat-1-bg: #00B4D8;
+  --game-stat-2-bg: #FF6B6B;
+  --game-stat-3-bg: #26C485;
+  --game-stat-4-bg: #F7B731;
+  --game-stat-fg: #ffffff;
+
+  --voice-toggle-bg: #F7B731;
+  --voice-toggle-muted-fg: #67E8F9;
+  --voice-toggle-unmuted-fg: #FF6B6B;
+
+  --game-countdown-and-call-area-bg: #000000;
+  --game-countdown-and-call-area-border: #ffffff;
+
+  --countdown-text-normal: #67E8F9;   /* cyan-300 */
+  --countdown-text-warning: #FCD34D;  /* amber-300 */
+  --countdown-text-danger: #FCA5A5;   /* red-300 */
+  --countdown-text-starting: #6EE7B7; /* emerald-300 */
+
+  --playing-letter-fg: #6EE7B7;
+  --playing-separator-fg: #FCA5A5;
+  --playing-number-fg: #FCD34D;
+
+  --countdown-label-fg: #ffffff;
+  --playing-number-glow: rgba(252, 211, 77, 0.65);
+
+  --user-menu-bg: oklch(0.17 0.04 220);
+  --user-menu-border: oklch(0.65 0.14 210);
+  --user-menu-fg: oklch(0.95 0.01 210);
+
+  --input-soft-bg: oklch(0.17 0.04 220);
+}
+
+
 
 
 /* =========================================================

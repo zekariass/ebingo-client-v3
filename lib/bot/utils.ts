@@ -174,10 +174,27 @@ export const agentsData: Record<number, any> = {
       }
     },
     translations: {},
+  },
+  4: {
+    name: "Gift Bingo",
+    adminIds: "52504489",
+    logoName: "gift_bingo.png",
+    supportContact: "",
+    supportUsername: "GiftBingo",
+    supportChannel: "GiftBingo",
+    bankDetails: {
+      telebirr: { 
+        "recieverName": "Eyerus Engdaw",
+        "phoneNumber": "251993093757",
+      },
+      cbeonline: {
+        "accountName": "Eyerus Engedaw",
+        "accountNumber": "1000154402059",
+      }
+    },
+    translations: {},
   }
 }
-
-
 
 
 
