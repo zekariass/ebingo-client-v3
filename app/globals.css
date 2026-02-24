@@ -1371,8 +1371,10 @@
   --bingo-key-bg-selected-hover: #2E5240;
   --bingo-key-fg-selected: #EAF3EC;
 
-  --bingo-key-bg-taken: #C0392B;
-  --bingo-key-bg-taken-hover: #922B21;
+  /* --bingo-key-bg-taken: #C0392B;
+  --bingo-key-bg-taken-hover: #922B21; */
+  --bingo-key-bg-taken: #FF0000;        /* red */
+  --bingo-key-bg-taken-hover: #CC0000;  /* darker red for hover */
   --bingo-key-fg-taken: #ffffff;
 
   --bingo-key-ring-selected: #6BAF85;
