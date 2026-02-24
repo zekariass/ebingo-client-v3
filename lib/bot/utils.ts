@@ -184,11 +184,11 @@ export const agentsData: Record<number, any> = {
     supportChannel: "gift_bingo",
     bankDetails: {
       telebirr: { 
-        "recieverName": "Eyerus Engdaw",
+        "recieverName": "Eyerus Engdaw Alemu",
         "phoneNumber": "251993093757",
       },
       cbeonline: {
-        "accountName": "Eyerus Engedaw",
+        "accountName": "EYERUS ENGEDAW ALEMU",
         "accountNumber": "1000154402059",
       }
     },
