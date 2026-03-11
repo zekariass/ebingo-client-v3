@@ -376,7 +376,7 @@ return (
         <CardTitle className="text-lg sm:text-xl">All Rooms</CardTitle>
         <CardDescription className="text-sm">Manage existing bingo rooms</CardDescription>
       </CardHeader>
-      <CardContent className="p-0 sm:p-6">
+      <CardContent className="p-1 sm:p-6">
         {isLoading ? (
           <div className="text-center py-8">Loading rooms...</div>
         ) : (
@@ -467,6 +467,7 @@ return (
             </Table>
           </div>
         )}
+
       </CardContent>
     </Card>
   </div>
