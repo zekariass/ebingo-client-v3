@@ -55,6 +55,9 @@ const {
   minBots: 0,
   maxBots: 0,
   maxCards: 1,
+  minDraws: 6,
+  maxDraws: 12,
+  fakeWinEnabled: false,
   commissionRate: 0,
   },            
 })
@@ -121,6 +124,9 @@ const handleEdit = (room: any) => {
   minBots: room.minBots,
   maxBots: room.maxBots,
   maxCards: room.maxCards,
+  minDraws: room.minDraws,
+  maxDraws: room.maxDraws,
+  fakeWinEnabled: room.fakeWinEnabled,
   commissionRate: room.commissionRate,
   })
   setIsCreateDialogOpen(true)
@@ -291,6 +297,43 @@ return (
             />
 
             <InputField
+              label="Minimum Draws"
+              type="number"
+              min="5"
+              max="75"
+              placeholder="6"
+              {...register("minDraws", { valueAsNumber: true })}
+              error={errors.minDraws?.message}
+            />
+
+            <InputField
+              label="Maximum Draws"
+              type="number"
+              min="5"
+              max="75"
+              placeholder="12"
+              {...register("maxDraws", { valueAsNumber: true })}
+              error={errors.maxDraws?.message}
+            />
+
+            <Controller
+              name="fakeWinEnabled"
+              control={control}
+              defaultValue={false}
+              render={({ field }) => (
+                <SelectField
+                  label="Enable Awuto Wins?"
+                  value={field.value ? "true" : "false"}
+                  onValueChange={(v) => field.onChange(v === "true")}
+                  error={errors.fakeWinEnabled?.message}
+                >
+                  <SelectItem value="true">Yes</SelectItem>
+                  <SelectItem value="false">No</SelectItem>
+                </SelectField>
+              )}
+            />
+
+            <InputField
               label="Maximum Cards"
               type="number"
               min="1"
@@ -348,6 +391,9 @@ return (
                   <TableHead className="min-w-[80px]">Bots Allowed</TableHead>
                   <TableHead className="min-w-[80px]">Min Bots</TableHead>
                   <TableHead className="min-w-[80px]">Max Bots</TableHead>
+                  <TableHead className="min-w-[80px]">Min Draws</TableHead>
+                  <TableHead className="min-w-[80px]">Max Draws</TableHead>
+                  <TableHead className="min-w-[100px]">Auto Win</TableHead>
                   <TableHead className="min-w-[100px]">Commission</TableHead>
                   <TableHead className="min-w-[100px]">Max Cards</TableHead>
                   <TableHead className="min-w-[100px]">Status</TableHead>
@@ -358,7 +404,7 @@ return (
               <TableBody>
                 {rooms.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={11} className="text-center py-6 text-muted-foreground">
+                    <TableCell colSpan={14} className="text-center py-6 text-muted-foreground">
                       No rooms data
                     </TableCell>
                   </TableRow>
@@ -377,9 +423,11 @@ return (
                       <TableCell>{room.botAllowed ? "Yes" : "No"}</TableCell>
                       <TableCell>{room.minBots}</TableCell>
                       <TableCell>{room.maxBots}</TableCell>
+                      <TableCell>{room.minDraws}</TableCell>
+                      <TableCell>{room.maxDraws}</TableCell>
+                      <TableCell>{room.fakeWinEnabled ? "Yes" : "No"}</TableCell>
                       <TableCell>{room.commissionRate}</TableCell>
                       <TableCell>{room.maxCards}</TableCell>
-
                       <TableCell>
                         <Badge
                           variant={room.status === "OPEN" ? "default" : "secondary"}

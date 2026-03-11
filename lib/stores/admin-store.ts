@@ -38,6 +38,9 @@ export type Room = {
   botAllowed?: boolean;
   minBots: number;
   maxBots: number;
+  minDraws?: number;
+  maxDraws?: number;
+  fakeWinEnabled?: boolean;
   commissionRate: number;
   maxCards: number;
   createdBy: number;            // Long -> number

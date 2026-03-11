@@ -132,6 +132,9 @@ export async function POST(request: NextRequest) {
       botAllowed = false,
       minBots = 0,
       maxBots = 0,
+      minDraws = 6,
+      maxDraws = 12,
+      fakeWinEnabled = false,
       commissionRate = 0,
     } = await request.json();
 
@@ -162,6 +165,9 @@ export async function POST(request: NextRequest) {
       botAllowed,
       minBots: Number(minBots),
       maxBots: Number(maxBots),
+      minDraws: Number(minDraws),
+      maxDraws: Number(maxDraws),
+      fakeWinEnabled,
       commissionRate: Number(commissionRate),
     });
 
