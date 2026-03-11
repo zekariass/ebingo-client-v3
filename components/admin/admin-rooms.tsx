@@ -167,7 +167,7 @@ return (
             {editingRoom ? "Edit Room" : "Create Room"}
           </Button>
         </DialogTrigger>}
-        <DialogContent className="w-[95vw] max-w-md mx-auto">
+        <DialogContent className="w-[96vw] max-w-md mx-auto">
           <DialogHeader>
             <DialogTitle>{editingRoom ? "Edit Room" : "Create New Room"}</DialogTitle>
             <DialogDescription>
