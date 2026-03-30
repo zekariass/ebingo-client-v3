@@ -136,64 +136,65 @@ export const agentsData: Record<number, any> = {
       }
     },
     translations: {},
-  },
-  2: {
-    name: "Awash Bingo",
-    adminIds: "1342999830,312661397",
-    logoName: "logo_abex.png",
-    supportContact: "",
-    supportUsername: "awashbingo",
-    supportChannel: "awashbingo",
-    bankDetails: {
-      telebirr: { 
-        "recieverName": "bezawite tadele zenebe",
-        "phoneNumber": "251902493104",
-      },
-      cbeonline: {
-        "accountName": "Bezawit Tadele Zenebe",
-        "accountNumber": "1000210696354",
-      }
-    },
-    translations: {},
-  },
-  3: {
-    name: "Great Bingo",
-    adminIds: "7579293471,752191099",
-    logoName: "great_bingo.png",
-    supportContact: "",
-    supportUsername: "Great_BING",
-    supportChannel: "Great_BING",
-    bankDetails: {
-      telebirr: { 
-        "recieverName": "Andargachew Awoke Demeke",
-        "phoneNumber": "251947061304",
-      },
-      cbeonline: {
-        "accountName": "Andargachew Awoke Demeke",
-        "accountNumber": "1000097184546",
-      }
-    },
-    translations: {},
-  },
-  4: {
-    name: "Gift Bingo",
-    adminIds: "1422859498",
-    logoName: "logo_gift.png",
-    supportContact: "",
-    supportUsername: "gift_bingo",
-    supportChannel: "gift_bingo",
-    bankDetails: {
-      telebirr: { 
-        "recieverName": "Eyerus Engdaw Alemu",
-        "phoneNumber": "251993093757",
-      },
-      cbeonline: {
-        "accountName": "EYERUS ENGEDAW ALEMU",
-        "accountNumber": "1000154402059",
-      }
-    },
-    translations: {},
   }
+  // ,
+  // 2: {
+  //   name: "Awash Bingo",
+  //   adminIds: "1342999830,312661397",
+  //   logoName: "logo_abex.png",
+  //   supportContact: "",
+  //   supportUsername: "awashbingo",
+  //   supportChannel: "awashbingo",
+  //   bankDetails: {
+  //     telebirr: { 
+  //       "recieverName": "bezawite tadele zenebe",
+  //       "phoneNumber": "251902493104",
+  //     },
+  //     cbeonline: {
+  //       "accountName": "Bezawit Tadele Zenebe",
+  //       "accountNumber": "1000210696354",
+  //     }
+  //   },
+  //   translations: {},
+  // },
+  // 3: {
+  //   name: "Great Bingo",
+  //   adminIds: "7579293471,752191099",
+  //   logoName: "great_bingo.png",
+  //   supportContact: "",
+  //   supportUsername: "Great_BING",
+  //   supportChannel: "Great_BING",
+  //   bankDetails: {
+  //     telebirr: { 
+  //       "recieverName": "Andargachew Awoke Demeke",
+  //       "phoneNumber": "251947061304",
+  //     },
+  //     cbeonline: {
+  //       "accountName": "Andargachew Awoke Demeke",
+  //       "accountNumber": "1000097184546",
+  //     }
+  //   },
+  //   translations: {},
+  // },
+  // 4: {
+  //   name: "Gift Bingo",
+  //   adminIds: "1422859498",
+  //   logoName: "logo_gift.png",
+  //   supportContact: "",
+  //   supportUsername: "gift_bingo",
+  //   supportChannel: "gift_bingo",
+  //   bankDetails: {
+  //     telebirr: { 
+  //       "recieverName": "Eyerus Engdaw Alemu",
+  //       "phoneNumber": "251993093757",
+  //     },
+  //     cbeonline: {
+  //       "accountName": "EYERUS ENGEDAW ALEMU",
+  //       "accountNumber": "1000154402059",
+  //     }
+  //   },
+  //   translations: {},
+  // }
 }
 
 
