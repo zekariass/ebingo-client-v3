@@ -1188,7 +1188,7 @@ export function GameOptionsGrid({ gameModes, agentId }: GameOptionsGridProps) {
         ))}
 
         {/* ── FEATURED ── */}
-        <Section>
+        {featuredGames.length > 0 && <Section>
           <SectionHeader
             icon="✦"
             label="Featured Games"
@@ -1209,12 +1209,12 @@ export function GameOptionsGrid({ gameModes, agentId }: GameOptionsGridProps) {
               />
             ))}
           </div>
-        </Section>
+        </Section>}
 
         <Divider delay={0.3} />
 
         {/* ── HOT GAMES ── */}
-        <Section>
+        {hotGames.length > 0 && <Section>
           <SectionHeader
             icon="🔥"
             label="Hot Games"
@@ -1235,7 +1235,7 @@ export function GameOptionsGrid({ gameModes, agentId }: GameOptionsGridProps) {
               />
             ))}
           </div>
-        </Section>
+        </Section>}
 
         <Divider delay={0.4} />
 
