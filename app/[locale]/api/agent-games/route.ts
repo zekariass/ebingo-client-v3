@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL!
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN!
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,17 +30,18 @@ export async function GET(request: NextRequest) {
       backendUrl += `&enabledOnly=${enabledOnly}`
     }
     
-    console.log("Fetching agent games from:", backendUrl)
+    // console.log("Fetching agent games from:", backendUrl)
 
     const response = await fetch(backendUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
       },
       cache: "no-store",
     })
 
-    console.log("Backend response status:", response.status)
+    // console.log("Backend response status:", response.status)
 
     const result = await response.json()
 
@@ -88,23 +90,24 @@ export async function POST(request: NextRequest) {
     const initData = request.headers.get("x-init-data")
     const backendUrl = `${BACKEND_BASE_URL}/api/agent-games`
     
-    console.log("Creating agent game:", backendUrl)
+    // console.log("Creating agent game:", backendUrl)
 
     const response = await fetch(backendUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
       },
       body: JSON.stringify(body),
       cache: "no-store",
     })
 
-    console.log("Backend response status:", response.status)
+    // console.log("Backend response status:", response.status)
 
     const result = await response.json()
 
     if (!response.ok) {
-      console.error("Backend error:", result)
+      // console.error("Backend error:", result)
       return NextResponse.json(
         {
           success: false,

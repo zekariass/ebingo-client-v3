@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL!
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN!
 
 export async function PUT(
   request: NextRequest,
@@ -33,6 +34,7 @@ export async function PUT(
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN,
       },
       cache: "no-store",
     })

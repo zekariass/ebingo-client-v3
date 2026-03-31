@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL!;
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN;
+
 /**
  * POST - Add Promo Bonus (ADMIN only)
  */
@@ -45,8 +47,10 @@ export async function POST(request: NextRequest) {
         headers: {
           "Content-Type": "application/json",
           // "x-init-data": initData,
+          "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
         },
-        body      }
+        body
+      }
     );
 
     const data = await response.json();

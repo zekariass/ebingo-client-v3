@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
 
     // Build the backend URL with parameters
     const backendUrl = process.env.BACKEND_BASE_URL
+    const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN
     if (!backendUrl) {
       throw new Error("BACKEND_BASE_URL environment variable is not set")
     }
@@ -40,6 +41,7 @@ export async function GET(request: NextRequest) {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${process.env.INTERNAL_API_KEY || ""}`,
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
       },
       cache: "no-store",
     })

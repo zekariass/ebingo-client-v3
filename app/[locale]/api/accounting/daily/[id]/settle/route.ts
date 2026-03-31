@@ -37,6 +37,7 @@ export async function PUT(
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
+      "X-Access-Token": process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN!,
     }
     
     if (apiKey) {

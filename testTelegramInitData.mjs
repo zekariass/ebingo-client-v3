@@ -29,4 +29,4 @@ const hash = crypto
 
 const initData = new URLSearchParams({ ...data, hash }).toString();
 
-console.log(initData);
+// console.log(initData);

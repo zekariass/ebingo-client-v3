@@ -7,6 +7,8 @@ import { getUserLang } from "../userLangMap"
 import { translations } from "../translations"
 
 const API_BASE_URL = process.env.BACKEND_BASE_URL!
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN;
+
 const awaitingNickname = new Map<number, boolean>()
 
 function getTranslationForLang(lang: string, key: string) {
@@ -50,6 +52,9 @@ export function registerNicknameHandlers(bot: Telegraf<Context>, agentId: number
     try {
       const response = await axios.put(`${API_BASE_URL}/api/v1/secured/user-profile/update-nickname`, null, {
         params: { telegramId: userId, nickName: newNickname, agentId },
+        headers: {
+          "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
+        },
       })
 
       if (response.data?.success) {

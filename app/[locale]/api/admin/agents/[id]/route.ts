@@ -33,6 +33,7 @@ export async function GET(
     }
 
     const backendUrl = process.env.BACKEND_BASE_URL
+    const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN
     if (!backendUrl) {
       throw new Error("BACKEND_BASE_URL environment variable is not set")
     }
@@ -42,6 +43,7 @@ export async function GET(
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${process.env.INTERNAL_API_KEY || ""}`,
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
       },
       cache: "no-store",
     })
@@ -81,82 +83,6 @@ export async function GET(
   }
 }
 
-// export async function PUT(
-//   request: NextRequest,
-//   { params }: { params: Promise<{ id: string }> }
-// ) {
-//   try {
-//     const { id } = await params
-//     const agentId = parseInt(id)
-//     const body = await request.json()
-
-//     if (isNaN(agentId)) {
-//       return NextResponse.json(
-//         { 
-//           success: false, 
-//           statusCode: 400,
-//           message: "Invalid agent ID",
-//           timestamp: new Date().toISOString()
-//         },
-//         { status: 400 }
-//       )
-//     }
-
-//     const backendUrl = process.env.BACKEND_BASE_URL
-//     if (!backendUrl) {
-//       throw new Error("BACKEND_BASE_URL environment variable is not set")
-//     }
-
-//     console.log(">>>>>>>>>>>>>>>> Updating agent with ID:", agentId)
-//     console.log(">>>>>>>>>>>>>>>> Request body:", body)
-
-//     const response = await fetch(`${backendUrl}/api/v1/agents/${agentId}`, {
-//       method: "PUT",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify(body),
-//     })
-
-//     if (!response.ok) {
-//       if (response.status === 404) {
-//         return NextResponse.json(
-//           { 
-//             success: false, 
-//             statusCode: 404,
-//             message: "Agent not found",
-//             timestamp: new Date().toISOString()
-//           },
-//           { status: 404 }
-//         )
-//       }
-
-//       const errorText = await response.text()
-//       console.error("Backend API error:", response.status, errorText)
-//       throw new Error(`Backend API error: ${response.status} ${errorText}`)
-//     }
-
-//     const result: ApiResponse<Agent> = await response.json()
-//     return NextResponse.json(result)
-//   } catch (error) {
-//     console.error("Error updating agent:", error)
-//     return NextResponse.json(
-//       { 
-//         success: false, 
-//         statusCode: 500,
-//         message: "Failed to update agent",
-//         error: error instanceof Error ? error.message : "Unknown error",
-//         timestamp: new Date().toISOString()
-//       },
-//       { status: 500 }
-//     )
-//   }
-// }
-
-
-
-
-
 type AgentUpdateDto = {
   name?: string
   phoneNumber?: string
@@ -178,6 +104,7 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN
   try {
     const { id } = await params
     const agentId = Number.parseInt(id, 10)
@@ -212,9 +139,6 @@ export async function PUT(
       contactAddress: body?.contactAddress,
     })
 
-    console.log(">>>>>>>>>>>>>>>> Updating agent with ID:", agentId)
-    console.log(">>>>>>>>>>>>>>>> Forwarding update DTO:", updateDto)
-
     const response = await fetch(`${backendUrl}/api/v1/agents/${agentId}`, {
       method: "PUT",
       headers: {
@@ -223,6 +147,7 @@ export async function PUT(
         ...(request.headers.get("authorization")
           ? { Authorization: request.headers.get("authorization")! }
           : {}),
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
       },
       body: JSON.stringify(updateDto),
     })

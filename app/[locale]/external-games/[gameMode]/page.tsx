@@ -20,10 +20,10 @@ export default function ExternalGamePage() {
   const rawGameMode = params?.gameMode
   
   // Debug logging
-  console.log("Raw params object:", params)
-  console.log("Raw gameMode value:", rawGameMode)
-  console.log("Type of rawGameMode:", typeof rawGameMode)
-  console.log("Is array?:", Array.isArray(rawGameMode))
+  // console.log("Raw params object:", params)
+  // console.log("Raw gameMode value:", rawGameMode)
+  // console.log("Type of rawGameMode:", typeof rawGameMode)
+  // console.log("Is array?:", Array.isArray(rawGameMode))
   
   const gameMode = typeof rawGameMode === 'string' 
     ? rawGameMode 
@@ -31,8 +31,8 @@ export default function ExternalGamePage() {
   
   const agentId = searchParams.get("agentId")
   
-  console.log("Extracted gameMode:", gameMode)
-  console.log("Extracted agentId:", agentId)
+  // console.log("Extracted gameMode:", gameMode)
+  // console.log("Extracted agentId:", agentId)
   
   const { launchGame, gameUrl, launching, error, setGameUrl } = useExternalGameStore()
   const { agentDetails, fetchAgentDetails } = useAgentStore()
@@ -56,9 +56,9 @@ export default function ExternalGamePage() {
     let isMounted = true
     
     const loadGame = async () => {
-      console.log("Loading game - gameMode:", gameMode, "agentId:", agentId)
-      console.log("Params:", params)
-      console.log("SearchParams:", searchParams.toString())
+      // console.log("Loading game - gameMode:", gameMode, "agentId:", agentId)
+      // console.log("Params:", params)
+      // console.log("SearchParams:", searchParams.toString())
       
       if (!gameMode || !agentId) {
         if (isMounted) {

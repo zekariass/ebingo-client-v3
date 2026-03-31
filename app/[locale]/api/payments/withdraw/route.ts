@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type { ApiResponse } from "@/lib/backend/types";
 
 const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL!;
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN;
 
 /**
  * POST /[lang]/api/payments/shop
@@ -69,6 +70,7 @@ export async function POST(req: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
         // "x-init-data": initData,
       },
       body: JSON.stringify(payload),

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type { ApiResponse } from "@/lib/backend/types";
 
 const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL!;
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN;
 
 /**
  * GET /[lang]/api/wallet
@@ -35,6 +36,7 @@ export async function GET(req: NextRequest) {
       headers: {
         "Content-Type": "application/json",
         // "x-init-data": initData, // pass initData for verification
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
       },
       cache: "no-store",
     });

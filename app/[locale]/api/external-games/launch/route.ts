@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL!
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN!
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,27 +31,28 @@ export async function POST(request: NextRequest) {
 
     const backendUrl = `${BACKEND_BASE_URL}/external-games/golden-eggs/launch`
     
-    console.log("=== GAME LAUNCH REQUEST ===")
-    console.log("Backend URL:", backendUrl)
-    console.log("Game Mode:", body.gameMode)
-    console.log("Agent ID:", body.agentId)
-    console.log("Full Request Body:", JSON.stringify(body, null, 2))
+    // console.log("=== GAME LAUNCH REQUEST ===")
+    // console.log("Backend URL:", backendUrl)
+    // console.log("Game Mode:", body.gameMode)
+    // console.log("Agent ID:", body.agentId)
+    // console.log("Full Request Body:", JSON.stringify(body, null, 2))
 
     const response = await fetch(backendUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN,
       },
       body: JSON.stringify(body),
       cache: "no-store",
     })
 
-    console.log("Backend response status:", response.status)
-    console.log("Backend response headers:", Object.fromEntries(response.headers.entries()))
+    // console.log("Backend response status:", response.status)
+    // console.log("Backend response headers:", Object.fromEntries(response.headers.entries()))
 
     const result = await response.json()
 
-    console.log("Backend response body:", JSON.stringify(result, null, 2))
+    // console.log("Backend response body:", JSON.stringify(result, null, 2))
 
     if (!response.ok) {
       console.error("=== BACKEND ERROR ===")

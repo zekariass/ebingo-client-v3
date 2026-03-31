@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL!
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN!
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,17 +26,18 @@ export async function GET(request: NextRequest) {
     const initData = request.headers.get("x-init-data")
     const backendUrl = `${BACKEND_BASE_URL}/external-games/golden-eggs/accounting/daily?agentId=${agentId}`
     
-    console.log("Fetching daily accounting from:", backendUrl)
+    // console.log("Fetching daily accounting from:", backendUrl)
 
     const response = await fetch(backendUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN,
       },
       cache: "no-store",
     })
 
-    console.log("Backend response status:", response.status)
+    // console.log("Backend response status:", response.status)
 
     const result = await response.json()
 

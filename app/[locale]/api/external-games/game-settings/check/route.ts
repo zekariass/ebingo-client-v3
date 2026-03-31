@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL!
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN!
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
 
     const backendUrl = `${BACKEND_BASE_URL}/external-games/game-settings/check?agentId=${agentId}&gameMode=${gameMode}`
     
-    console.log("Checking if game mode is enabled:", gameMode, "for agent:", agentId)
+    // console.log("Checking if game mode is enabled:", gameMode, "for agent:", agentId)
 
     const initData = request.headers.get("x-init-data") || ""
 
@@ -34,11 +35,12 @@ export async function GET(request: NextRequest) {
       headers: {
         "Content-Type": "application/json",
         "x-init-data": initData,
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN,
       },
       cache: "no-store",
     })
 
-    console.log("Backend response status:", response.status)
+    // console.log("Backend response status:", response.status)
 
     const result = await response.json()
 

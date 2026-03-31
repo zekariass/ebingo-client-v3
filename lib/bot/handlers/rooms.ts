@@ -17,6 +17,10 @@ export async function showRooms(ctx: any, page = 1, agentId: number) {
   try {
     const response = await axios.get(`${process.env.BACKEND_BASE_URL}/api/v1/public/rooms`, {
       params: { agentId },
+      headers: { 
+        "Content-Type": "application/json",
+        "X-Access-Token": process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
+      },
     })
     const rooms = response.data.data
     if (!rooms || rooms.length === 0) {

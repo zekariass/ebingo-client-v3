@@ -98,7 +98,7 @@ export function AdminGames() {
 
   useEffect(() => {
     if (agentGameSettings) {
-      console.log("=== LOADING GAME SETTINGS ===")
+      // console.log("=== LOADING GAME SETTINGS ===")
       // console.log("Agent Game Settings:", agentGameSettings)
       // console.log("Game Modes from API:", agentGameSettings.gameModes)
       // console.log("Type of gameModes:", typeof agentGameSettings.gameModes)

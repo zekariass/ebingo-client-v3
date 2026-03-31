@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
     const backendUrl = `${BACKEND_BASE_URL}/api/v1/agents/search?searchTerm=${encodeURIComponent(searchTerm)}`
     
-    console.log("Searching agents with searchTerm:", searchTerm)
+    // console.log("Searching agents with searchTerm:", searchTerm)
 
     const initData = request.headers.get("x-init-data") || ""
 
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       cache: "no-store",
     })
 
-    console.log("Backend response status:", response.status)
+    // console.log("Backend response status:", response.status)
 
     const result = await response.json()
 

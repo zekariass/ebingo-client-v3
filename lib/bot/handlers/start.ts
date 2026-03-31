@@ -10,6 +10,9 @@ import { ADMIN_COMMANDS } from "../setup-webhooks";
  * 1) Old: /start 1961597377
  * 2) New (multi-agent safe): /start a1_r1961597377
  */
+
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN;
+
 function parseStartPayload(ctx: Context): { agentId?: number; referrerId?: number } {
   const message = ctx.message as { text?: string } | undefined;
   const text = message?.text || "";
@@ -82,13 +85,16 @@ export function registerStartHandlers(bot: Telegraf, agentId: number) {
     ctx.session = ctx.session || {};
     if (referrerId && referrerId !== userId) {
       ctx.session.referrerId = referrerId;
-      console.log(`Stored referrerId ${referrerId} for user ${userId} in agent ${agentId}`);
+      // console.log(`Stored referrerId ${referrerId} for user ${userId} in agent ${agentId}`);
     }
 
     let isRegistered = false;
     try {
       const res = await axios.get(`${process.env.BACKEND_BASE_URL}/api/v1/secured/user-profile/${userId}`, {
         params: { agentId },
+        headers: {
+          "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
+        },
       });
       isRegistered = res.data?.success && res.data?.data?.telegramId === userId;
     } catch {}
@@ -141,7 +147,11 @@ export function registerStartHandlers(bot: Telegraf, agentId: number) {
     };
 
     try {
-      const response = await axios.post(`${process.env.BACKEND_BASE_URL}/api/v1/public/user-profile/register`, payload);
+      const response = await axios.post(`${process.env.BACKEND_BASE_URL}/api/v1/public/user-profile/register`, payload, {
+        headers: {
+          "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
+        },
+      });
 
       if (!response.data.success) {
         const errors = response.data.errors;
@@ -159,7 +169,12 @@ export function registerStartHandlers(bot: Telegraf, agentId: number) {
         try {
           const referrerRes = await axios.get(
             `${process.env.BACKEND_BASE_URL}/api/v1/secured/user-profile/${referrerId}`,
-            { params: { agentId } }
+            {
+              params: { agentId },
+              headers: {
+                "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
+              },
+            }
           );
           if (referrerRes.data?.success && referrerRes.data?.data?.firstName) {
             welcomeMessage += ` You were referred by ${referrerRes.data.data.firstName}!`;

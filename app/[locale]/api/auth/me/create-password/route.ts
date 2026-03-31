@@ -5,6 +5,7 @@ export async function POST(req: Request) {
     const body = await req.json()
     // const initData = req.headers.get("x-init-data") ?? ""
     const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL
+    const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN
 
     if (!BACKEND_BASE_URL) throw new Error("Backend URL not configured")
 
@@ -18,6 +19,7 @@ export async function POST(req: Request) {
         headers: {
           "Content-Type": "application/json",
           // "x-init-data": initData,
+          "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
         },
         body: JSON.stringify({ ...body, agentId }),
       }

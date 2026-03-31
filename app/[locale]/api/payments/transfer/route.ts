@@ -3,6 +3,8 @@ import type { ApiResponse } from "@/lib/backend/types"
 import { error } from "console"
 
 const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL!
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN;
+
 
 /**
  * POST /[lang]/api/payments/transfer
@@ -50,6 +52,7 @@ export async function POST(req: NextRequest) {
       headers: {
         "Content-Type": "application/json",
         "x-init-data": initData,
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
       },
       body: JSON.stringify({ amount, phoneNumber: phone, agentId}),
     })

@@ -35,6 +35,7 @@ export async function PUT(
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        "X-Access-Token": process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
         // "x-init-data": initData, // verification by backend
       },
       body: JSON.stringify({ id, ...updates }),
@@ -85,7 +86,8 @@ export async function DELETE(
     const response = await fetch(`${BACKEND_BASE_URL}/api/v1/secured/rooms/${id}?agentId=${agentId}`, {
       method: "DELETE",
       headers: {
-        "x-init-data": initData,
+        "x-init-data": initData,  
+        "X-Access-Token": process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
       },
     });
 

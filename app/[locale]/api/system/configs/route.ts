@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import type { ApiResponse } from "@/lib/backend/types"
 
 const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL!
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,7 +21,10 @@ export async function GET(request: NextRequest) {
       `${BACKEND_BASE_URL}/api/v1/system-configs?agentId=${agentId}`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
+        },
         cache: "no-store",
       }
     )

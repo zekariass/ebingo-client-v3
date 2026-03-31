@@ -15,18 +15,19 @@ export async function GET(request: NextRequest) {
     const initData = request.headers.get("x-init-data")
     const backendUrl = `${BACKEND_BASE_URL}/external-games/golden-eggs/game-modes`
     
-    console.log("Fetching game modes from:", backendUrl)
+    // console.log("Fetching game modes from:", backendUrl)
 
     const response = await fetch(backendUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         // "x-init-data": initData,
+        "X-Access-Token": process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
       },
       cache: "no-store",
     })
 
-    console.log("Backend response status:", response.status)
+    // console.log("Backend response status:", response.status)
 
     const result = await response.json()
 

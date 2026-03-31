@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import axios from "axios"
 
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN;
+
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const role = req.headers.get("x-user-role")
@@ -18,6 +20,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       {
         headers: {
           "x-user-role": role,
+          "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
           // "x-init-data": initData || "",
         },
       }

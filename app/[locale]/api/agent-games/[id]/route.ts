@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL!
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN!
 
 export async function GET(
   request: NextRequest,
@@ -27,17 +28,18 @@ export async function GET(
     const initData = request.headers.get("x-init-data")
     const backendUrl = `${BACKEND_BASE_URL}/api/agent-games/${id}`
     
-    console.log("Fetching agent game by ID from:", backendUrl)
+    // console.log("Fetching agent game by ID from:", backendUrl)
 
     const response = await fetch(backendUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
       },
       cache: "no-store",
     })
 
-    console.log("Backend response status:", response.status)
+    // console.log("Backend response status:", response.status)
 
     const result = await response.json()
 
@@ -97,17 +99,18 @@ export async function DELETE(
     const initData = request.headers.get("x-init-data")
     const backendUrl = `${BACKEND_BASE_URL}/api/agent-games/${id}`
     
-    console.log("Deleting agent game:", backendUrl)
+    // console.log("Deleting agent game:", backendUrl)
 
     const response = await fetch(backendUrl, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
       },
       cache: "no-store",
     })
 
-    console.log("Backend response status:", response.status)
+    // console.log("Backend response status:", response.status)
 
     if (response.status === 204) {
       return NextResponse.json({

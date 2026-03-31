@@ -4,6 +4,8 @@ import { Markup, type Telegraf, session } from "telegraf"
 const registeredUsersCache = new Map<string, boolean>()
 const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
 
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN;
+
 export function registerMiddleware(bot: Telegraf, agentId: number) {
   // Add session middleware first
   bot.use(session())
@@ -24,6 +26,9 @@ export function registerMiddleware(bot: Telegraf, agentId: number) {
       try {
         const response = await axios.get(`${process.env.BACKEND_BASE_URL}/api/v1/secured/user-profile/${userId}`, {
           params: { agentId },
+          headers: {
+            "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
+          },
         })
         isRegistered = response.data?.success && response.data?.data?.telegramId === userId
         if (isRegistered) {

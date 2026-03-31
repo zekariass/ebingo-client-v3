@@ -6,10 +6,13 @@ import { agentsData, t } from "../utils"
 import { showRooms } from "./rooms"
 import axios from "axios"
 
+
 const languageFullName = {
   en: "English",
   am: "Amharic",
 }
+
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN;
 
 function getTranslationForLang(lang: string, key: string) {
   return translations[lang]?.[key] || translations["am"][key] || key
@@ -171,6 +174,9 @@ export function registerCommandHandlers(bot: Telegraf, agentId: number) {
     try {
       const res = await axios.get(`${process.env.BACKEND_BASE_URL}/api/v1/secured/user-profile/${userId}`, {
         params: { agentId },
+        headers: {
+          "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
+        },
       })
       isRegistered = res.data?.success && res.data?.data?.telegramId === userId
     } catch (err) {

@@ -62,7 +62,7 @@ export function useVoiceAnnouncer({
       utterance.voice = selectedVoice
     }
 
-    console.log("[v0] Announcing number:", utterance.text)
+    // console.log("[v0] Announcing number:", utterance.text)
 
     onAnnounce?.(announcement)
 

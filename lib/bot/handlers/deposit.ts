@@ -133,6 +133,7 @@ type CBEVerifyResponse = {
 
 const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL!;
 const VERIFY_API_KEY = process.env.NEXT_PUBLIC_VERIFY_API_KEY!;
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN;
 
 const userState = new Map<string, UserState>(); // key = `${agentId}:${userId}`
 const depositTimeouts = new Map<string, NodeJS.Timeout>();
@@ -247,7 +248,12 @@ async function sendDepositToBackend(
   const res = await axios.post(
     `${BACKEND_BASE_URL}/api/v1/secured/payment-orders/offline/offline-deposit`,
     body,
-    { headers: { "Content-Type": "application/json" } }
+    { headers: 
+      { 
+        "Content-Type": "application/json",
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
+
+      } }
   );
 
   if (res.status > 299) return res.data?.message || "Unknown error";

@@ -11,7 +11,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ loc
     // Fetch agent details from backend
     const agentResponse = await axios.get(`${process.env.BACKEND_BASE_URL}/api/v1/agents/${agentId}`, {
       headers: {
-        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN || "",
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
       },
     })
 

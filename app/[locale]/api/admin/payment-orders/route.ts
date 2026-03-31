@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN;
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
@@ -40,6 +42,7 @@ export async function GET(req: NextRequest) {
       headers: {
         "Content-Type": "application/json",
         "x-user-role": userRole,
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
         // "x-init-data": initData || "",
       },
     })

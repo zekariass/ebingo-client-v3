@@ -3,6 +3,7 @@ import type { ApiResponse } from "@/lib/backend/types";
 import { PaymentMethod } from "@/lib/types";
 
 const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL!;
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN;
 
 /**
  * GET - Fetch payment methods using x-init-data
@@ -27,6 +28,7 @@ export async function GET(request: NextRequest) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
         // "x-init-data": initData, // send to backend for verification
       },
       cache: "no-store",

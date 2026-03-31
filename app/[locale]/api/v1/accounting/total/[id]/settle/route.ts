@@ -10,6 +10,7 @@ export async function PUT(
     const backendUrl = process.env.BACKEND_BASE_URL
     const apiKey = process.env.INTERNAL_API_KEY
     
+    
     if (!backendUrl) {
       return NextResponse.json(
         { success: false, error: "Backend URL not configured" },
@@ -23,6 +24,7 @@ export async function PUT(
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          "X-Access-Token": process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
           ...(apiKey && { "X-API-KEY": apiKey }),
         },
       }

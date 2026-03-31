@@ -4,6 +4,7 @@ import { t } from "../utils"
 import { showStartMenu } from "./commands"
 
 const API_BASE_URL = process.env.BACKEND_BASE_URL!
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN
 
 export async function fetchAndSendWallet(ctx: Context, agentId: number, userId?: number) {
   const telegramId = userId || ctx.from?.id
@@ -12,6 +13,9 @@ export async function fetchAndSendWallet(ctx: Context, agentId: number, userId?:
   try {
     const response = await axios.get(`${API_BASE_URL}/api/v1/secured/wallet/by-telegram-id`, {
       params: { telegramId, agentId },
+      headers: {
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
+      },
     })
 
     const apiResponse = response.data

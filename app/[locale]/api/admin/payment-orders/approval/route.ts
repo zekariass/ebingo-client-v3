@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
 const BACKEND_URL = process.env.BACKEND_URL
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN
 
 export async function POST(req: NextRequest) {
   const initData = req.headers.get("x-init-data")
@@ -20,6 +21,7 @@ export async function POST(req: NextRequest) {
         "Content-Type": "application/json",
         // "x-init-data": initData,
         "x-user-role": role,
+        "x-backend-endpoints-access-token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
       },
       body: JSON.stringify(body),
     })

@@ -65,12 +65,12 @@
 
     // Load voices (needed in some browsers)
     window.speechSynthesis.onvoiceschanged = () => {
-      console.log("Available voices:", window.speechSynthesis.getVoices());
+      // console.log("Available voices:", window.speechSynthesis.getVoices());
     };
 
     window.speechSynthesis.onvoiceschanged = () => {
   const voices = window.speechSynthesis.getVoices();
-  voices.forEach(v => console.log(v.name, v.lang));
+  // voices.forEach(v => console.log(v.name, v.lang));
 };
   </script>
 </body>

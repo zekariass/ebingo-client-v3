@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL!;
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN;
 
 export async function GET(req: NextRequest, context: { params: Promise<{ telegramId: string }> }) {
   try {
@@ -18,6 +19,9 @@ export async function GET(req: NextRequest, context: { params: Promise<{ telegra
 
     const res = await fetch(`${BACKEND_BASE_URL}/api/v1/secured/user-profile/${telegramId}?agentId=${agentId}`, {
       cache: "no-store",
+      headers: {
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
+      },
     });
 
     if (!res.ok) {
