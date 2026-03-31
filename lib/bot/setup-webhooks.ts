@@ -8,9 +8,11 @@ import { agentsData } from "./utils";
 const APP_URL = process.env.APP_URL;
 const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL;
 const DEFAULT_LOCALE = process.env.DEFAULT_LOCALE ?? "en";
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN;
 
 if (!APP_URL) console.warn("[Webhook Setup] APP_URL is not defined");
 if (!BACKEND_BASE_URL) console.warn("[Webhook Setup] BACKEND_BASE_URL is not defined");
+if (!BACKEND_ENDPOINTS_ACCESS_TOKEN) console.warn("[Webhook Setup] BACKEND_ENDPOINTS_ACCESS_TOKEN is not defined");
 
 /* ======================================================
    Telegram commands
@@ -116,6 +118,7 @@ async function fetchActiveAgents(): Promise<Agent[]> {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${process.env.INTERNAL_API_KEY ?? ""}`,
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
       },
     });
 

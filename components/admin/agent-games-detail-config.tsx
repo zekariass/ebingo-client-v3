@@ -60,6 +60,11 @@ const AVAILABLE_GAME_MODES = [
   "chicken-road-race",
   "cricket-road",
   "chicken-road-two",
+  "fish-road-v1",
+  "fish-boom",
+  "penalty-unlimited",
+  "chicken-road-bonus",
+  "chicken-coin"
 ]
 
 interface AgentGamesDetailConfigProps {

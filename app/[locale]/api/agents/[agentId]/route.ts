@@ -1,6 +1,8 @@
 import { ApiResponse } from "@/lib/backend/types";
 import { NextRequest, NextResponse } from "next/server";
 const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL!
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN
+
 
 
 export async function GET(
@@ -13,7 +15,10 @@ export async function GET(
       `${BACKEND_BASE_URL}/api/v1/agents/${agentId}`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
+        },
         cache: "no-store",
       }
     )

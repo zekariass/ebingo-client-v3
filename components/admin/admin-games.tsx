@@ -54,6 +54,17 @@ const AVAILABLE_GAME_MODES = [
   "chicken-road-race",
   "cricket-road",
   "chicken-road-two",
+  "fish-road-v1",
+  "fish-boom",
+  "penalty-unlimited",
+  "chicken-road-bonus",
+  "chicken-coin",
+  "chicken-banana",
+  "chicken-shoot",
+  "chicken-road-two-bonus",
+  "mine-slot-two",
+  "jumper",
+  "twist-san-quentin"
 ]
 
 export function AdminGames() {
@@ -65,9 +76,9 @@ export function AdminGames() {
 
   // Debug: Log whenever selectedGameModes changes
   useEffect(() => {
-    console.log("=== SELECTED GAME MODES CHANGED ===")
-    console.log("Current selectedGameModes:", selectedGameModes)
-    console.log("Count:", selectedGameModes.length)
+    // console.log("=== SELECTED GAME MODES CHANGED ===")
+    // console.log("Current selectedGameModes:", selectedGameModes)
+    // console.log("Count:", selectedGameModes.length)
   }, [selectedGameModes])
 
   const {
@@ -88,13 +99,13 @@ export function AdminGames() {
   useEffect(() => {
     if (agentGameSettings) {
       console.log("=== LOADING GAME SETTINGS ===")
-      console.log("Agent Game Settings:", agentGameSettings)
-      console.log("Game Modes from API:", agentGameSettings.gameModes)
-      console.log("Type of gameModes:", typeof agentGameSettings.gameModes)
-      console.log("Is Array:", Array.isArray(agentGameSettings.gameModes))
+      // console.log("Agent Game Settings:", agentGameSettings)
+      // console.log("Game Modes from API:", agentGameSettings.gameModes)
+      // console.log("Type of gameModes:", typeof agentGameSettings.gameModes)
+      // console.log("Is Array:", Array.isArray(agentGameSettings.gameModes))
       
       const modes = agentGameSettings.gameModes || []
-      console.log("Setting selected game modes to:", modes)
+      // console.log("Setting selected game modes to:", modes)
       setSelectedGameModes(modes)
       setHasLoaded(true)
     }

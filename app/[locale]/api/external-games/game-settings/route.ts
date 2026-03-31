@@ -5,7 +5,7 @@ const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL!
 export async function GET(request: NextRequest) {
   try {
     if (!BACKEND_BASE_URL) {
-      console.error("BACKEND_BASE_URL is not configured")
+      // console.error("BACKEND_BASE_URL is not configured")
       return NextResponse.json(
         { success: false, error: "Server misconfiguration: BACKEND_BASE_URL not set" },
         { status: 500 }
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       cache: "no-store",
     })
 
-    console.log("Backend response status:", response.status)
+    // console.log("Backend response status:", response.status)
 
     const result = await response.json()
 
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
       message: result.message || "Agent game settings retrieved successfully",
     })
   } catch (err) {
-    console.error("Error fetching agent game settings:", err)
+    // console.error("Error fetching agent game settings:", err)
     const errorMessage = err instanceof Error ? err.message : "Internal server error"
     return NextResponse.json(
       { 
@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     if (!BACKEND_BASE_URL) {
-      console.error("BACKEND_BASE_URL is not configured")
+      // console.error("BACKEND_BASE_URL is not configured")
       return NextResponse.json(
         { success: false, error: "Server misconfiguration: BACKEND_BASE_URL not set" },
         { status: 500 }
@@ -93,8 +93,8 @@ export async function PUT(request: NextRequest) {
 
     const backendUrl = `${BACKEND_BASE_URL}/external-games/game-settings`
     
-    console.log("Updating agent game settings for agent:", body.agentId)
-    console.log("Game modes:", body.gameModes)
+    // console.log("Updating agent game settings for agent:", body.agentId)
+    // console.log("Game modes:", body.gameModes)
 
     const initData = request.headers.get("x-init-data") || ""
 
@@ -108,12 +108,12 @@ export async function PUT(request: NextRequest) {
       cache: "no-store",
     })
 
-    console.log("Backend response status:", response.status)
+    // console.log("Backend response status:", response.status)
 
     const result = await response.json()
 
     if (!response.ok) {
-      console.error("Backend error:", result)
+      // console.error("Backend error:", result)
       return NextResponse.json(
         {
           success: false,
@@ -130,7 +130,7 @@ export async function PUT(request: NextRequest) {
       message: result.message || "Agent game settings updated successfully",
     })
   } catch (err) {
-    console.error("Error updating agent game settings:", err)
+    // console.error("Error updating agent game settings:", err)
     const errorMessage = err instanceof Error ? err.message : "Internal server error"
     return NextResponse.json(
       { 
