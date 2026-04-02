@@ -181,6 +181,10 @@ export async function PUT(
     }
 
     const result = await response.json()
+    // Strip botToken before returning to client
+    if (result.data) {
+      result.data = sanitizeAgent(result.data) as Agent
+    }
     return NextResponse.json(result)
   } catch (error) {
     console.error("Error updating agent:", error)
