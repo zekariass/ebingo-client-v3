@@ -3,6 +3,12 @@ import { NextRequest, NextResponse } from "next/server"
 const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL!
 const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN!
 
+// Strip sensitive fields before sending to client
+function sanitizeAgent(agent: Record<string, any>) {
+  const { botToken, ...safe } = agent
+  return safe
+}
+
 
 export async function GET(request: NextRequest) {
   try {
@@ -56,9 +62,14 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Strip botToken from each agent before returning to client
+    const sanitizedData = Array.isArray(result.data)
+      ? result.data.map(sanitizeAgent)
+      : result.data
+
     return NextResponse.json({
       success: true,
-      data: result.data,
+      data: sanitizedData,
       message: result.message || "Agents retrieved successfully",
     })
   } catch (err) {

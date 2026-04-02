@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import { Agent } from "@/lib/stores/agent-store"
 
+// Strip sensitive fields (botToken) before sending to client
+function sanitizeAgent(agent: Agent): Omit<Agent, "botToken"> {
+  const { botToken, ...safe } = agent
+  return safe
+}
+
 interface ApiResponse<T> {
   success: boolean
   statusCode: number
@@ -53,6 +59,10 @@ export async function GET(request: NextRequest) {
     }
 
     const result: ApiResponse<Agent[]> = await response.json()
+    // Strip botToken from each agent before returning to client
+    if (result.data) {
+      result.data = result.data.map(a => sanitizeAgent(a) as Agent)
+    }
     return NextResponse.json(result)
   } catch (error) {
     console.error("Error searching agents:", error)

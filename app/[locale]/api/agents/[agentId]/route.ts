@@ -3,14 +3,18 @@ import { NextRequest, NextResponse } from "next/server";
 const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL!
 const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN
 
-
+// Strip sensitive fields before sending to client
+function sanitizeAgent(agent: Record<string, any>) {
+  const { botToken, ...safe } = agent
+  return safe
+}
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ agentId: string }> } // 👈 params is async now
+  context: { params: Promise<{ agentId: string }> } // 
 ) {
   try {
-    const { agentId } = await context.params; // 👈 await here
+    const { agentId } = await context.params; // 
     const backendRes = await fetch(
       `${BACKEND_BASE_URL}/api/v1/agents/${agentId}`,
       {
@@ -42,7 +46,7 @@ export async function GET(
     }
     const response: ApiResponse = {
       success: true,
-      data,
+      data: sanitizeAgent(data),
         error: null,    
     }
     return NextResponse.json(response)

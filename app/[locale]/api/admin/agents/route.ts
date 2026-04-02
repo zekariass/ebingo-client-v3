@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import { Agent } from "@/lib/stores/agent-store"
 
+// Strip sensitive fields (botToken) before sending to client
+function sanitizeAgent(agent: Agent): Omit<Agent, "botToken"> {
+  const { botToken, ...safe } = agent
+  return safe
+}
+
 interface PageResponse<T> {
   content: T[]
   page: number
@@ -85,6 +91,10 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Strip botToken from each agent before returning to client
+    if (result.data?.content) {
+      result.data.content = result.data.content.map(a => sanitizeAgent(a) as Agent)
+    }
     return NextResponse.json(result)
   } catch (error) {
     console.error("Error fetching agents:", error)
@@ -142,6 +152,10 @@ export async function PUT(request: NextRequest) {
     }
 
     const result: ApiResponse<Agent> = await response.json()
+    // Strip botToken before returning to client
+    if (result.data) {
+      result.data = sanitizeAgent(result.data) as Agent
+    }
     return NextResponse.json(result)
   } catch (error) {
     console.error("Error updating agent:", error)

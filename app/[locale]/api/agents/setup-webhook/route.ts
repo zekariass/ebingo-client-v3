@@ -1,14 +1,30 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { Telegraf } from "telegraf"
+import axios from "axios"
+
+const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ locale: string }> }) {
   try {
     const { locale } = await params
-    const { agentId, botToken } = await req.json()
+    const { agentId } = await req.json()
 
-    if (!agentId || !botToken) {
-      return NextResponse.json({ ok: false, error: "Missing agentId or botToken" }, { status: 400 })
+    if (!agentId) {
+      return NextResponse.json({ ok: false, error: "Missing agentId" }, { status: 400 })
     }
+
+    // Fetch botToken server-side from backend
+    const agentResponse = await axios.get(`${process.env.BACKEND_BASE_URL}/api/v1/agents/${agentId}`, {
+      headers: {
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
+      },
+    })
+
+    if (!agentResponse.data?.success || !agentResponse.data?.data?.botToken) {
+      return NextResponse.json({ ok: false, error: "Agent not found or missing bot token" }, { status: 404 })
+    }
+
+    const botToken = agentResponse.data.data.botToken
 
     // Create temporary bot instance to set webhook
     const bot = new Telegraf(botToken)
