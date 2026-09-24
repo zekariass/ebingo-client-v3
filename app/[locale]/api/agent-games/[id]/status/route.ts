@@ -5,7 +5,7 @@ const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKE
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     if (!BACKEND_BASE_URL) {
@@ -18,7 +18,7 @@ export async function PATCH(
 
     const { searchParams } = new URL(request.url)
     const isEnabled = searchParams.get("isEnabled")
-    const id = params.id
+    const { id } = await params
 
     if (!id || isEnabled === null) {
       return NextResponse.json(
@@ -59,7 +59,7 @@ export async function PATCH(
 
     return NextResponse.json({
       success: true,
-      data: result.data,
+      data: result.data ?? result,
       message: result.message,
     })
   } catch (err) {

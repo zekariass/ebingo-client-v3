@@ -1,5 +1,5 @@
 import { Telegraf } from "telegraf";
-import { agentsData } from "./utils";
+import { getAgentConfig, prefetchAgentConfigs } from "./agent-config";
 
 /* ======================================================
    Environment variables (SERVER ONLY)
@@ -36,6 +36,7 @@ export const BASE_COMMANDS = [
 export const ADMIN_COMMANDS = [
   ...BASE_COMMANDS,
   { command: "broadcast", description: "📡 Broadcast message (Admin)" },
+  { command: "theme", description: "🎨 Change app theme (Admin)" },
   { command: "cancel", description: "❌ Cancel broadcast (Admin)" },
 ];
 
@@ -55,21 +56,23 @@ interface Agent {
 function parseAdminIds(raw: string): number[] {
   return (raw || "")
     .split(",")
-    .map((x) => Number(String(x).trim()))
-    .filter((n) => Number.isFinite(n));
+    .map((x) => x.trim())
+    .filter((x) => x !== "")
+    .map((x) => Number(x))
+    .filter((n) => Number.isFinite(n) && n > 0);
 }
 
-function getAdminsForAgentId(agentIdFromBackend: string): number[] {
+async function getAdminsForAgentId(agentIdFromBackend: string): Promise<number[]> {
   const numericId = Number(agentIdFromBackend);
   if (!Number.isFinite(numericId)) {
     console.warn(
-      `[Webhook Setup] agent.id="${agentIdFromBackend}" is not numeric. Cannot read admins from agentsData.`
+      `[Webhook Setup] agent.id="${agentIdFromBackend}" is not numeric. Cannot read admins from agent config.`
     );
     return [];
   }
 
-  const raw = agentsData[numericId]?.adminIds || "";
-  return parseAdminIds(raw);
+  const config = await getAgentConfig(numericId);
+  return parseAdminIds(config?.adminIds || "");
 }
 
 /* ======================================================
@@ -85,11 +88,12 @@ function getAdminsForAgentId(agentIdFromBackend: string): number[] {
  *   enableAdminCommandsOnStart(bot, agentId)
  */
 export function enableAdminCommandsOnStart(bot: Telegraf, agentId: number) {
-  const adminIds = parseAdminIds(agentsData[agentId]?.adminIds || "");
-
   bot.start(async (ctx: any) => {
     const uid = ctx.from?.id;
     if (!uid) return;
+
+    const config = await getAgentConfig(agentId);
+    const adminIds = parseAdminIds(config?.adminIds || "");
 
     if (adminIds.includes(uid)) {
       try {
@@ -172,7 +176,7 @@ async function setupAgentWebhook(agent: Agent): Promise<boolean> {
     await bot.telegram.setMyCommands(BASE_COMMANDS);
 
     // Best-effort: pre-set admin commands for admins who have already started the bot
-    const adminIds = getAdminsForAgentId(id);
+    const adminIds = await getAdminsForAgentId(id);
 
     for (const adminId of adminIds) {
       try {
@@ -219,6 +223,10 @@ export async function setupAllAgentWebhooks(): Promise<void> {
   }
 
   console.info(`[Webhook Setup] Found ${agents.length} active agent(s)`);
+
+  // Warm the config cache so handlers don't hit the backend per message
+  const agentIds = agents.map((a) => Number(a.id)).filter(Number.isFinite);
+  await prefetchAgentConfigs(agentIds);
 
   const results = await Promise.allSettled(agents.map((a) => setupAgentWebhook(a)));
 

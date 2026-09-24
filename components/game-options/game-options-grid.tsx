@@ -839,7 +839,7 @@ function SectionHeader({
           letterSpacing: "0.06em",
           textTransform: "uppercase",
           color: accent,
-          textShadow: `0 0 20px ${accent}88`,
+          textShadow: `0 0 20px color-mix(in oklab, ${accent} 53%, transparent)`,
         }}
       >
         {label}
@@ -863,7 +863,7 @@ function SectionHeader({
         style={{
           flex: 1,
           height: "1px",
-          background: `linear-gradient(90deg, ${accent}55 0%, transparent 100%)`,
+          background: `linear-gradient(90deg, color-mix(in oklab, ${accent} 33%, transparent) 0%, transparent 100%)`,
         }}
       />
     </motion.div>
@@ -898,12 +898,12 @@ function GameTile({
   }
 
   const accentColor = isBingo
-    ? "#ffd250"
+    ? "var(--signal)"
     : isFeatured
-    ? "#a78bfa"
+    ? "var(--voice)"
     : isHot
-    ? "#fb923c"
-    : "rgba(255,255,255,0.5)"
+    ? "var(--taken)"
+    : "color-mix(in oklab, var(--ink) 50%, transparent)"
 
   return (
     <motion.div
@@ -930,15 +930,15 @@ function GameTile({
           cursor: "pointer",
           overflow: "hidden",
           background: isBingo
-            ? "linear-gradient(145deg, rgba(255,210,80,0.13) 0%, rgba(120,50,200,0.12) 100%)"
+            ? "linear-gradient(145deg, color-mix(in oklab, var(--brand) 14%, transparent) 0%, color-mix(in oklab, var(--signal) 13%, transparent) 100%)"
             : isFeatured
-            ? "linear-gradient(145deg, rgba(167,139,250,0.1) 0%, rgba(99,102,241,0.07) 100%)"
+            ? "linear-gradient(145deg, color-mix(in oklab, var(--voice) 10%, transparent) 0%, color-mix(in oklab, var(--brand) 7%, transparent) 100%)"
             : isHot
-            ? "linear-gradient(145deg, rgba(251,146,60,0.1) 0%, rgba(239,68,68,0.07) 100%)"
-            : "rgba(255,255,255,0.04)",
-          border: `1px solid ${hovered ? accentColor + "55" : "rgba(255,255,255,0.07)"}`,
+            ? "linear-gradient(145deg, color-mix(in oklab, var(--taken) 10%, transparent) 0%, color-mix(in oklab, var(--danger) 7%, transparent) 100%)"
+            : "color-mix(in oklab, var(--ink) 4%, transparent)",
+          border: `1px solid ${hovered ? `color-mix(in oklab, ${accentColor} 33%, transparent)` : "var(--line)"}`,
           boxShadow: hovered
-            ? `0 0 24px ${accentColor}33, 0 8px 28px rgba(0,0,0,0.5)`
+            ? `0 0 24px color-mix(in oklab, ${accentColor} 20%, transparent), 0 8px 28px rgba(0,0,0,0.5)`
             : "0 2px 12px rgba(0,0,0,0.35)",
           transition: "border-color 0.2s, box-shadow 0.2s",
         }}
@@ -975,7 +975,7 @@ function GameTile({
               style={{
                 position: "absolute",
                 inset: 0,
-                background: `${accentColor}44`,
+                background: `color-mix(in oklab, ${accentColor} 27%, transparent)`,
                 borderRadius: "14px",
                 zIndex: 20,
                 pointerEvents: "none",
@@ -993,17 +993,17 @@ function GameTile({
               right: 3,
               zIndex: 10,
               background: isBingo
-                ? "linear-gradient(135deg, #ffd250, #ff9500)"
+                ? "linear-gradient(135deg, var(--signal), var(--brand))"
                 : isFeatured
-                ? "linear-gradient(135deg, #a7bc06ff, #ee890eff)"
-                : "linear-gradient(135deg, #fb923c, #ef4444)",
+                ? "linear-gradient(135deg, var(--voice), var(--key))"
+                : "linear-gradient(135deg, var(--taken), var(--danger))",
               borderRadius: "5px",
               padding: "2px 5px",
               fontSize: "7.5px",
               fontFamily: "'Barlow Condensed', sans-serif",
               fontWeight: 700,
               letterSpacing: "0.12em",
-              color: isBingo ? "#1a0a00" : "#fff",
+              color: isBingo ? "var(--on-signal)" : "#fff",
             }}
           >
             {isFeatured ? "✦ TOP" : "🔥 HOT"}
@@ -1163,9 +1163,9 @@ export function GameOptionsGrid({ gameModes, agentId }: GameOptionsGridProps) {
 
         {/* Ambient orbs */}
         {[
-          { top: -80, left: -60, w: 380, color: "rgba(167,139,250,0.15)", anim: "orbFloat1 10s ease-in-out infinite" },
-          { top: 200, right: -80, w: 320, color: "rgba(251,146,60,0.13)", anim: "orbFloat2 12s ease-in-out infinite" },
-          { bottom: 100, left: "35%", w: 280, color: "rgba(255,210,80,0.1)", anim: "orbFloat1 14s ease-in-out infinite reverse" },
+          { top: -80, left: -60, w: 380, color: "color-mix(in oklab, var(--key) 15%, transparent)", anim: "orbFloat1 10s ease-in-out infinite" },
+          { top: 200, right: -80, w: 320, color: "color-mix(in oklab, var(--signal) 13%, transparent)", anim: "orbFloat2 12s ease-in-out infinite" },
+          { bottom: 100, left: "35%", w: 280, color: "color-mix(in oklab, var(--voice) 10%, transparent)", anim: "orbFloat1 14s ease-in-out infinite reverse" },
         ].map((orb, i) => (
           <div
             key={i}
@@ -1193,7 +1193,7 @@ export function GameOptionsGrid({ gameModes, agentId }: GameOptionsGridProps) {
             icon="✦"
             label="Featured Games"
             count={featuredGames.length}
-            accent="#a78bfa"
+            accent="var(--voice)"
             delay={0.05}
           />
           <div className="game-grid">
@@ -1219,7 +1219,7 @@ export function GameOptionsGrid({ gameModes, agentId }: GameOptionsGridProps) {
             icon="🔥"
             label="Hot Games"
             count={hotGames.length}
-            accent="#fb923c"
+            accent="var(--taken)"
             delay={0.15}
           />
           <div className="game-grid">
@@ -1245,7 +1245,7 @@ export function GameOptionsGrid({ gameModes, agentId }: GameOptionsGridProps) {
             icon="◈"
             label="All Games"
             count={allGames.length}
-            accent="#94a3b8"
+            accent="var(--soft-ink)"
             delay={0.25}
           />
           <div className="game-grid">

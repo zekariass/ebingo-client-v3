@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
 
-    const page = searchParams.get("page") || "1"
+    const page = searchParams.get("page") || "0"
     const size = searchParams.get("size") || "20"
     const txnType = searchParams.get("txnType")
     const status = searchParams.get("status")
@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     const agentId = searchParams.get("agentId")
 
     const userRole = req.headers.get("x-user-role")
-    // const initData = req.headers.get("x-init-data")
+    const initData = req.headers.get("x-init-data")
 
     if (!userRole || (userRole !== "ADMIN" && userRole !== "AGENT")) {
       return NextResponse.json(
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
         "Content-Type": "application/json",
         "x-user-role": userRole,
         "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
-        // "x-init-data": initData || "",
+        ...(initData && { "x-init-data": initData }),
       },
     })
 

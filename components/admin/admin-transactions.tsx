@@ -12,6 +12,7 @@ import { useAdminStore } from "@/lib/stores/admin-store"
 import { Transaction, TransactionStatus, TransactionType } from "@/lib/types"
 import { getStatusColor } from "@/lib/constant"
 import { useAgentStore } from "@/lib/stores/agent-store"
+import { useSearchParams } from "next/navigation"
 
 type EditFormData = { status: TransactionStatus }
 
@@ -25,7 +26,9 @@ type TransactionProps = {
 
 export default function TransactionsTable({ transactions, txnType }: TransactionProps){
 
-  const { activeAgentId } = useAgentStore();
+  const { activeAgentId, setActiveAgentId } = useAgentStore();
+  const searchParams = useSearchParams()
+  const agentId = Number(searchParams.get("agentId")) || activeAgentId
   const { getTransactions, changeTransactionStatus, isLoading } = useAdminStore()
 
 
@@ -42,10 +45,19 @@ export default function TransactionsTable({ transactions, txnType }: Transaction
   
     const statuses: TransactionStatus[] = ["PENDING", "COMPLETED", "CANCELLED", "REJECTED"]
   
+    useEffect(() => {
+      const urlAgentId = Number(searchParams.get("agentId"))
+      if (urlAgentId && urlAgentId !== activeAgentId) {
+        setActiveAgentId(urlAgentId)
+      }
+    }, [searchParams, activeAgentId, setActiveAgentId])
+
     // Fetch Transactions whenever filters/pagination/sort change
     useEffect(() => {
-      getTransactions(activeAgentId!, filterStatus, txnType, page, size, sortBy)
-    }, [filterStatus, page, size, sortBy, getTransactions])
+      if (agentId) {
+        getTransactions(agentId, filterStatus, txnType, page, size, sortBy)
+      }
+    }, [agentId, filterStatus, txnType, page, size, sortBy, getTransactions])
   
     const handleEdit = (txn: typeof transactions[0]) => {
       setEditingTxn(txn)

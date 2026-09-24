@@ -3,45 +3,32 @@
 import { useEffect, useState } from "react"
 import { userStore } from "@/lib/stores/user-store"
 import { useAgentStore, Agent } from "@/lib/stores/agent-store"
-import { Shield, AlertCircle, Search, Edit, Save, X, Users, Mail, Phone, MessageCircle, Hash, Code, DollarSign, Bot, MapPin, Eye, Calendar, Info } from "lucide-react"
+import { Shield, AlertCircle, Search, Edit, Save, Users, Mail, Phone, Code, DollarSign, Bot, MapPin, Eye, Calendar, Landmark, UserCog, Gamepad2, RefreshCw, Plus, Palette } from "lucide-react"
+import { useRouter } from "next/navigation"
+import i18n from "@/i18n"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Skeleton } from "@/components/ui/skeleton"
+import { CreateAgentDialog } from "@/components/admin/create-agent-dialog"
 import { format } from "date-fns"
-interface PageResponse<T> {
-  content: T[]
-  page: number
-  size: number
-  totalElements: number
-  totalPages: number
-  first: boolean
-  last: boolean
-  empty: boolean
+import { cn } from "@/lib/utils"
+import { AGENT_THEMES, DEFAULT_THEME_KEY } from "@/lib/themes"
+
+function agentTheme(agent: Agent) {
+  return AGENT_THEMES.find((t) => t.key === agent.themeKey)
+    ?? AGENT_THEMES.find((t) => t.key === DEFAULT_THEME_KEY)!
 }
 
-interface ApiResponse<T> {
-  success: boolean
-  statusCode: number
-  message: string
-  error?: string
-  errors?: Map<string, string>
-  path?: string
-  data: T
-  timestamp: string
-}
-
-interface AdminAgentsProps {
-  agentId?: number
-}
-
-export function AdminAgents({ agentId }: AdminAgentsProps) {
-  const { user, initData } = userStore.getState()
+export function AdminAgents() {
+  const router = useRouter()
+  const user = userStore((state) => state.user)
   const userRole = user?.role
-  
+
   const {
     agents,
     agentsLoading,
@@ -54,7 +41,8 @@ export function AdminAgents({ agentId }: AdminAgentsProps) {
     searchAgents,
     updateAgent,
     setSearchTerm,
-    setCurrentPage
+    setCurrentPage,
+    resetAgents,
   } = useAgentStore()
 
   const [editingAgent, setEditingAgent] = useState<Agent | null>(null)
@@ -62,10 +50,18 @@ export function AdminAgents({ agentId }: AdminAgentsProps) {
   const [updateLoading, setUpdateLoading] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false)
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  // Store search input value separately from the actual search term
+  const [searchInputValue, setSearchInputValue] = useState(searchTerm)
 
   const pageSize = 10
 
-  // Check if user has ADMIN role
+  useEffect(() => {
+    fetchAgents()
+    return () => resetAgents()
+  }, [fetchAgents, resetAgents])
+
+  // Check if user has ADMIN role — after all hooks to keep hook order stable
   if (userRole !== "ADMIN") {
     return (
       <div className="p-6">
@@ -95,27 +91,32 @@ export function AdminAgents({ agentId }: AdminAgentsProps) {
     }
   }
 
-  // Store search input value separately from the actual search term
-  const [searchInputValue, setSearchInputValue] = useState(searchTerm)
-  
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInputValue(e.target.value)
   }
-  
+
   const handleSearchSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault()
-    
+
     // Update the actual search term in the store
     setSearchTerm(searchInputValue)
-    
+
     // If search term is empty, fetch regular paginated list
     if (!searchInputValue.trim()) {
       fetchAgents(0)
       return
     }
-    
+
     // Otherwise use the dedicated search endpoint
     searchAgents(searchInputValue)
+  }
+
+  const handleRefresh = () => {
+    if (searchTerm) {
+      searchAgents(searchTerm)
+    } else {
+      fetchAgents(currentPage)
+    }
   }
 
   const handlePageChange = (page: number) => {
@@ -141,20 +142,36 @@ export function AdminAgents({ agentId }: AdminAgentsProps) {
     }
   }
 
-  useEffect(() => {
-    fetchAgents()
-  }, [])
-
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-2">
           <Shield className="h-6 w-6 text-primary" />
           <h1 className="text-2xl font-bold">Agents Management</h1>
+          <Badge variant="secondary" className="text-sm">
+            {totalElements} total agents
+          </Badge>
         </div>
-        <Badge variant="secondary" className="text-sm">
-          {totalElements} total agents
-        </Badge>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Button
+            size="sm"
+            onClick={() => setIsCreateDialogOpen(true)}
+            className="flex items-center gap-2 flex-1 sm:flex-none"
+          >
+            <Plus className="h-4 w-4" />
+            Create Agent
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={agentsLoading}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={cn("h-4 w-4", agentsLoading && "animate-spin")} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Search */}
@@ -169,12 +186,12 @@ export function AdminAgents({ agentId }: AdminAgentsProps) {
               className="pl-10"
             />
           </div>
-          <Button type="submit" variant="secondary">
+          <Button type="submit" variant="secondary" disabled={agentsLoading}>
             Search
           </Button>
           {searchTerm && (
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               variant="outline"
               onClick={() => {
                 setSearchInputValue('')
@@ -186,103 +203,165 @@ export function AdminAgents({ agentId }: AdminAgentsProps) {
             </Button>
           )}
         </form>
+        {searchTerm && (
+          <p className="text-sm text-muted-foreground mt-2">
+            Showing results for &quot;{searchTerm}&quot;
+          </p>
+        )}
       </div>
 
       {/* Error */}
       {agentsError && (
         <div className="mb-4 p-4 bg-destructive/10 border border-destructive/20 rounded-md">
-          <p className="text-destructive">{agentsError}</p>
+          <div className="flex items-center gap-2 text-destructive">
+            <AlertCircle className="h-5 w-5" />
+            <p>{agentsError}</p>
+          </div>
         </div>
       )}
 
       {/* Agents List */}
       {agentsLoading ? (
-        <div className="text-center py-8">
-          <p>Loading agents...</p>
+        <div className="space-y-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-5 w-5 rounded" />
+                  <Skeleton className="h-6 w-40" />
+                  <Skeleton className="h-5 w-16" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {Array.from({ length: 6 }).map((_, j) => (
+                    <Skeleton key={j} className="h-5 w-full max-w-[180px]" />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
+      ) : agents.length === 0 ? (
+        <Card>
+          <CardContent className="py-12">
+            <div className="text-center text-muted-foreground">
+              <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>{searchTerm ? `No agents matching "${searchTerm}"` : "No agents found"}</p>
+            </div>
+          </CardContent>
+        </Card>
       ) : (
         <div className="space-y-4">
           {agents.map((agent) => (
             <Card key={agent.id}>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Users className="h-5 w-5 text-primary" />
-                    <CardTitle className="text-lg">{agent.name}</CardTitle>
-                    <Badge variant={agent.isActive ? "default" : "secondary"}>
-                      {agent.isActive ? "Active" : "Inactive"}
+                <div className="flex flex-wrap items-center gap-3">
+                  <Users className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-lg">{agent.name}</CardTitle>
+                  <Badge variant="outline" className="text-xs font-mono">
+                    #{agent.id}
+                  </Badge>
+                  <Badge variant={agent.isActive ? "default" : "secondary"}>
+                    {agent.isActive ? "Active" : "Inactive"}
+                  </Badge>
+                  {agent.isMaster && (
+                    <Badge variant="outline" className="text-xs">
+                      Master
                     </Badge>
-                    {agent.isMaster && (
-                      <Badge variant="outline" className="text-xs">
-                        Master
-                      </Badge>
-                    )}
-                  </div>
-                  
+                  )}
+                  <Badge variant="outline" className="text-xs flex items-center gap-1.5">
+                    <span
+                      className="inline-block h-2.5 w-2.5 rounded-full border border-black/10"
+                      style={{ backgroundColor: agentTheme(agent).swatch }}
+                    />
+                    {agentTheme(agent).label}
+                  </Badge>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="flex items-center gap-2">
-                    <Code className="h-4 w-4 text-muted-foreground" />
+                    <Code className="h-4 w-4 shrink-0 text-muted-foreground" />
                     <span className="text-sm">Code: {agent.code}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{agent.email || "No email"}</span>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="text-sm truncate">{agent.email || "No email"}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <Phone className="h-4 w-4 shrink-0 text-muted-foreground" />
                     <span className="text-sm">{agent.phoneNumber}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    <DollarSign className="h-4 w-4 shrink-0 text-muted-foreground" />
                     <span className="text-sm">Commission: {agent.commissionRate}%</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Bot className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">@{agent.botUsername || "No bot"}</span>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Bot className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="text-sm truncate">
+                      {agent.botUsername ? `@${agent.botUsername}` : "No bot"}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{agent.contactAddress || "No address"}</span>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <span className="text-sm truncate">{agent.contactAddress || "No address"}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openDetailDialog(agent)}
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      View
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openEditDialog(agent)}
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </Button>
-                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openDetailDialog(agent)}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    View
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openEditDialog(agent)}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push(`/${i18n.language}/admin/agent-games-config/${agent.id}`)}
+                  >
+                    <Gamepad2 className="h-4 w-4 mr-2" />
+                    Games
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push(`/${i18n.language}/admin/agent-config?agentId=${agent.id}`)}
+                  >
+                    <UserCog className="h-4 w-4 mr-2" />
+                    Agent Config
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push(`/${i18n.language}/admin/agent-deposit-config?agentId=${agent.id}`)}
+                  >
+                    <Landmark className="h-4 w-4 mr-2" />
+                    Deposit Config
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           ))}
-
-          {agents.length === 0 && !agentsLoading && (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">No agents found</p>
-            </div>
-          )}
         </div>
       )}
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-6">
           <div className="text-sm text-muted-foreground">
-            Page {currentPage + 1} of {totalPages}
+            Page {currentPage + 1} of {totalPages} · {totalElements} total agents
           </div>
           <div className="flex gap-2">
             <Button
@@ -367,6 +446,19 @@ export function AdminAgents({ agentId }: AdminAgentsProps) {
                     <h3 className="text-sm font-medium text-muted-foreground mb-1">Master Agent</h3>
                     <p className="font-medium">{viewingAgent.isMaster ? "Yes" : "No"}</p>
                   </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground mb-1 flex items-center gap-1.5">
+                      <Palette className="h-4 w-4" />
+                      UI Theme
+                    </h3>
+                    <p className="font-medium flex items-center gap-2">
+                      <span
+                        className="inline-block h-3 w-3 rounded-full border border-black/10"
+                        style={{ backgroundColor: agentTheme(viewingAgent).swatch }}
+                      />
+                      {agentTheme(viewingAgent).label}
+                    </p>
+                  </div>
                 </div>
               </div>
               
@@ -426,8 +518,9 @@ export function AdminAgents({ agentId }: AdminAgentsProps) {
                   <Input
                     id="code"
                     value={editingAgent.code}
-                    onChange={(e) => setEditingAgent({ ...editingAgent, code: e.target.value })}
+                    disabled
                   />
+                  <p className="text-xs text-muted-foreground">Agent code cannot be changed.</p>
                 </div>
               </div>
 
@@ -502,12 +595,7 @@ export function AdminAgents({ agentId }: AdminAgentsProps) {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="isMaster">Master Agent</Label>
-                  <Select
-                    value={editingAgent.isMaster.toString()}
-                    onValueChange={(value) =>
-                      setEditingAgent({ ...editingAgent, isMaster: value === "true" })
-                    }
-                  >
+                  <Select value={editingAgent.isMaster.toString()} disabled>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -516,6 +604,42 @@ export function AdminAgents({ agentId }: AdminAgentsProps) {
                       <SelectItem value="false">No</SelectItem>
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground">Master status cannot be changed here.</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="themeKey" className="flex items-center gap-1.5">
+                    <Palette className="h-4 w-4" />
+                    UI Theme
+                  </Label>
+                  <Select
+                    value={agentTheme(editingAgent).key}
+                    onValueChange={(value) =>
+                      setEditingAgent({ ...editingAgent, themeKey: value })
+                    }
+                  >
+                    <SelectTrigger id="themeKey">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {AGENT_THEMES.map((theme) => (
+                        <SelectItem key={theme.key} value={theme.key}>
+                          <span className="flex items-center gap-2">
+                            <span
+                              className="inline-block h-3 w-3 rounded-full border border-black/10"
+                              style={{ backgroundColor: theme.swatch }}
+                            />
+                            {theme.label}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Player-facing color palette for this agent&apos;s link.
+                  </p>
                 </div>
               </div>
 
@@ -525,9 +649,13 @@ export function AdminAgents({ agentId }: AdminAgentsProps) {
                   <Input
                     id="botToken"
                     type="password"
+                    placeholder="••••••••••••••••"
                     value={editingAgent.botToken || ""}
                     onChange={(e) => setEditingAgent({ ...editingAgent, botToken: e.target.value })}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    The current token is hidden for security. Leave empty to keep it unchanged.
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="botUsername">Bot Username</Label>
@@ -569,6 +697,13 @@ export function AdminAgents({ agentId }: AdminAgentsProps) {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Create Dialog */}
+      <CreateAgentDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onCreated={handleRefresh}
+      />
     </div>
   )
 }

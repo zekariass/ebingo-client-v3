@@ -46,7 +46,7 @@ export const translations: Record<string, Record<string, string>> = {
     cbeOnlineBank: "CBE Online Banking",
     payTeleInstructions: `<blockquote>Telebirr Deposit Instructions\n\n1️⃣ Open Telebirr and send the payment to: \n\n<code><b> Phone Numebr: {phone}</b></code>\n<code><b> Name: {name}</b></code>.\n\n2️⃣ Paste the full confirmation message with the transaction number. \n\n3️⃣ Your balance will be updated in less than 30 seconds </blockquote>`,
 
-    payCBEInstructions: `<blockquote>CBE Online Bank Deposit Instructions\n\n1️⃣ Send the payment in CBE Mobile Banking App to: \n\n<code><b> Account: {accountNumber}</b></code>\n<code><b> Name: {name}</b></code>.\n\n2️⃣ Paste the full confirmation message including the transaction reference and your account number.\n\n3️⃣ Your balance will be updated in 30 seconds </blockquote>`,
+    payCBEInstructions: `<blockquote>CBE Online Bank Deposit Instructions\n\n1️⃣ Send the payment in CBE Mobile Banking App to: \n\n<code><b> Account: {accountNumber}</b></code>\n<code><b> Name: {name}</b></code>.\n\n2️⃣ Paste the full confirmation message including the receipt link (mbreciept.cbe.com.et) or transaction reference.\n\n3️⃣ Your balance will be updated in 30 seconds </blockquote>`,
 
     telebirrPaymetExpireMessage: `⏰ Your Telebirr payment has expired. Payments must be made within ${allowedPaymentHours} hours. Please try again.`,
 
@@ -121,12 +121,12 @@ export const translations: Record<string, Record<string, string>> = {
       <code><b> አካውንት ቁጥር፡ {accountNumber}</b></code>
       <code><b> ስም፡ {name}</b></code>
 
-      2️⃣ የCBE ክፍያ ማረጋገጫ መልእክቱን (transaction reference እና የእርስዎን አካውንት ቁጥር የያዘ) ሙሉ በሙሉ Copy ያድርጉና ከታች ባለው መጻፊያ ላይ Paste አድርገው ይላኩ።
+      2️⃣ የCBE ክፍያ ማረጋገጫ መልእክቱን (የደረሰኝ ሊንክ ወይም transaction reference የያዘ) ሙሉ በሙሉ Copy ያድርጉና ከታች ባለው መጻፊያ ላይ Paste አድርገው ይላኩ።
 
       3️⃣ በ30 ሰከንድ ውስጥ Approve ይሆንልዎታል</blockquote>`,
 
 
-    cbeTxnNumber: "የንግድ ባንክ FT ቁጥር ማግኘት አልተቻለም። እባክዎ ከንግድ ባንክ የደረስዎትን የክፍያ ማረጋገጫ መልዕክት ሙሉ በሙሉ ያስገቡ እና ይላኩ። እናመሰግናለን!",
+    cbeTxnNumber: "የንግድ ባንክ ክፍያ ማረጋገጫ ማግኘት አልተቻለም። እባክዎ ከንግድ ባንክ የደረስዎትን የክፍያ ማረጋገጫ መልዕክት (የደረሰኝ ሊንክ የያዘ) ሙሉ በሙሉ ያስገቡ እና ይላኩ። እናመሰግናለን!",
 
     cbeVerificationFailed: "የንግድ ባንክ ክፍያን ማረጋገጥ አልተቻለም። እባክዎ ትክክለኛውን ክንግድ ባንክ የደረስዎትን የጽሁፍ መልዕክት ያስገቡ!",
 

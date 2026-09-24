@@ -87,3 +87,84 @@ export async function GET(
     )
   }
 }
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ locale: string; id: string }> }
+) {
+  try {
+    const { id } = await params
+
+    const backendUrl = process.env.BACKEND_BASE_URL
+    const apiKey = process.env.INTERNAL_API_KEY
+
+    if (!backendUrl) {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 500,
+          message: "Backend URL not configured",
+          error: "BACKEND_BASE_URL environment variable is not set",
+          timestamp: new Date().toISOString(),
+          data: null as any
+        },
+        { status: 500 }
+      )
+    }
+
+    const body = await request.json()
+
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      "X-Access-Token": process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN!,
+    }
+
+    if (apiKey) {
+      headers["Authorization"] = `Bearer ${apiKey}`
+    }
+
+    const backendResponse = await fetch(
+      `${backendUrl}/api/v1/accounting/daily/${id}`,
+      {
+        method: "PUT",
+        headers,
+        body: JSON.stringify(body),
+        cache: "no-store",
+      }
+    )
+
+    if (!backendResponse.ok) {
+      const errorText = await backendResponse.text()
+      console.error("Backend API error:", backendResponse.status, errorText)
+
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: backendResponse.status,
+          message: "Backend error while updating daily accounting record",
+          error: errorText,
+          path: `/api/v1/accounting/daily/${id}`,
+          timestamp: new Date().toISOString(),
+          data: null as any
+        },
+        { status: backendResponse.status }
+      )
+    }
+
+    const result: ApiResponse<any> = await backendResponse.json()
+    return NextResponse.json(result)
+  } catch (error) {
+    console.error("Error updating daily accounting:", error)
+    return NextResponse.json(
+      {
+        success: false,
+        statusCode: 500,
+        message: "Failed to update daily accounting record",
+        error: error instanceof Error ? error.message : "Unknown error",
+        timestamp: new Date().toISOString(),
+        data: null as any
+      },
+      { status: 500 }
+    )
+  }
+}

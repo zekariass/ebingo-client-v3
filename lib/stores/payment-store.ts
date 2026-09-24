@@ -392,9 +392,9 @@ export const usePaymentStore = create<PaymentState>()(
         const { user, initData } = userStore.getState()
 
         if (!user){
-
           set({ walletError: "User not logged in. Go back to telegram and reload the page", loading: false })
-        };
+          return
+        }
         set({ loading: true, walletError: null })
 
         try {
@@ -574,7 +574,8 @@ export const usePaymentStore = create<PaymentState>()(
         const user = userStore.getState().user;
         if (!user){
           set({ depositError: "User not logged in. Go back to telegram and reload the page", loading: false })
-        };
+          return
+        }
 
         try {
           // const paymentMethod = get().paymentMethods.find(pm => pm.id === paymentMethodId);

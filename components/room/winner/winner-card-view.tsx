@@ -109,6 +109,8 @@
 "use client"
 
 import { BingoColumn, GamePattern } from "@/lib/types"
+import { cn } from "@/lib/utils"
+import { Star } from "lucide-react"
 
 interface WinnerCardViewProps {
   card: Partial<Record<BingoColumn, number[]>> | undefined
@@ -161,7 +163,6 @@ export function WinnerCardView({ card, markedNumbers, pattern }: WinnerCardViewP
       for (let r = 0; r < size; r++) {
         if (grid[r].every(n => isMarked(n))) {
           markRow(r)
-          break // stop after first winning row
         }
       }
 
@@ -169,7 +170,6 @@ export function WinnerCardView({ card, markedNumbers, pattern }: WinnerCardViewP
       for (let c = 0; c < size; c++) {
         if (grid.every(row => isMarked(row[c]))) {
           markCol(c)
-          break // stop after first winning column
         }
       }
 
@@ -200,12 +200,23 @@ export function WinnerCardView({ card, markedNumbers, pattern }: WinnerCardViewP
 
 
 
+  const headerBgClasses = [
+    "!bg-[var(--bingo-card-header-key1-bg)]",
+    "!bg-[var(--bingo-card-header-key2-bg)]",
+    "!bg-[var(--bingo-card-header-key3-bg)]",
+    "!bg-[var(--bingo-card-header-key4-bg)]",
+    "!bg-[var(--bingo-card-header-key5-bg)]",
+  ]
+
   return (
     <div className="w-full max-w-sm mx-auto mt-4">
       <div className="grid grid-cols-5 gap-1">
         {/* Column headers */}
-        {columns.map(col => (
-          <div key={col} className="h-6 flex items-center justify-center font-bold text-sm bg-gray-200 dark:bg-gray-700 rounded">
+        {columns.map((col, index) => (
+          <div
+            key={col}
+            className={`h-6 flex items-center justify-center font-bold text-sm text-white rounded ${headerBgClasses[index]}`}
+          >
             {col}
           </div>
         ))}
@@ -214,22 +225,29 @@ export function WinnerCardView({ card, markedNumbers, pattern }: WinnerCardViewP
         {grid.map((row, r) =>
           row.map((num, c) => {
             const key = `${r}-${c}`
+            const free = num === "FREE"
             const marked = isMarked(num)
             const isWinning = winningPositions.has(key)
 
             return (
               <div
                 key={key}
-                className={`
-                  flex items-center justify-center
-                  aspect-square w-full
-                  rounded text-sm font-semibold
-                  ${isWinning ? "bg-green-500 text-white" :
-                    marked ? "bg-violet-600 text-white" :
-                    "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"}
-                `}
+                className={cn(
+                  "flex items-center justify-center aspect-square w-full rounded text-sm font-semibold border transition-colors",
+                  isWinning
+                    ? "bg-[var(--winner-card-key-winning-bg)] text-[var(--winner-card-key-winning-fg)] border-[var(--winner-card-key-winning-border)] font-extrabold"
+                    : free
+                      ? "bg-[var(--playing-card-key-free-bg)] text-white border-[var(--playing-card-key-free-border)]"
+                      : marked
+                        ? "bg-[var(--playing-card-key-after-call-marked-bg)] text-[var(--playing-card-key-after-call-marked-fg)] border-[var(--playing-card-key-after-call-marked-border)]"
+                        : "bg-[var(--playing-card-key-before-call-bg)] text-[var(--playing-card-key-before-call-fg)] border-[var(--playing-card-key-before-call-border)] opacity-60"
+                )}
               >
-                {num ?? ""}
+                {free ? (
+                  <Star fill="currentColor" strokeWidth="0" className="h-4 w-4" />
+                ) : (
+                  num ?? ""
+                )}
               </div>
             )
           })

@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const backendUrl = `${BACKEND_BASE_URL}/external-games/game-settings?agentId=${agentId}`
+    const backendUrl = `${BACKEND_BASE_URL}/external-games/game-settings/${agentId}`
     
     console.log("Fetching agent game settings for agent:", agentId)
 
@@ -94,11 +94,16 @@ export async function PUT(request: NextRequest) {
     }
 
     const backendUrl = `${BACKEND_BASE_URL}/external-games/game-settings`
-    
+
     // console.log("Updating agent game settings for agent:", body.agentId)
     // console.log("Game modes:", body.gameModes)
 
     const initData = request.headers.get("x-init-data") || ""
+
+    // Backend expects gameModes as a JSON array and agentId in the body
+    const gameModes = Array.isArray(body.gameModes)
+      ? body.gameModes
+      : String(body.gameModes).split(",").map((m: string) => m.trim()).filter(Boolean)
 
     const response = await fetch(backendUrl, {
       method: "PUT",
@@ -107,7 +112,7 @@ export async function PUT(request: NextRequest) {
         "x-init-data": initData,
         "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN,
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ agentId: body.agentId, gameModes }),
       cache: "no-store",
     })
 

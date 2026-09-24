@@ -101,8 +101,18 @@ export function GoldenEggsAccounting() {
       return
     }
 
+    const agentIdNum = parseInt(agentId)
+    if (!agentIdNum || isNaN(agentIdNum)) {
+      toast({
+        title: "Invalid Agent ID",
+        description: "Please enter a valid agent ID",
+        variant: "destructive",
+      })
+      return
+    }
+
     try {
-      await settleGoldenEggsDailyAccounting(id)
+      await settleGoldenEggsDailyAccounting(id, agentIdNum)
       toast({
         title: "Success",
         description: "Daily accounting settled successfully",
@@ -126,8 +136,18 @@ export function GoldenEggsAccounting() {
       return
     }
 
+    const agentIdNum = parseInt(agentId)
+    if (!agentIdNum || isNaN(agentIdNum)) {
+      toast({
+        title: "Invalid Agent ID",
+        description: "Please enter a valid agent ID",
+        variant: "destructive",
+      })
+      return
+    }
+
     try {
-      await unsettleGoldenEggsDailyAccounting(id)
+      await unsettleGoldenEggsDailyAccounting(id, agentIdNum)
       toast({
         title: "Success",
         description: "Daily accounting unsettled successfully",

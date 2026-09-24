@@ -1,34 +1,19 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { userStore } from "@/lib/stores/user-store"
 import { AdminAgentDailyAccounting } from "@/components/admin/admin-agent-daily-accounting"
 import { AlertCircle } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 
 export default function AdminAgentAccountingPage() {
   const searchParams = useSearchParams()
-  const { user } = userStore.getState()
+  const user = userStore((state) => state.user)
   const userRole = user?.role
-  
-  const [agentId, setAgentId] = useState<number | null>(null)
-  const [targetAgentId, setTargetAgentId] = useState<number | null>(null)
 
-  useEffect(() => {
-    // Get agentId from query params
-    const agentParam = searchParams.get("agentId")
-    if (agentParam) {
-      const id = parseInt(agentParam, 10)
-      if (!isNaN(id)) {
-        setTargetAgentId(id)
-        // Current agent is the logged-in admin user
-        if (user?.agentId) {
-          setAgentId(user.agentId)
-        }
-      }
-    }
-  }, [searchParams, user?.agentId])
+  // The agent whose accounting is being viewed
+  const targetAgentId = Number(
+    searchParams.get("agentId") || searchParams.get("targetAgentId") || 0
+  )
 
   // Check if user has ADMIN role
   if (userRole !== "ADMIN") {
@@ -60,10 +45,5 @@ export default function AdminAgentAccountingPage() {
     )
   }
 
-  return (
-    <AdminAgentDailyAccounting 
-      // agentId={agentId || 0} 
-      // targetAgentId={targetAgentId} 
-    />
-  )
+  return <AdminAgentDailyAccounting targetAgentId={targetAgentId} />
 }

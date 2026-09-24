@@ -16,13 +16,15 @@ import { Loader2, Eye, Edit, ChevronLeft, ChevronRight, ArrowLeftIcon } from "lu
 import { toast } from "sonner"
 import { motion } from "framer-motion"
 import { TransactionStatus, TransactionType } from "@/lib/types"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import i18n from "@/i18n"
 import Link from "next/link"
 import { useAgentStore } from "@/lib/stores/agent-store"
 
 export default function PaymentOrdersPage() {
-  const { activeAgentId } = useAgentStore();
+  const { activeAgentId, setActiveAgentId } = useAgentStore();
+  const searchParams = useSearchParams()
+  const agentId = Number(searchParams.get("agentId")) || activeAgentId
   const { user } = userStore.getState()
   const role = user?.role
 
@@ -40,37 +42,48 @@ export default function PaymentOrdersPage() {
   const [phoneNumber, setPhoneNumber] = useState("")
 
   useEffect(() => {
-    getPaymentOrders(activeAgentId!, txnType, status, 0, 10, phoneNumber)
-  }, [])
+    const urlAgentId = Number(searchParams.get("agentId"))
+    if (urlAgentId && urlAgentId !== activeAgentId) {
+      setActiveAgentId(urlAgentId)
+    }
+  }, [searchParams, activeAgentId, setActiveAgentId])
+
+  useEffect(() => {
+    if (agentId) {
+      getPaymentOrders(agentId, txnType, status, 0, 10, phoneNumber)
+    }
+  }, [agentId])
 
   useEffect(() => {
     if (error) toast.error(error)
   }, [error])
 
   const handleSearch = () => {
-    getPaymentOrders(activeAgentId!, txnType, status, 0, 10, phoneNumber)
+    if (agentId) {
+      getPaymentOrders(agentId, txnType, status, 0, 10, phoneNumber)
+    }
   }
 
   const handlePageChange = (newPage: number) => {
-    if (newPage >= 0 && newPage < totalPages) {
-      getPaymentOrders(activeAgentId!, txnType, status, newPage, 10, phoneNumber)
+    if (agentId && newPage >= 0 && newPage < totalPages) {
+      getPaymentOrders(agentId, txnType, status, newPage, 10, phoneNumber)
     }
   }
 
   const router = useRouter()
 
   const handleView = (id: number) => {
-    router.push(`/${i18n.language}/admin/payment-orders/${id}?agentId=${activeAgentId}`)
+    router.push(`/${i18n.language}/admin/payment-orders/${id}?agentId=${agentId}`)
 }
 
   const handleUpdate = (id: number) => {
-    router.push(`/${i18n.language}/admin/payment-orders/${id}/update?agentId=${activeAgentId}`)
+    router.push(`/${i18n.language}/admin/payment-orders/${id}/update?agentId=${agentId}`)
   }
 
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto">
       <Link
-          href={`/admin/rooms?agentId=${activeAgentId}`}
+          href={`/${i18n.language}/admin/rooms?agentId=${agentId}`}
           className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium"
         >
           <ArrowLeftIcon className="w-4 h-4 mr-2" />
@@ -96,8 +109,10 @@ export default function PaymentOrdersPage() {
             onChange={(e) => setStatus(e.target.value as any)}
           >
             <option value="PENDING" className="text-primary-foreground">Pending</option>
-            {/* <option value="AWAITING_APPROVAL">Awaiting Approval</option> */}
+            <option value="INITIATED" className="text-primary-foreground">Initiated</option>
+            <option value="AWAITING_APPROVAL" className="text-primary-foreground">Awaiting Approval</option>
             <option value="COMPLETED" className="text-primary-foreground">Completed</option>
+            <option value="FAILED" className="text-primary-foreground">Failed</option>
             <option value="REJECTED" className="text-primary-foreground">Rejected</option>
             <option value="CANCELLED" className="text-primary-foreground">Cancelled</option>
           </select>

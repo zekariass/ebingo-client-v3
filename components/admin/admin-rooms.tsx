@@ -185,7 +185,7 @@ return (
             />
 
             <InputField
-              label="Entry Fee ($)"
+              label="Entry Fee (ETB)"
               type="number"
               step="0.01"
               min="0"
@@ -412,7 +412,7 @@ return (
                   rooms.map((room) => (
                     <TableRow key={room.id}>
                       <TableCell className="font-medium">{room.name}</TableCell>
-                      <TableCell>${room.entryFee}</TableCell>
+                      <TableCell>{room.entryFee} ETB</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4" />

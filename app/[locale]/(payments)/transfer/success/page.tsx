@@ -1,28 +1,22 @@
 "use client"
 
+import { useEffect } from "react"
 import { CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useAgentStore } from "@/lib/stores/agent-store"
 import { Card } from "@/components/ui/card"
 import i18n from "@/lib/i18n/config"
 
-interface TransferPageProps {
-  searchParams: {
-    agentId?: number
-  }
-}
-
-export default function TransferSuccessPage({searchParams}: TransferPageProps) {
+export default function TransferSuccessPage() {
   const router = useRouter()
-  const agentId = searchParams.agentId
+  const searchParams = useSearchParams()
+  const agentId = searchParams.get("agentId") ? Number(searchParams.get("agentId")) : undefined
   const {setActiveAgentId} = useAgentStore()
 
-  if (agentId !== undefined) {
-    setActiveAgentId(agentId);
-  } else {
-    setActiveAgentId(null);
-  }
+  useEffect(() => {
+    setActiveAgentId(agentId ?? null);
+  }, [agentId, setActiveAgentId]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6">

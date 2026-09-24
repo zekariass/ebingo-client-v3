@@ -148,8 +148,9 @@ async function verifyCBE(reference: string) {
       <div className="min-h-screen bg-background">
         <LobbyHeader />
         <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-lg text-muted-foreground">Loading rooms...</div>
+          <div className="flex flex-col items-center justify-center gap-3 min-h-[400px]">
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-primary border-t-transparent" />
+            <div className="text-sm text-muted-foreground">Loading rooms...</div>
           </div>
         </div>
       </div>

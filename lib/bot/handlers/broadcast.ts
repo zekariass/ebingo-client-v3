@@ -1,6 +1,7 @@
 
 import type { Telegraf, Context } from "telegraf";
-import { agentsData, escapeTelegramHtml } from "../utils";
+import { escapeTelegramHtml } from "../utils";
+import { getAgentConfig } from "../agent-config";
 
 const API_BASE_URL = process.env.BACKEND_BASE_URL!;
 const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN;
@@ -22,11 +23,17 @@ function makeKey(agentId: number, adminId: number) {
 // }
 
 export function registerBroadcastHandler(bot: Telegraf<Context>, agentId: number) {
-  const adminIdsRaw = agentsData[agentId]?.adminIds || "";
-  const ADMIN_IDS = adminIdsRaw
-    .split(",")
-    .map((id: string) => Number(id.trim()))
-    .filter((n: number) => Number.isFinite(n));
+  // Resolved per-call via the cached config so admin changes apply without restart
+  async function isAdmin(userId: number): Promise<boolean> {
+    const config = await getAgentConfig(agentId);
+    const adminIds = (config?.adminIds || "")
+      .split(",")
+      .map((id: string) => id.trim())
+      .filter((id: string) => id !== "")
+      .map((id: string) => Number(id))
+      .filter((n: number) => Number.isFinite(n) && n > 0);
+    return adminIds.includes(userId);
+  }
 
   // Helper: agent-scoped user ids
   async function getAgentUserIds(adminTelegramId: number): Promise<number[]> {
@@ -53,7 +60,7 @@ export function registerBroadcastHandler(bot: Telegraf<Context>, agentId: number
 
   bot.command("broadcast", async (ctx) => {
     const userId = ctx.from?.id;
-    if (!userId || !ADMIN_IDS.includes(userId)) {
+    if (!userId || !(await isAdmin(userId))) {
       return ctx.reply("🚫 You are not authorized.");
     }
 
@@ -97,23 +104,23 @@ export function registerBroadcastHandler(bot: Telegraf<Context>, agentId: number
     return ctx.reply("ℹ️ No broadcast in progress.");
   });
 
-  bot.on("message", async (ctx) => {
+  bot.on("message", async (ctx, next) => {
     try {
       const adminId = ctx.from?.id;
-      if (!adminId) return;
+      if (!adminId) return next();
 
       // Only handle admins for this agent
-      if (!ADMIN_IDS.includes(adminId)) return;
+      if (!(await isAdmin(adminId))) return next();
 
       const key = makeKey(agentId, adminId);
-      if (!pendingPrompts.has(key)) return;
+      if (!pendingPrompts.has(key)) return next();
 
       const expectedPromptId = pendingPrompts.get(key);
       const msg = ctx.message;
-      if (!msg) return;
+      if (!msg) return next();
 
       const replyTo = (msg as any).reply_to_message;
-      if (!replyTo || replyTo.message_id !== expectedPromptId) return;
+      if (!replyTo || replyTo.message_id !== expectedPromptId) return next();
 
       // Cancel check
       if ("text" in msg && msg.text?.trim().toLowerCase() === "cancel") {
@@ -154,67 +161,77 @@ export function registerBroadcastHandler(bot: Telegraf<Context>, agentId: number
         return ctx.reply(`❌ Failed to load users for this agent.`);
       }
 
+      userIds = [...new Set(userIds)];
       if (!userIds.length) return ctx.reply("⚠️ No users found to broadcast.");
+
+      await ctx.reply(`👥 Found ${userIds.length} users. Broadcasting...`);
 
       let sent = 0;
       let failed = 0;
       const failedIds: number[] = [];
 
-      const CHUNK_SIZE = 25;
-      const BATCH_DELAY_MS = 120;
+      // Telegram allows roughly 30 msgs/sec to different users for bulk sends.
+      // Pace sends conservatively and honor retry_after on 429 responses.
+      const PACE_MS = 40;
+      let useHtml = true;
 
-      function chunkArray<T>(arr: T[], size: number): T[][] {
-        const chunks: T[][] = [];
-        for (let i = 0; i < arr.length; i += size) {
-          chunks.push(arr.slice(i, i + size));
-        }
-        return chunks;
+      const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+      async function sendTo(id: number) {
+        const html = useHtml ? ({ parse_mode: "HTML" } as const) : {};
+        return sendType === "text"
+          ? bot.telegram.sendMessage(id, text, html)
+          : bot.telegram.sendPhoto(id, photoFileId as string, { caption: text, ...html });
       }
 
-      async function retrySend(fn: () => Promise<any>, retries = 3, backoff = 500) {
+      async function retrySend(fn: () => Promise<any>, retries = 5) {
+        let backoff = 500;
         for (let i = 0; i < retries; i++) {
           try {
             return await fn();
           } catch (err: any) {
+            const retryAfterSec = err?.response?.parameters?.retry_after;
             const isRateLimit =
-              err && (err.code === 429 || String(err.description || "").includes("Too Many Requests"));
+              err?.code === 429 ||
+              Number.isFinite(retryAfterSec) ||
+              String(err?.description || err?.message || "").includes("Too Many Requests");
             if (!isRateLimit || i === retries - 1) throw err;
-            await new Promise((r) => setTimeout(r, backoff));
+            await sleep(Number.isFinite(retryAfterSec) ? retryAfterSec * 1000 + 250 : backoff);
             backoff *= 2;
           }
         }
       }
 
-      const batches = chunkArray(userIds, CHUNK_SIZE);
-
-      for (const batch of batches) {
-        const results = await Promise.allSettled(
-          batch.map((id) =>
-            sendType === "text"
-              ? retrySend(() => bot.telegram.sendMessage(id, text, { parse_mode: "HTML" }))
-              : retrySend(() =>
-                  bot.telegram.sendPhoto(id, photoFileId as string, {
-                    caption: text,
-                    parse_mode: "HTML",
-                  })
-                )
-          )
-        );
-
-        results.forEach((res, i) => {
-          if (res.status === "fulfilled") sent++;
-          else {
-            failed++;
-            failedIds.push(batch[i]);
+      for (const id of userIds) {
+        try {
+          await retrySend(() => sendTo(id));
+          sent++;
+        } catch (err: any) {
+          const desc = String(err?.response?.description || err?.description || err?.message || "");
+          // If the message isn't valid HTML, drop parse_mode and resend as plain text
+          if (useHtml && /can't parse entities|can't parse/i.test(desc)) {
+            useHtml = false;
+            try {
+              await retrySend(() => sendTo(id));
+              sent++;
+            } catch {
+              failed++;
+              failedIds.push(id);
+            }
+            continue;
           }
-        });
-
-        await new Promise((r) => setTimeout(r, BATCH_DELAY_MS));
+          failed++;
+          failedIds.push(id);
+        }
+        await sleep(PACE_MS);
       }
 
-      await ctx.reply(`✅ Broadcast complete.\nSent: ${sent}\nFailed: ${failed}`);
-      // If you want:
-      // if (failedIds.length) await ctx.reply("⚠️ Failed IDs: " + JSON.stringify(failedIds.slice(0, 50)));
+      await ctx.reply(
+        `✅ Broadcast complete.\nTotal users: ${userIds.length}\nSent: ${sent}\nFailed: ${failed}`
+      );
+      if (failedIds.length) {
+        await ctx.reply(`⚠️ Failed IDs (first 20): ${failedIds.slice(0, 20).join(", ")}`);
+      }
     } catch (err) {
       console.error("Unexpected handler error:", err);
       const adminId = ctx.from?.id;

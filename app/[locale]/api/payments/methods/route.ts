@@ -14,22 +14,15 @@ export async function GET(request: NextRequest) {
       throw new Error("BACKEND_BASE_URL is not defined");
     }
 
-    // Read initData from headers
-    // const initData = request.headers.get("x-init-data");
-
-    // if (!initData) {
-    //   return NextResponse.json(
-    //     { success: false, error: "Missing x-init-data header" },
-    //     { status: 400 }
-    //   );
-    // }
+    // Read initData from headers (forwarded to backend when present)
+    const initData = request.headers.get("x-init-data");
 
     const response = await fetch(`${BACKEND_BASE_URL}/api/v1/secured/payment-methods`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
-        // "x-init-data": initData, // send to backend for verification
+        ...(initData && { "x-init-data": initData }),
       },
       cache: "no-store",
     });

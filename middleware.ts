@@ -69,6 +69,11 @@ export async function middleware(req: NextRequest) {
   const { pathname } = url;
   const res = NextResponse.next();
 
+  // Serve the cleanup service worker directly — never locale-redirect it.
+  if (pathname === "/sw.js") {
+    return res;
+  }
+
   // --- 1) Locale handling ---
   const segments = pathname.split("/");
   const maybeLocale = segments[1];

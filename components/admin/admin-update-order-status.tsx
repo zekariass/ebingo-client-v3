@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeftIcon, Loader2 } from "lucide-react"
 import { useAdminStore } from "@/lib/stores/admin-store"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { useAgentStore } from "@/lib/stores/agent-store"
 import i18n from "@/i18n"
 
@@ -15,17 +16,28 @@ interface UpdatePaymentOrderPageProps {
 export default function UpdatePaymentOrderPage({ orderId }: UpdatePaymentOrderPageProps) {
   const { orderDetail, isDetailLoading, detailError, fetchPaymentOrderDetail, updatePaymentOrderStatus } = useAdminStore()
 
-  const {activeAgentId} = useAgentStore();
+  const {activeAgentId, setActiveAgentId} = useAgentStore();
+  const searchParams = useSearchParams()
+  const agentId = Number(searchParams.get("agentId")) || activeAgentId
   const [approve, setApprove] = useState<string>("") // "true" or "false"
   const [reason, setReason] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
+  useEffect(() => {
+    const urlAgentId = Number(searchParams.get("agentId"))
+    if (urlAgentId && urlAgentId !== activeAgentId) {
+      setActiveAgentId(urlAgentId)
+    }
+  }, [searchParams, activeAgentId, setActiveAgentId])
+
   // Fetch order detail on page load
   useEffect(() => {
-    fetchPaymentOrderDetail(orderId)
-  }, [orderId])
+    if (agentId) {
+      fetchPaymentOrderDetail(orderId, agentId)
+    }
+  }, [orderId, agentId, fetchPaymentOrderDetail])
 
   const handleUpdate = async () => {
     setError(null)
@@ -39,11 +51,15 @@ export default function UpdatePaymentOrderPage({ orderId }: UpdatePaymentOrderPa
       setError("Reason is required for rejection")
       return
     }
+    if (!agentId) {
+      setError("No active agent selected")
+      return
+    }
 
     setLoading(true)
     try {
       await updatePaymentOrderStatus({
-        agentId: activeAgentId!,
+        agentId,
         orderId,
         approve: approve === "true",
         reason: reason.trim() || undefined,
@@ -52,7 +68,7 @@ export default function UpdatePaymentOrderPage({ orderId }: UpdatePaymentOrderPa
       setSuccess(`Order ${approve === "true" ? "approved" : "rejected"} successfully`)
       setApprove("")
       setReason("")
-      await fetchPaymentOrderDetail(orderId)
+      await fetchPaymentOrderDetail(orderId, agentId)
     } catch (err: any) {
       setError(err.message || "Failed to update status")
     } finally {
@@ -86,7 +102,7 @@ export default function UpdatePaymentOrderPage({ orderId }: UpdatePaymentOrderPa
   return (
     <div className="min-h-screen bg-[var(--background)] p-4 flex flex-col items-center space-y-6 text-white">
        <Link
-          href={`/${i18n.language}/admin/payment-orders?agentId=${activeAgentId}`}
+          href={`/${i18n.language}/admin/payment-orders?agentId=${agentId}`}
           className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium"
         >
           <ArrowLeftIcon className="w-4 h-4 mr-2" />
@@ -100,7 +116,7 @@ export default function UpdatePaymentOrderPage({ orderId }: UpdatePaymentOrderPa
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           <LabelItem label="Status" value={order.status} />
           <LabelItem label="Amount" value={`${order.amount} ${order.currency}`} />
-          <LabelItem label="Payment Method" value={order.paymentMethod.name}/>
+          <LabelItem label="Payment Method" value={order.paymentMethod?.name}/>
           <LabelItem label="Txn Ref" value={order.txnRef} mono />
           <LabelItem label="Provider Ref" value={order.providerOrderRef} />
           <LabelItem label="Phone" value={order.phoneNumber} />

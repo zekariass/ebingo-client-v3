@@ -103,6 +103,7 @@ type AgentUpdateDto = {
   botToken?: string
   botUsername?: string
   contactAddress?: string
+  themeKey?: string | null
 }
 
 // helper: remove undefined fields so backend gets only what was provided
@@ -147,9 +148,10 @@ export async function PUT(
       botToken: body?.botToken,
       botUsername: body?.botUsername,
       contactAddress: body?.contactAddress,
+      themeKey: body?.themeKey,
     })
 
-    const response = await fetch(`${backendUrl}/api/v1/agents/${agentId}`, {
+    const response = await fetch(`${backendUrl}/api/v1/admin/agents/${agentId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

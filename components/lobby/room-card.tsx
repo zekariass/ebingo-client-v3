@@ -55,12 +55,12 @@ export function RoomCard({ room }: RoomCardProps) {
 
   return (
     <Button
-      className="w-36 h-36 flex flex-col items-center justify-center text-xl dark:text-white font-bold bg-green-900 hover:bg-green-800 rounded-2xl shadow-lg cursor-pointer"
+      className="w-36 h-36 flex flex-col items-center justify-center text-xl font-bold rounded-2xl shadow-md cursor-pointer bg-[var(--soft)] hover:bg-[var(--accent-c)] text-[var(--ink)] border border-[var(--line)] hover:border-[var(--ring-c)] transition-colors"
       onClick={() => handleCardButtonClick(room)}
     >
       {/* <span className="text-sm">Room {room?.id}</span> */}
-      <span className="text-sm">Capacity: {room?.capacity}</span>
-      <span>Price: ${room.entryFee}</span>
+      <span className="text-sm text-[var(--soft-ink)]">Capacity: {room?.capacity}</span>
+      <span className="text-[var(--key)]">Price: ${room.entryFee}</span>
     </Button>
 )
 

@@ -20,15 +20,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Forbidden: Admins only" }, { status: 403 });
     }
 
-    if (!initData) {
-      return NextResponse.json({ error: "Missing initData" }, { status: 400 });
-    }
-
     // Call backend API with initData for verification
     const response = await fetch(`${BACKEND_BASE_URL}/api/v1/secured/rooms?agentId=${agentId}`, {
       headers: {
         "Content-Type": "application/json",
-        "x-init-data": initData, // Pass to backend for verification
+        ...(initData && { "x-init-data": initData }),
         "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
       },
       cache: "no-store",
@@ -57,7 +53,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const role = request.headers.get("x-user-role");
-    // const initData = request.headers.get("x-init-data");
+    const initData = request.headers.get("x-init-data");
 
     const { searchParams } = new URL(request.url)
     const telegramId = searchParams.get("telegramId")
@@ -65,10 +61,6 @@ export async function POST(request: NextRequest) {
     if (role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden: Admins only" }, { status: 403 });
     }
-
-    // if (!initData) {
-    //   return NextResponse.json({ error: "Missing initData" }, { status: 400 });
-    // }
 
     const {
       agentId,
@@ -120,12 +112,15 @@ export async function POST(request: NextRequest) {
       commissionRate: Number(commissionRate),
     });
 
-    const response = await fetch(`${BACKEND_BASE_URL}/api/v1/secured/rooms?telegramId=${telegramId}`, {
+    const createUrl = new URL(`${BACKEND_BASE_URL}/api/v1/secured/rooms`);
+    if (telegramId) createUrl.searchParams.set("telegramId", telegramId);
+
+    const response = await fetch(createUrl.toString(), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
-        // "x-init-data": initData,
+        ...(initData && { "x-init-data": initData }),
       },
       body,
     });

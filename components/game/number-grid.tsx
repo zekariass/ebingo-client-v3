@@ -4,6 +4,7 @@ import { useGameStore } from "@/lib/stores/game-store"
 import { cn } from "@/lib/utils"
 import { ConnectionStatus } from "../room/connection-status"
 import { Badge } from "../ui/badge"
+import { LayoutGrid } from "lucide-react"
 
 const BINGO_LETTERS = ["B", "I", "N", "G", "O"]
 
@@ -44,8 +45,15 @@ export function NumberGrid() {
       {/* <h2 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 text-center text-primary">
         75 Number Grid
       </h2> */}
-      <div className="flex items-center justify-center mb-2">
-        <Badge variant="outline"><ConnectionStatus roomId={roomId} /></Badge>
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <LayoutGrid className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground shrink-0" />
+          <h2 className="text-xs sm:text-sm font-semibold truncate">Called Numbers</h2>
+          <Badge variant="secondary" className="text-[10px] sm:text-xs px-1.5">
+            {calledNumbers.length}/75
+          </Badge>
+        </div>
+        <ConnectionStatus roomId={roomId} />
       </div>
 
       <div className="flex items-center justify-center w-full">

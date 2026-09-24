@@ -111,11 +111,10 @@
 
 import type { Room } from "@/lib/types"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, RefreshCcw } from "lucide-react"
+import { ArrowLeft, Coins, Hash, RefreshCcw, Wallet } from "lucide-react"
 import Link from "next/link"
 import { ConnectionStatus } from "./connection-status"
 import { useGameStore } from "@/lib/stores/game-store"
-import { useRouter } from "next/navigation"
 import { currency } from "@/lib/constant"
 import { usePaymentStore } from "@/lib/stores/payment-store"
 import { motion } from "framer-motion"
@@ -133,7 +132,6 @@ export function RoomHeader({ room }: RoomHeaderProps) {
   const {
     balance: { totalAvailableBalance },
   } = usePaymentStore()
-  const router = useRouter()
 
   const handleBackArrowClick = () => {
     resetGameState()
@@ -141,54 +139,58 @@ export function RoomHeader({ room }: RoomHeaderProps) {
   }
 
   return (
-    <header className="border-b bg-card/90 backdrop-blur-md shadow-sm">
-      <div className="container mx-auto px-4 py-3 sm:py-4">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+    <header className="sticky top-0 z-40 border-b bg-card/90 backdrop-blur-md shadow-sm">
+      <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-3">
+        <div className="flex items-center justify-between gap-3">
           {/* Left Section: Back & Room Info */}
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <Button variant="ghost" size="sm" asChild>
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <Button variant="ghost" size="sm" className="px-2 sm:px-3 shrink-0" asChild>
               <Link href={`/?agentId=${activeAgentId}`} onClick={() => handleBackArrowClick()}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <ArrowLeft className="h-4 w-4 sm:mr-1" />
                 <span className="hidden sm:inline font-medium">Back</span>
               </Link>
             </Button>
 
             <motion.div
-              className="min-w-0 space-y-0.5"
+              className="min-w-0"
               initial={{ opacity: 0, y: -5 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              {/* <h1 className="text-sm sm:text-base font-semibold truncate text-foreground/90">
+              <h1 className="text-sm sm:text-base font-semibold truncate leading-tight text-foreground">
                 {room?.name ?? "Game Room"}
-              </h1> */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs text-[var(--foreground)]">
-                <span className="truncate">Room ID: {room?.id}</span>
-                <span>
-                  Bet: {room?.entryFee && room.entryFee > 0 ? `${room.entryFee} ${currency}` : "Free"}
+              </h1>
+              <div className="flex items-center gap-3 text-[11px] sm:text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1">
+                  <Hash className="h-3 w-3" />
+                  {room?.id}
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <Coins className="h-3 w-3" />
+                  {room?.entryFee && room.entryFee > 0 ? `${room.entryFee} ${currency}` : "Free"}
                 </span>
               </div>
             </motion.div>
           </div>
 
-          {/* Center Section: Connection + Balance */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-1 sm:gap-2">
-              <span className="text-[var(--foreground)] font-bold">Balance:</span>
-              <span className="text-[var(--foreground)] font-bold">{totalAvailableBalance} {currency}</span>
+          {/* Right Section: Balance, Connection, Refresh */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <div className="flex items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2 py-1">
+              <Wallet className="h-3.5 w-3.5 text-muted-foreground" />
+              <span className="text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">
+                {totalAvailableBalance} {currency}
+              </span>
             </div>
-            <div className="font-bold"><ConnectionStatus roomId={room?.id} /></div>
-          </div>
 
-          {/* Right Section: Refresh */}
-          <div className="flex items-center gap-3">
+            <ConnectionStatus roomId={room?.id} />
+
             <Button
               variant="ghost"
               size="icon"
-              className="text-foreground/70 hover:text-foreground transition-colors"
+              className="h-8 w-8 text-foreground/70 hover:text-foreground transition-colors"
               onClick={() => window.location.reload()}
               title="Refresh"
             >
-              <RefreshCcw className="h-4 w-4 text-white"/>
+              <RefreshCcw className="h-4 w-4"/>
             </Button>
           </div>
         </div>

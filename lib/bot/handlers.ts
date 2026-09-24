@@ -7,6 +7,7 @@ import { registerWalletHandlers } from "./handlers/wallet-handler"
 import { registerInviteHandler } from "./handlers/invite"
 import { registerBroadcastHandler } from "./handlers/broadcast"
 import { registerDepositHandler } from "./handlers/deposit"
+import { registerThemeHandler } from "./handlers/theme"
 
 export function registerHandlers(bot: Telegraf, agentId: number) {
   // Pass agentId to all handlers
@@ -16,6 +17,7 @@ export function registerHandlers(bot: Telegraf, agentId: number) {
   registerStartHandlers(bot, agentId)
   registerDepositHandler(bot, agentId)
   registerBroadcastHandler(bot, agentId)
+  registerThemeHandler(bot, agentId)
   registerWalletHandlers(bot, agentId)
   registerRoomHandlers(bot, agentId)
 }

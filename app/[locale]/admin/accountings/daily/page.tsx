@@ -1,12 +1,14 @@
-import { AdminDailyAccountings } from "@/components/admin/admin-daily-accountings"
+import { redirect } from "next/navigation"
 
-interface AdminDailyAccountingsPageProps {
-  searchParams: Promise<{
-    agentId?: number
-  }>
+interface PageProps {
+  params: Promise<{ locale: string }>
+  searchParams: Promise<{ agentId?: string }>
 }
 
-export default async function AdminDailyAccountingsPage({ searchParams }: AdminDailyAccountingsPageProps) {
-  const resolvedSearchParams = await searchParams
-  return <AdminDailyAccountings agentId={resolvedSearchParams.agentId} />
+export default async function DailyAccountingsRedirect({ params, searchParams }: PageProps) {
+  const { locale } = await params
+  const sp = await searchParams
+  const q = new URLSearchParams({ tab: "daily" })
+  if (sp.agentId) q.set("agentId", String(sp.agentId))
+  redirect(`/${locale}/admin/accountings?${q}`)
 }

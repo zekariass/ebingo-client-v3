@@ -32,7 +32,7 @@ interface AdminTotalAccountingProps {
   agentId?: number
 }
 
-function formatCurrency(amount: number) {
+function formatCurrency(amount: number | null | undefined) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "ETB",
@@ -139,7 +139,7 @@ export function AdminTotalAccounting({ agentId }: AdminTotalAccountingProps) {
   const searchParams = useSearchParams()
   const { fetchTotalAccountingForAgent } = useAgentStore()
 
-  const user = userStore.getState().user
+  const user = userStore((state) => state.user)
   const userRole = user?.role
 
   const queryAgentId = Number(searchParams.get("agentId") ?? 0)
@@ -296,7 +296,7 @@ export function AdminTotalAccounting({ agentId }: AdminTotalAccountingProps) {
                   ID: #{totalAccounting.id}
                 </Badge>
 
-                {totalAccounting.settledAt ? (
+                {totalAccounting.lastSettledAt ? (
                   <Badge className="bg-green-600">
                     <BadgeCheck className="mr-1 h-3 w-3" />
                     Settled
@@ -334,10 +334,10 @@ export function AdminTotalAccounting({ agentId }: AdminTotalAccountingProps) {
               />
               <MetricCard
                 label="Net Income"
-                value={formatCurrency(totalAccounting.totalNetIncome)}
-                tone={totalAccounting.totalNetIncome >= 0 ? "positive" : "negative"}
+                value={formatCurrency(totalAccounting.netIncome)}
+                tone={totalAccounting.netIncome >= 0 ? "positive" : "negative"}
                 icon={
-                  totalAccounting.totalNetIncome >= 0 ? (
+                  totalAccounting.netIncome >= 0 ? (
                     <TrendingUp className="h-5 w-5 text-green-600" />
                   ) : (
                     <TrendingDown className="h-5 w-5 text-red-600" />
@@ -366,13 +366,13 @@ export function AdminTotalAccounting({ agentId }: AdminTotalAccountingProps) {
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Wins</span>
                     <span className="font-medium tabular-nums text-green-600">
-                      {(totalAccounting as any)?.totalWins ?? 0}
+                      {formatCurrency(totalAccounting.totalBotWinAmount)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Losses</span>
                     <span className="font-medium tabular-nums text-red-600">
-                      {(totalAccounting as any)?.totalLosses ?? 0}
+                      {formatCurrency(totalAccounting.totalBotLossAmount)}
                     </span>
                   </div>
                 </div>
@@ -400,19 +400,33 @@ export function AdminTotalAccounting({ agentId }: AdminTotalAccountingProps) {
                     <span
                       className={cn(
                         "font-medium",
-                        totalAccounting.settledAt ? "text-green-600" : "text-yellow-600"
+                        totalAccounting.lastSettledAt ? "text-green-600" : "text-yellow-600"
                       )}
                     >
-                      {totalAccounting.settledAt ? "Settled" : "Pending"}
+                      {totalAccounting.lastSettledAt ? "Settled" : "Pending"}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Settled at</span>
+                    <span className="text-muted-foreground">Last settled at</span>
                     <span className="font-medium text-foreground">
-                      {totalAccounting.settledAt
-                        ? format(new Date(totalAccounting.settledAt), "MMM dd, yyyy")
+                      {totalAccounting.lastSettledAt
+                        ? format(new Date(totalAccounting.lastSettledAt), "MMM dd, yyyy")
                         : "—"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Last amount</span>
+                    <span className="font-medium tabular-nums text-foreground">
+                      {formatCurrency(totalAccounting.lastSettledAmount)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Total settled</span>
+                    <span className="font-medium tabular-nums text-foreground">
+                      {formatCurrency(totalAccounting.totalSettledAmount)}
                     </span>
                   </div>
                 </div>
@@ -435,10 +449,10 @@ export function AdminTotalAccounting({ agentId }: AdminTotalAccountingProps) {
                   </div>
                 </div>
                 <div>
-                  <span className="font-medium text-foreground/80">Settled</span>
+                  <span className="font-medium text-foreground/80">Last settled</span>
                   <div className="break-all">
-                    {totalAccounting.settledAt
-                      ? format(new Date(totalAccounting.settledAt), "MMM dd, yyyy 'at' h:mm a")
+                    {totalAccounting.lastSettledAt
+                      ? format(new Date(totalAccounting.lastSettledAt), "MMM dd, yyyy 'at' h:mm a")
                       : "Not settled yet"}
                   </div>
                 </div>

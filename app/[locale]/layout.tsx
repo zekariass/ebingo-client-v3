@@ -61,15 +61,24 @@ import { I18nProvider } from "@/providers/I18nProvider";
 import { ProcessingProvider } from "@/lib/contexts/processing-context";
 import { LayoutContent } from "./layout-content";
 import { AgentThemeSync } from "../agent-theme-sync";
+import { THEME_CLASSES } from "@/lib/themes";
 
 interface LayoutProps {
   children: ReactNode;
 }
 
+// Applies the agent palette class to <html> before first paint:
+// ?theme=<key> wins, else the per-agent value cached by AgentThemeSync.
+const themeBootScript = `(function(){try{var p=new URLSearchParams(location.search);var classes=${JSON.stringify(
+  THEME_CLASSES
+)};var t=p.get('theme');var id=p.get('agentId');var cls=null;if(t&&classes.indexOf('theme-'+t)>-1){cls='theme-'+t}else if(id){var c=localStorage.getItem('agentTheme:'+id);if(c&&classes.indexOf(c)>-1){cls=c}}if(cls){document.documentElement.classList.add(cls)}}catch(e){}})()`;
+
 export default function RootLayout({ children }: LayoutProps) {
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <head>
+        {/* eslint-disable-next-line @next/next/no-sync-scripts -- intentional pre-paint theme script */}
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
         <script src="https://telegram.org/js/telegram-web-app.js?59"></script>
       </head>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>

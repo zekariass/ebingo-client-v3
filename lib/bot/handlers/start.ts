@@ -2,7 +2,7 @@ import axios from "axios";
 import { Markup } from "telegraf";
 import type { Telegraf, Context } from "telegraf";
 import { showStartMenu } from "./commands";
-import { agentsData } from "../utils";
+import { getAgentConfig } from "../agent-config";
 import { ADMIN_COMMANDS } from "../setup-webhooks";
 
 /**
@@ -34,19 +34,22 @@ function parseStartPayload(ctx: Context): { agentId?: number; referrerId?: numbe
   return {};
 }
 
-function parseAdminIds(agentId: number): number[] {
-  const raw = agentsData[agentId]?.adminIds || "";
+async function parseAdminIds(agentId: number): Promise<number[]> {
+  const config = await getAgentConfig(agentId);
+  const raw = config?.adminIds || "";
   return raw
     .split(",")
-    .map((x: string) => Number(x.trim()))
-    .filter((n: number) => Number.isFinite(n));
+    .map((x: string) => x.trim())
+    .filter((x: string) => x !== "")
+    .map((x: string) => Number(x))
+    .filter((n: number) => Number.isFinite(n) && n > 0);
 }
 
 /**
  * Option A: Enable admin commands AFTER admin starts bot (avoids "chat not found")
  */
 async function enableAdminCommandsIfAdmin(ctx: any, agentId: number) {
-  const adminIds = parseAdminIds(agentId);
+  const adminIds = await parseAdminIds(agentId);
   const uid = ctx.from?.id;
   if (!uid) return;
 
@@ -100,10 +103,18 @@ export function registerStartHandlers(bot: Telegraf, agentId: number) {
     } catch {}
 
     // Welcome image
-    await ctx.replyWithPhoto(
-      { url: `${process.env.APP_URL}/${agentsData[agentId].logoName}` },
-      { caption: `Welcome to (${agentsData[agentId].name})` }
-    );
+    const config = await getAgentConfig(agentId);
+    if (config?.logoName) {
+      const logoUrl = /^https?:\/\//.test(config.logoName)
+        ? config.logoName
+        : `${process.env.APP_URL}/${config.logoName}`;
+      await ctx.replyWithPhoto(
+        { url: logoUrl },
+        { caption: `Welcome to (${config.name})` }
+      );
+    } else {
+      await ctx.reply(`Welcome to (${config?.name ?? "Bingo"})`);
+    }
 
     if (!isRegistered) {
       await ctx.reply(

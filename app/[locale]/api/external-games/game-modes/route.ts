@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        // "x-init-data": initData,
+        ...(initData && { "x-init-data": initData }),
         "X-Access-Token": process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
       },
       cache: "no-store",

@@ -57,7 +57,7 @@ export async function PATCH(
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        // "x-init-data": initData,
+        "x-init-data": initData,
         "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
       },
     });

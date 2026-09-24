@@ -8,13 +8,13 @@ import { BingoColumn, GamePattern, BingoClaimRequestPayloadType } from "@/lib/ty
 // import { useWebSocketEvents } from "@/lib/hooks/websockets/use-websocket-events"
 import { userStore } from "@/lib/stores/user-store"
 import { cn } from "@/lib/utils"
-import { Star } from "lucide-react"
+import { AlertCircle, Star } from "lucide-react"
 import { useRoomSocket } from "@/lib/hooks/websockets/use-room-socket"
 
 const COLUMN_HEADERS = ["B", "I", "N", "G", "O"]
 
 // Utility: normalize card into 5x5 grid
-function transformCardData(card?: Partial<Record<BingoColumn, number[]>>) {
+export function transformCardData(card?: Partial<Record<BingoColumn, number[]>>) {
   const columns = [BingoColumn.B, BingoColumn.I, BingoColumn.N, BingoColumn.G, BingoColumn.O]
 
   if (!card) {
@@ -130,8 +130,9 @@ export function GameBingoCard({ cardInfoId, index }: GameBingoCardProps) {
             </Badge>
           </div> */}
           {claimError && cardInfoId === claimError?.cardId && (
-            <div className="text-center text-xs text-red-500 mt-1">
-              {claimError?.message}
+            <div className="flex items-center justify-center gap-1.5 rounded-md border border-destructive/40 bg-destructive/10 px-2 py-1 text-[11px] text-destructive mt-1">
+              <AlertCircle className="h-3 w-3 shrink-0" />
+              <span>{claimError?.message}</span>
             </div>
           )}
         </div>

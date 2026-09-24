@@ -22,7 +22,7 @@ export function TransferDialog({ open, onOpenChange }: TransferDialogProps) {
 
   const { activeAgentId } = useAgentStore()
   const [isProcessing, setIsProcessing] = useState(false)
-  const { balance, transferFunds, fetchWallet } = usePaymentStore()
+  const { balance, transferFunds, transferError, setTransferError, fetchWallet } = usePaymentStore()
 
   const minTransfer = 10
   const maxTransferable = useMemo(
@@ -65,7 +65,10 @@ export function TransferDialog({ open, onOpenChange }: TransferDialogProps) {
 
   // Fetch wallet when dialog opens
   useEffect(() => {
-    if (open) fetchWallet(true, activeAgentId || 0)
+    if (open) {
+      setTransferError(null)
+      fetchWallet(true, activeAgentId || 0)
+    }
   }, [open, fetchWallet])
 
   const onSubmit = async (data: TransferForm) => {
@@ -76,10 +79,12 @@ export function TransferDialog({ open, onOpenChange }: TransferDialogProps) {
 
     setIsProcessing(true)
     try {
-      await transferFunds(data.amount, data.phone, activeAgentId || 0)
-      reset()
-      await fetchWallet(true, activeAgentId || 0)
-      onOpenChange(false)
+      const success = await transferFunds(data.amount, data.phone, activeAgentId || 0)
+      if (success) {
+        reset()
+        await fetchWallet(true, activeAgentId || 0)
+        onOpenChange(false)
+      }
     } catch (error) {
       console.error("Transfer failed:", error)
     } finally {
@@ -167,6 +172,7 @@ export function TransferDialog({ open, onOpenChange }: TransferDialogProps) {
               )}
             </Button>
           </div>
+          {transferError && <p className="text-sm text-red-600 text-center">{transferError}</p>}
         </form>
       </DialogContent>
     </Dialog>

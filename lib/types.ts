@@ -1136,7 +1136,7 @@ export interface AgentGameResponse {
   id: number;
   agentId: number;
   gameCategory: string;
-  gameTypes: string[];
+  gameTypes: string;
   isEnabled: boolean;
   createdAt: string;
   updatedAt: string;
@@ -1145,7 +1145,7 @@ export interface AgentGameResponse {
 export interface CreateAgentGameRequest {
   agentId: number;
   gameCategory: string;
-  gameTypes: string[];
+  gameTypes: string;
   isEnabled?: boolean;
 }
 

@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       headers: {
         "Content-Type": "application/json",
         "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
-        // "x-init-data": initData,
+        "x-init-data": initData,
       },
       body: JSON.stringify(payload),
     });

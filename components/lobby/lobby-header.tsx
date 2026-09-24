@@ -44,7 +44,7 @@ export function LobbyHeader() {
   const pathName = usePathname()
 
   return (
-    <header className="border-b bg-card">
+    <header className="sticky top-0 z-40 border-b bg-card/90 backdrop-blur-md shadow-sm">
       <div className="container mx-auto px-4 py-2">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center justify-between w-full">

@@ -6,23 +6,18 @@ import { userStore } from "./user-store"
 import axios from "axios"
 
 interface AdminStats {
-  activePlayers: number
-  playersToday: number
-  revenueToday: number
-  revenueGrowth: number
-  activeGames: number
-  gamesCompleted: number
-  avgGameDuration: number
-}
-
-interface ActiveRoom {
-  id: string
-  name: string
-  players: number
-  capacity: number
-  fee: number
-  status: "active" | "waiting" | "finished"
-  gameStatus: "waiting" | "playing" | "finished"
+  depositsToday: number
+  withdrawalsToday: number
+  betsToday: number
+  prizesToday: number
+  commissionToday: number
+  netIncomeToday: number
+  totalDeposits: number
+  totalWithdrawals: number
+  totalCommission: number
+  totalNetIncome: number
+  openRooms: number
+  totalRooms: number
 }
 
 
@@ -91,7 +86,6 @@ interface Analytics {
 interface AdminStore {
   // Dashboard data
   stats: AdminStats
-  activeRooms: ActiveRoom[]
   // deposits: PaymentOrder[]
   // withdrawals: PaymentOrder[]
   systemStatus: "healthy" | "warning" | "error"
@@ -135,7 +129,7 @@ interface AdminStore {
   systemConfigs: SystemConfig[] | []
   sysConfigLoading: boolean
 
-  fetchPaymentOrderDetail: (id: number) => Promise<void>
+  fetchPaymentOrderDetail: (id: number, agentId: number) => Promise<void>
   updatePaymentOrderStatus: (payload: {
     agentId: number
     orderId: number
@@ -151,7 +145,7 @@ interface AdminStore {
   addPromoBonus: (agentId: number, telegramId: number, amount: number) => Promise<boolean>
 
   // Actions
-  loadDashboardData: () => Promise<void>
+  loadDashboardData: (agentId: number) => Promise<void>
   refreshData: (agentId: number) => Promise<void>
   createRoom: (room: RoomFormData, agentId: number) => Promise<void>
   updateRoom: (id: string, agentId: number, updates: Partial<Room>) => Promise<void>
@@ -185,7 +179,7 @@ interface AdminStore {
     page: number,
     size: number,
     phoneNumber: string) => Promise<void>
-  approveOrRejectPaymentOrder: (orderId: number, approve: boolean, reason?: string) => Promise<void>
+  approveOrRejectPaymentOrder: (orderId: number, agentId: number, approve: boolean, reason?: string) => Promise<void>
 
   getSystemConfigs: (agentId: number) => Promise<void>
   updateSystemConfig: (id: number, value: string) => Promise<void>
@@ -219,16 +213,20 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
 
   // Initial state
   stats: {
-    activePlayers: 247,
-    playersToday: 89,
-    revenueToday: 12450,
-    revenueGrowth: 15.2,
-    activeGames: 12,
-    gamesCompleted: 156,
-    avgGameDuration: 18,
+    depositsToday: 0,
+    withdrawalsToday: 0,
+    betsToday: 0,
+    prizesToday: 0,
+    commissionToday: 0,
+    netIncomeToday: 0,
+    totalDeposits: 0,
+    totalWithdrawals: 0,
+    totalCommission: 0,
+    totalNetIncome: 0,
+    openRooms: 0,
+    totalRooms: 0,
   },
 
-  activeRooms: [],
   withdrawals: [],
   deposits: [],
   systemStatus: "healthy",
@@ -264,32 +262,74 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
   error: null,
 
   // Actions
-  loadDashboardData: async () => {
+  loadDashboardData: async (agentId) => {
+    const { user, initData } = userStore.getState()
+    const role = user?.role
+
+    if (role !== "ADMIN" && role !== "AGENT") {
+      set({ error: "Access denied: Admins and agents only" })
+      return
+    }
+
     set({ isLoading: true, error: null })
     try {
-      const response = await fetch("/api/admin/stats")
-      const result = await response.json()
-
-      if (result.success) {
-        set({ stats: result.data })
-      } else {
-        set({ error: result.error })
+      const headers: Record<string, string> = {
+        "x-user-role": role,
+        ...(initData && { "x-init-data": initData }),
       }
-    } catch (error) {
+
+      const [todayRes, totalRes] = await Promise.all([
+        fetch(`/${i18n.language}/api/accounting/daily/agent/${agentId}/today`, {
+          headers,
+          cache: "no-store",
+        }),
+        fetch(`/${i18n.language}/api/v1/accounting/total/agent/${agentId}`, {
+          headers,
+          cache: "no-store",
+        }),
+      ])
+
+      const [todayResult, totalResult] = await Promise.all([
+        todayRes.json(),
+        totalRes.json(),
+      ])
+
+      if (!todayResult.success && !totalResult.success) {
+        set({ error: todayResult.message || totalResult.message || "Failed to load dashboard data" })
+        return
+      }
+
+      const today = todayResult?.data ?? {}
+      const total = totalResult?.data ?? {}
+      const rooms = get().rooms ?? []
+
+      set({
+        stats: {
+          depositsToday: today.dailyDepositAmount ?? 0,
+          withdrawalsToday: today.dailyWithdrawalAmount ?? 0,
+          betsToday: today.dailyBetAmount ?? 0,
+          prizesToday: today.dailyPrizeAmount ?? 0,
+          commissionToday: today.dailyCommissionAmount ?? 0,
+          netIncomeToday: today.netIncome ?? 0,
+          totalDeposits: total.totalDepositAmount ?? 0,
+          totalWithdrawals: total.totalWithdrawalAmount ?? 0,
+          totalCommission: total.totalCommissionAmount ?? 0,
+          totalNetIncome: total.netIncome ?? 0,
+          openRooms: rooms.filter((r) => r.status === "OPEN").length,
+          totalRooms: rooms.length,
+        },
+      })
+    } catch {
       set({ error: "Failed to load dashboard data" })
     } finally {
       set({ isLoading: false })
     }
   },
 
-  // refreshData: async (agentId) => {
-  //   const { loadDashboardData, loadRooms } = get()
-  //   await Promise.all([loadDashboardData(), loadRooms(agentId)])
-  // },
-
   refreshData: async (agentId) => {
-    const { loadRooms } = get()
-    await Promise.all([loadRooms(agentId)])
+    const { loadDashboardData, loadRooms } = get()
+    await loadRooms(agentId)
+    await loadDashboardData(agentId)
   },
 
   createRoom: async (roomData, agentId) => {
@@ -618,7 +658,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const params = new URLSearchParams({
-        page: (page + 1).toString(), // backend page starts at 1
+        page: page.toString(), // backend page is 0-based
         size: size.toString(),
       })
 
@@ -627,12 +667,12 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
       params.append("agentId", agentId.toString())
       if (phoneNumber) params.append("phoneNumber", phoneNumber)
 
-      const url = `/api/admin/payment-orders?${params.toString()}`
+      const url = `/${i18n.language}/api/admin/payment-orders?${params.toString()}`
 
       const response = await fetch(url, {
         headers: {
           "x-user-role": role,
-          // "x-init-data": initData || "",
+          "x-init-data": initData || "",
         },
       })
 
@@ -641,7 +681,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
       if (data.success) {
         set({
           orders: data.data.content,
-          page: data.data.page - 1, // convert to 0-based page
+          page: data.data.page,
           totalPages: Math.ceil(data.data.totalElements/size),
         })
       } else {
@@ -656,7 +696,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
   },
 
 
-  fetchPaymentOrderDetail: async (id: number) => {
+  fetchPaymentOrderDetail: async (id: number, agentId: number) => {
     const { user, initData } = userStore.getState()
     const role = user?.role
 
@@ -666,9 +706,9 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
     }
 
     try {
-      set({ isDetailLoading: true, detailError: null })
+      set({ isDetailLoading: true, detailError: null, orderDetail: null })
 
-      const res = await axios.get(`/api/admin/payment-orders/${id}`, {
+      const res = await axios.get(`/${i18n.language}/api/admin/payment-orders/${id}?agentId=${agentId}`, {
         headers: {
           "x-user-role": role,
           "x-init-data": initData || "",
@@ -680,8 +720,8 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
       } else {
         set({ detailError: res.data.message || "Unable to load order detail" })
       }
-    } catch (err) {
-      set({ detailError: "Request failed" })
+    } catch (err: any) {
+      set({ detailError: err.response?.data?.message || err.response?.data?.error || "Request failed" })
     } finally {
       set({ isDetailLoading: false })
     }
@@ -699,7 +739,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
     try {
       const res = await axios.put(
         `/${i18n.language}/api/admin/payment-orders/update-status`, // Next.js route
-        {adminUserId: user?.id, agentId, orderId, approve, reason },
+        { adminUserId: user?.id, agentId, orderId, approve, reason },
         {
           headers: {
             "x-user-role": role,
@@ -714,7 +754,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
       }
 
       // Refresh order detail after successful update
-      await get().fetchPaymentOrderDetail(orderId)
+      await get().fetchPaymentOrderDetail(orderId, agentId)
     } catch (err: any) {
       throw new Error(err.response?.data?.message || err.message || "Request failed")
     }
@@ -764,7 +804,10 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
         body: JSON.stringify({ telegramId, amount, agentId, adminTelegramId: admin?.telegramId }),
       });
 
-      if (!res.ok) throw new Error("Failed to add promo bonus");
+      const data = await res.json().catch(() => null);
+      if (!res.ok || data?.success === false) {
+        throw new Error(data?.error || data?.message || "Failed to add promo bonus");
+      }
 
       set({ isLoading: false });
       return true;
@@ -790,9 +833,10 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
         body: JSON.stringify(body),
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to add deposit")
-      };
+      const data = await res.json().catch(() => null);
+      if (!res.ok || data?.success === false) {
+        throw new Error(data?.error || data?.message || "Failed to add deposit")
+      }
 
       set({ isLoading: false });
       return true;
@@ -803,7 +847,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
   },
 
 
-  approveOrRejectPaymentOrder: async (orderId, approve, reason) => {
+  approveOrRejectPaymentOrder: async (orderId, agentId, approve, reason) => {
     const { user, initData } = userStore.getState()
     const role = user?.role
     if (role !== "ADMIN") return
@@ -817,7 +861,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
           "x-user-role": role,
           "x-init-data": initData || "",
         },
-        body: JSON.stringify({ orderId, approve, reason }),
+        body: JSON.stringify({ orderId, agentId, approve, reason, adminUserId: user?.id }),
       })
 
       const result = await response.json()
@@ -924,9 +968,10 @@ updateSystemConfig: async (id: number, value: string) => {
 
     const { user, initData } = userStore.getState()
     const role = user?.role
+    const configAgentId = get().systemConfigs.find((c) => c.id === id)?.agentId
 
     try {
-      const response = await fetch(`/${i18n.language}/api/admin/system-configs/${id}`, {
+      const response = await fetch(`/${i18n.language}/api/admin/system-configs/${id}${configAgentId ? `?agentId=${configAgentId}` : ""}`, {
         method: "PUT",
         headers: {
           "x-user-role": role || "",

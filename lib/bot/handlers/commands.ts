@@ -2,7 +2,8 @@ import { Markup } from "telegraf"
 import type { Telegraf } from "telegraf"
 import { getUserLang, setUserLang } from "../userLangMap"
 import { availableLanguages, translations } from "../translations"
-import { agentsData, t } from "../utils"
+import { t } from "../utils"
+import { getAgentConfig } from "../agent-config"
 import { showRooms } from "./rooms"
 import axios from "axios"
 
@@ -25,6 +26,7 @@ function getUserLangFromCtx(ctx: any) {
 
 export async function showStartMenu(ctx: any, agentId: number) {
   const lang = getUserLangFromCtx(ctx)
+  const config = await getAgentConfig(agentId)
 
   await ctx.reply(
     getTranslationForLang(lang, "chooseCommand"),
@@ -73,10 +75,10 @@ export async function showStartMenu(ctx: any, agentId: number) {
         ],
         [
           // Markup.button.url(tr.btnSupport, 'https://t.me/M104610'),
-          Markup.button.url(getTranslationForLang(lang, "btnSupport"), `https://t.me/${agentsData[agentId].supportChannel}?direct`),
+          Markup.button.url(getTranslationForLang(lang, "btnSupport"), `https://t.me/${config?.supportChannel}?direct`),
         ],
 
-        [Markup.button.url("🔔 Join Channel For Notification", `https://t.me/${agentsData[agentId].supportChannel}`)],
+        [Markup.button.url("🔔 Join Channel For Notification", `https://t.me/${config?.supportChannel}`)],
     ]),
   )
 }
@@ -226,12 +228,13 @@ export function registerCommandHandlers(bot: Telegraf, agentId: number) {
   });
 
   bot.command('support', async (ctx) => {
+      const config = await getAgentConfig(agentId);
       await ctx.reply(
         t(ctx, 'support'),
         Markup.inlineKeyboard([
           Markup.button.url(
             'Get Support',
-            `https://t.me/${agentsData[agentId].supportUsername}?direct` // replace with your private Telegram username
+            `https://t.me/${config?.supportUsername}?direct` // replace with your private Telegram username
           )
         ])
       );

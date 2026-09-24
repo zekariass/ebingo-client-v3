@@ -45,18 +45,7 @@ export async function GET(request: NextRequest) {
       throw new Error("BACKEND_BASE_URL environment variable is not set")
     }
 
-    const params = new URLSearchParams({
-      page: page.toString(),
-      size: size.toString(),
-      sortBy: sortBy,
-    })
-
-    // Add search parameter if provided (backend might need to implement this)
-    if (search) {
-      params.append("search", search)
-    }
-
-    const response = await fetch(`${backendUrl}/api/v1/agents?${params.toString()}`, {
+    const response = await fetch(`${backendUrl}/api/v1/agents`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -72,30 +61,40 @@ export async function GET(request: NextRequest) {
       throw new Error(`Backend API error: ${response.status} ${errorText}`)
     }
 
-    const result: ApiResponse<PageResponse<Agent>> = await response.json()
+    const result: ApiResponse<PageResponse<Agent> | Agent[]> = await response.json()
 
-    // If search is provided and backend doesn't support it, filter client-side
-    let filteredData = result.data
-    if (search && result.data.content) {
-      const filteredContent = result.data.content.filter(agent =>
-        agent.name.toLowerCase().includes(search.toLowerCase()) ||
-        agent.email?.toLowerCase().includes(search.toLowerCase()) ||
-        agent.phoneNumber.toLowerCase().includes(search.toLowerCase())
-      )
-      
-      filteredData = {
-        ...result.data,
-        content: filteredContent,
-        totalElements: filteredContent.length,
-        totalPages: Math.ceil(filteredContent.length / size),
-      }
-    }
+    // Backend returns a plain list; normalize into the paged shape the UI expects
+    const allAgents: Agent[] = Array.isArray(result.data)
+      ? result.data
+      : result.data?.content ?? []
 
-    // Strip botToken from each agent before returning to client
-    if (result.data?.content) {
-      result.data.content = result.data.content.map(a => sanitizeAgent(a) as Agent)
-    }
-    return NextResponse.json(result)
+    const searchLower = search.toLowerCase()
+    const filtered = search
+      ? allAgents.filter(agent =>
+          agent.name?.toLowerCase().includes(searchLower) ||
+          agent.code?.toLowerCase().includes(searchLower) ||
+          agent.email?.toLowerCase().includes(searchLower) ||
+          agent.phoneNumber?.toLowerCase().includes(searchLower)
+        )
+      : allAgents
+
+    const totalElements = filtered.length
+    const totalPages = Math.max(1, Math.ceil(totalElements / size))
+    const content = filtered.slice(page * size, (page + 1) * size)
+
+    return NextResponse.json({
+      ...result,
+      data: {
+        content: content.map(a => sanitizeAgent(a) as Agent),
+        page,
+        size,
+        totalElements,
+        totalPages,
+        first: page === 0,
+        last: page >= totalPages - 1,
+        empty: content.length === 0,
+      } satisfies PageResponse<Omit<Agent, "botToken">>,
+    })
   } catch (error) {
     console.error("Error fetching agents:", error)
     return NextResponse.json(
@@ -103,6 +102,83 @@ export async function GET(request: NextRequest) {
         success: false, 
         statusCode: 500,
         message: "Failed to fetch agents",
+        error: error instanceof Error ? error.message : "Unknown error",
+        timestamp: new Date().toISOString()
+      },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * POST - Create a new agent (ADMIN only)
+ * Proxies to POST /api/v1/admin/agents and preserves the backend
+ * status code + standard envelope so the client can distinguish
+ * 400 (field errors) and 409 (duplicate code/phone/email).
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const backendUrl = process.env.BACKEND_BASE_URL
+    const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN
+
+    if (!backendUrl) {
+      throw new Error("BACKEND_BASE_URL environment variable is not set")
+    }
+
+    const role = request.headers.get("x-user-role")
+    if (role !== "ADMIN") {
+      return NextResponse.json(
+        {
+          success: false,
+          statusCode: 403,
+          message: "Forbidden: Admins only",
+          timestamp: new Date().toISOString(),
+        },
+        { status: 403 }
+      )
+    }
+
+    const body = await request.json()
+
+    const response = await fetch(`${backendUrl}/api/v1/admin/agents`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.INTERNAL_API_KEY || ""}`,
+        "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
+      },
+      body: JSON.stringify(body),
+      cache: "no-store",
+    })
+
+    const result = await response.json().catch(() => null)
+
+    if (!response.ok) {
+      console.error("Create agent backend error:", response.status, result)
+      return NextResponse.json(
+        result ?? {
+          success: false,
+          statusCode: response.status,
+          message: "Backend rejected create request",
+          timestamp: new Date().toISOString(),
+        },
+        { status: response.status }
+      )
+    }
+
+    // Strip botToken before returning to client
+    if (result?.data) {
+      result.data = sanitizeAgent(result.data) as Agent
+    }
+
+    return NextResponse.json(result, { status: response.status })
+  } catch (error) {
+    console.error("Error creating agent:", error)
+    return NextResponse.json(
+      {
+        success: false,
+        statusCode: 500,
+        message: "Failed to create agent",
         error: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString()
       },
@@ -135,7 +211,7 @@ export async function PUT(request: NextRequest) {
       throw new Error("BACKEND_BASE_URL environment variable is not set")
     }
 
-    const response = await fetch(`${backendUrl}/api/v1/agents/${id}`, {
+    const response = await fetch(`${backendUrl}/api/v1/admin/agents/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",

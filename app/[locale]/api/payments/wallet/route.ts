@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        // "x-init-data": initData, // pass initData for verification
+        "x-init-data": initData,
         "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
       },
       cache: "no-store",

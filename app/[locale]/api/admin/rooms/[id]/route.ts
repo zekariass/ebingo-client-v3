@@ -17,16 +17,12 @@ export async function PUT(
 
     // Extract headers sent from the client
     const role = request.headers.get("x-user-role");
-    // const initData = request.headers.get("x-init-data");
+    const initData = request.headers.get("x-init-data");
 
     // Check for admin and valid Telegram initData
     if (!role || (role !== "ADMIN" && role !== "AGENT")) {
       return NextResponse.json({ error: "Forbidden: Admins only" }, { status: 403 });
     }
-
-    // if (!initData) {
-    //   return NextResponse.json({ error: "Missing Telegram initData" }, { status: 400 });
-    // }
 
     const updates = await request.json();
 
@@ -36,7 +32,7 @@ export async function PUT(
       headers: {
         "Content-Type": "application/json",
         "X-Access-Token": process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
-        // "x-init-data": initData, // verification by backend
+        ...(initData && { "x-init-data": initData }),
       },
       body: JSON.stringify({ id, ...updates }),
     });
@@ -78,15 +74,11 @@ export async function DELETE(
       return NextResponse.json({ error: "Forbidden: Admins only" }, { status: 403 });
     }
 
-    if (!initData) {
-      return NextResponse.json({ error: "Missing Telegram initData" }, { status: 400 });
-    }
-
     // Call backend delete endpoint
     const response = await fetch(`${BACKEND_BASE_URL}/api/v1/secured/rooms/${id}?agentId=${agentId}`, {
       method: "DELETE",
       headers: {
-        "x-init-data": initData,  
+        ...(initData && { "x-init-data": initData }),
         "X-Access-Token": process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
       },
     });

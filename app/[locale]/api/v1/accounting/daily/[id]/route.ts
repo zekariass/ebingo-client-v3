@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { locale: string; id: string } }
+  { params }: { params: Promise<{ locale: string; id: string }> }
 ) {
   try {
-    const id = params.id
+    const { id } = await params
     
     const backendUrl = process.env.BACKEND_BASE_URL
     const apiKey = process.env.INTERNAL_API_KEY
@@ -49,10 +49,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { locale: string; id: string } }
+  { params }: { params: Promise<{ locale: string; id: string }> }
 ) {
   try {
-    const id = params.id
+    const { id } = await params
     
     const backendUrl = process.env.BACKEND_BASE_URL
     const apiKey = process.env.INTERNAL_API_KEY

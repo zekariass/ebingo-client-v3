@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
       headers: {
         "Content-Type": "application/json",
         "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN,
+        ...(initData && { "x-init-data": initData }),
       },
       cache: "no-store",
     })

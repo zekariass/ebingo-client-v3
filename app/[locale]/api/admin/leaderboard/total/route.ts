@@ -12,21 +12,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Forbidden: Admins only" }, { status: 403 });
     }
 
-    if (!initData) {
-      return NextResponse.json({ error: "Missing initData" }, { status: 400 });
-    }
-
     const { searchParams } = new URL(request.url);
     const agentId = searchParams.get("agentId");
-    const page = searchParams.get("page") || "1";
+    const page = searchParams.get("page") || "0";
     const size = searchParams.get("size") || "10";
     const orderBy = searchParams.get("orderBy") || "totalWins";
     const includeBots = searchParams.get("includeBots") || "false";
 
-    const response = await fetch(`${BACKEND_BASE_URL}/api/v1/leaderboard/admin/total?page=${page}&size=${size}&orderBy=${orderBy}&includeBots=${includeBots}&agentId=${agentId}`, {
+    const backendUrl = new URL(`${BACKEND_BASE_URL}/api/v1/leaderboard/admin/total`);
+    backendUrl.searchParams.set("page", page);
+    backendUrl.searchParams.set("size", size);
+    backendUrl.searchParams.set("orderBy", orderBy);
+    backendUrl.searchParams.set("includeBots", includeBots);
+    if (agentId) backendUrl.searchParams.set("agentId", agentId);
+
+    const response = await fetch(backendUrl.toString(), {
       headers: {
         "Content-Type": "application/json",
-        "x-init-data": initData,
+        ...(initData && { "x-init-data": initData }),
         "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN,
       },
       cache: "no-store",

@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeftRight, Phone, Send } from "lucide-react"
 import { usePaymentStore } from "@/lib/stores/payment-store"
-import { useRouter } from "next/navigation"
+import { userStore } from "@/lib/stores/user-store"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useTelegramInit } from "@/lib/hooks/use-telegram-init"
 import Link from "next/link"
 import { useAgentStore } from "@/lib/stores/agent-store"
@@ -37,17 +38,13 @@ const buildTransferSchema = (maxTransferable: number) =>
 
 type TransferForm = z.infer<ReturnType<typeof buildTransferSchema>>
 
-interface TransferPageProps {
-  searchParams: {
-    agentId?: number
-  }
-}
-
-export default function TransferPage({searchParams}: TransferPageProps) {
-  const agentId = searchParams.agentId
+export default function TransferPage() {
+  const searchParams = useSearchParams()
+  const agentId = searchParams.get("agentId") ? Number(searchParams.get("agentId")) : undefined
   const {setActiveAgentId} = useAgentStore()
   const router = useRouter()
   const { balance, transferFunds, transferError, setTransferError, fetchWallet } = usePaymentStore()
+  const user = userStore((s) => s.user)
   const [isProcessing, setIsProcessing] = useState(false)
 
   const maxTransferable = useMemo(
@@ -86,8 +83,8 @@ export default function TransferPage({searchParams}: TransferPageProps) {
   },[])
 
   useEffect(() => {
-    fetchWallet(true, agentId!)
-  }, [fetchWallet, agentId])
+    if (user?.telegramId) fetchWallet(true, agentId!)
+  }, [fetchWallet, agentId, user?.telegramId])
 
   
   const onSubmit = async (data: TransferForm) => {
@@ -102,11 +99,11 @@ export default function TransferPage({searchParams}: TransferPageProps) {
         const success = await transferFunds(data.amount, data.phone, agentId!);
 
         if (success) {
-          router.push(`/transfer/success?agentId=${agentId}`); 
-        }else {
-          router.push(`/transfer/failure?agentId=${agentId}`); 
+          router.push(`/${i18n.language}/transfer/success?agentId=${agentId}`);
+        } else {
+          const reason = usePaymentStore.getState().transferError;
+          router.push(`/${i18n.language}/transfer/failure?agentId=${agentId}${reason ? `&reason=${encodeURIComponent(reason)}` : ""}`);
         }
-        // if not success, error will be in transferError and displayed automatically
       } catch (error) {
         console.error("Transfer failed:", error);
       } finally {

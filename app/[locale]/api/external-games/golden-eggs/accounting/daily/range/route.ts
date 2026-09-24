@@ -26,15 +26,14 @@ export async function GET(request: NextRequest) {
     }
 
     const initData = request.headers.get("x-init-data")
-    const backendUrl = `${BACKEND_BASE_URL}/external-games/golden-eggs/accounting/daily/range?agentId=${agentId}&startDate=${startDate}&endDate=${endDate}`
+    const backendUrl = `${BACKEND_BASE_URL}/external-games/golden-eggs/accounting/daily/range?agentId=${agentId}&start=${startDate}&end=${endDate}`
     
-    console.log("Fetching daily accounting by range from:", backendUrl)
-
     const response = await fetch(backendUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN,
+        ...(initData && { "x-init-data": initData }),
       },
       cache: "no-store",
     })

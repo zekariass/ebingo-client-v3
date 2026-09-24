@@ -5,6 +5,7 @@ import { Trophy, ChevronDown, ChevronUp, ArrowLeftIcon } from "lucide-react";
 import { useAdminStore } from "@/lib/stores/admin-store";
 import Link from "next/link";
 import { useAgentStore } from "@/lib/stores/agent-store";
+import i18n from "@/i18n";
 
 const trophyColors = ["text-yellow-400", "text-gray-400", "text-orange-500"];
 const top3BgColors = ["bg-yellow-900/40", "bg-gray-700/50", "bg-orange-900/40"];
@@ -26,12 +27,14 @@ const TotalLeaderboardPage = () => {
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
   useEffect(() => {
-    fetchTotalLeaderboard(activeAgentId!, 1, 10, sortBy, includeBots);
-  }, [sortBy, includeBots]);
+    if (activeAgentId) {
+      fetchTotalLeaderboard(activeAgentId, 0, 10, sortBy, includeBots);
+    }
+  }, [sortBy, includeBots, activeAgentId]);
 
   const handlePageChange = (newPage: number) => {
-    if (newPage > 0 && newPage <= totalLeaderboardTotalPages) {
-      fetchTotalLeaderboard(activeAgentId!, newPage, 10, sortBy, includeBots);
+    if (activeAgentId && newPage >= 0 && newPage < totalLeaderboardTotalPages) {
+      fetchTotalLeaderboard(activeAgentId, newPage, 10, sortBy, includeBots);
       setExpandedRows(new Set()); // collapse all rows on page change
     }
   };
@@ -49,7 +52,7 @@ const TotalLeaderboardPage = () => {
   return (
     <div className="p-4 bg-[var(--background)] min-h-screen text-white">
       <Link
-        href={`/admin/rooms?agentId=${activeAgentId}`}
+        href={`/${i18n.language}/admin/rooms?agentId=${activeAgentId}`}
         className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium"
       >
         <ArrowLeftIcon className="w-4 h-4 mr-2" />
@@ -110,8 +113,9 @@ const TotalLeaderboardPage = () => {
                         className={`w-6 h-6 ${trophyColors[idx]} animate-bounce`}
                       />
                     )}
-                    {player.userProfile.nickname ||
-                      `${player.userProfile.firstName} ${player.userProfile.lastName}`}
+                    {player.userProfile?.nickname ||
+                      `${player.userProfile?.firstName ?? ""} ${player.userProfile?.lastName ?? ""}`.trim() ||
+                      "Unknown Player"}
                     {player.isBot && <span className="ml-1 text-gray-400">(Bot)</span>}
                   </div>
                   {isExpanded ? (
@@ -143,7 +147,7 @@ const TotalLeaderboardPage = () => {
                             📞
                             </div>
                             <div className="label">Phone</div>
-                            <div className="value">{player.userProfile.phoneNumber || "-"}</div>
+                            <div className="value">{player.userProfile?.phoneNumber || "-"}</div>
                         </div>
 
                         {/* Wins */}
@@ -199,21 +203,27 @@ const TotalLeaderboardPage = () => {
             );
           })}
 
+          {totalLeaderboard.length === 0 && (
+            <div className="text-center py-10 text-gray-400">
+              No leaderboard data found
+            </div>
+          )}
+
           {/* Pagination */}
           <div className="flex justify-between items-center mt-4 px-2">
             <button
               onClick={() => handlePageChange(totalLeaderboardPage - 1)}
-              disabled={totalLeaderboardPage === 1}
+              disabled={totalLeaderboardPage === 0}
               className="px-4 py-2 bg-[var(--btn-default-bg)] rounded disabled:opacity-50"
             >
               Previous
             </button>
             <span>
-              Page {totalLeaderboardPage} of {Math.max(1, totalLeaderboardTotalPages)}
+              Page {totalLeaderboardPage + 1} of {Math.max(1, totalLeaderboardTotalPages)}
             </span>
             <button
               onClick={() => handlePageChange(totalLeaderboardPage + 1)}
-              disabled={totalLeaderboardPage === totalLeaderboardTotalPages}
+              disabled={totalLeaderboardPage >= totalLeaderboardTotalPages - 1}
               className="px-4 py-2 bg-[var(--btn-default-bg)] rounded disabled:opacity-50"
             >
               Next

@@ -104,7 +104,6 @@
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Users,
   GamepadIcon,
@@ -120,6 +119,9 @@ import {
   Egg,
   Gamepad2,
   Search,
+  Landmark,
+  UserCog,
+  Bot,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -138,12 +140,15 @@ type SidebarItem = {
   title: string
   href: string
   icon: React.ComponentType<{ className?: string }>
+  section: string
   adminOnly?: boolean
+  agentOnly?: boolean
   agentOrAdminOnly?: boolean
 }
 
 function canSeeItem(item: SidebarItem, role: Role) {
   if (item.adminOnly) return role === "ADMIN"
+  if (item.agentOnly) return role === "AGENT"
   if (item.agentOrAdminOnly) return role === "ADMIN" || role === "AGENT"
   return true
 }
@@ -157,36 +162,29 @@ export function AdminSidebar({ isMobile = false, onLinkClick }: AdminSidebarProp
   const userRole: Role = user?.role
 
   const allSidebarItems: SidebarItem[] = [
-      // Core
-      { title: "Home", href: `/${i18n.language}/game-options?agentId=${activeAgentId}`, icon: Home },
-      { title: "Rooms", href: `/admin/rooms?agentId=${activeAgentId}`, icon: GamepadIcon },
+      // Main
+      { title: "Home", href: `/${i18n.language}/game-options?agentId=${activeAgentId}`, icon: Home, section: "Main" },
+      { title: "Rooms", href: `/admin/rooms?agentId=${activeAgentId}`, icon: GamepadIcon, section: "Main" },
+      { title: "Leaderboard", href: `/admin/leaderboard?agentId=${activeAgentId}`, icon: Trophy, section: "Main" },
+      { title: "Golden Eggs", href: `/admin/golden-eggs?agentId=${activeAgentId}`, icon: Egg, section: "Main", agentOrAdminOnly: true },
 
-      // Money / Ops
-      { title: "Wallets", href: `/admin/wallet/details?agentId=${activeAgentId}`, icon: Wallet },
-      { title: "Payments", href: `/admin/payment-orders?agentId=${activeAgentId}`, icon: ArrowUpToLineIcon },
+      // Finance
+      { title: "Payments", href: `/admin/payment-orders?agentId=${activeAgentId}`, icon: ArrowUpToLineIcon, section: "Finance" },
+      { title: "Wallets", href: `/admin/wallet/details?agentId=${activeAgentId}`, icon: Wallet, section: "Finance" },
+      { title: "Accounting (Agent)", href: `/admin/accounting?agentId=${activeAgentId}`, icon: BarChart3, section: "Finance", agentOrAdminOnly: true },
+      { title: "Accountings (Admin)", href: `/admin/accountings?agentId=${activeAgentId}`, icon: DollarSign, section: "Finance", adminOnly: true },
 
-      // Performance
-      { title: "Leaderboard (Daily)", href: `/admin/leaderboard/daily?agentId=${activeAgentId}`, icon: Trophy },
-      { title: "Leaderboard (Total)", href: `/admin/leaderboard/total?agentId=${activeAgentId}`, icon: Trophy },
+      // Management
+      { title: "My Agent", href: `/admin/agent-profile?agentId=${activeAgentId}`, icon: UserCog, section: "Management", agentOnly: true },
+      { title: "Agents", href: `/admin/agents?agentId=${activeAgentId}`, icon: Users, section: "Management", adminOnly: true },
+      { title: "Bot Users", href: `/admin/bot-users?agentId=${activeAgentId}`, icon: Bot, section: "Management", adminOnly: true },
 
-      // Accounting (agent or admin)
-      { title: "Daily Accounting (Agent)", href: `/admin/accounting/daily?agentId=${activeAgentId}`, icon: BarChart3, agentOrAdminOnly: true },
-      { title: "Total Accounting (Agent)", href: `/admin/accounting/total?agentId=${activeAgentId}`, icon: DollarSign, agentOrAdminOnly: true },
-
-      // Accounting (admin only)
-      { title: "Daily Accountings (Admin)", href: `/admin/accountings/daily?agentId=${activeAgentId}`, icon: BarChart3, adminOnly: true },
-      { title: "Total Accountings (Admin)", href: `/admin/accountings/total?agentId=${activeAgentId}`, icon: DollarSign, adminOnly: true },
-
-      // Golden Eggs
-      { title: "Golden Eggs", href: `/admin/golden-eggs?agentId=${activeAgentId}`, icon: Egg, agentOrAdminOnly: true },
-
-      // Game Settings
-      { title: "Games", href: `/admin/games?agentId=${activeAgentId}`, icon: Gamepad2, adminOnly: true },
-      { title: "Agent Games Config", href: `/admin/agent-games-config?agentId=${activeAgentId}`, icon: Search, adminOnly: true },
-
-      // Admin / System
-      { title: "Agents", href: `/admin/agents?agentId=${activeAgentId}`, icon: Users, adminOnly: true },
-      { title: "Configs", href: `/admin/configs?agentId=${activeAgentId}`, icon: Settings },
+      // Configuration
+      { title: "Games", href: `/admin/games?agentId=${activeAgentId}`, icon: Gamepad2, section: "Configuration", adminOnly: true },
+      { title: "Agent Games Config", href: `/admin/agent-games-config?agentId=${activeAgentId}`, icon: Search, section: "Configuration", adminOnly: true },
+      { title: "Agent Config", href: `/admin/agent-config?agentId=${activeAgentId}`, icon: UserCog, section: "Configuration", agentOrAdminOnly: true },
+      { title: "Deposit Config", href: `/admin/agent-deposit-config?agentId=${activeAgentId}`, icon: Landmark, section: "Configuration", agentOrAdminOnly: true },
+      { title: "Configs", href: `/admin/configs?agentId=${activeAgentId}`, icon: Settings, section: "Configuration" },
     ];
 
 
@@ -213,27 +211,40 @@ export function AdminSidebar({ isMobile = false, onLinkClick }: AdminSidebarProp
       </div>
 
       {/* Menu */}
-      <ScrollArea className="flex-1 px-3 py-2">
+      <div className="flex-1 min-h-0 overflow-y-auto px-3 py-2">
         <div className="space-y-1">
-          {sidebarItems.map((item) => {
-            const isActive = pathname === item.href
+          {sidebarItems.map((item, index) => {
+            const itemPath = item.href.split("?")[0]
+            const isActive = pathname === itemPath || pathname.endsWith(itemPath) || pathname.includes(`${itemPath}/`)
+            const isFirstInSection = sidebarItems.findIndex((i) => i.section === item.section) === index
             return (
-              <Button
-                key={item.href}
-                variant={isActive ? "secondary" : "ghost"}
-                className={cn("w-full justify-start text-sm py-2", isActive && "bg-secondary")}
-                asChild
-                onClick={onLinkClick}
-              >
-                <Link href={item.href}>
-                  <item.icon className="mr-2 h-4 w-4" />
-                  {item.title}
-                </Link>
-              </Button>
+              <div key={item.href}>
+                {isFirstInSection && (
+                  <div
+                    className={cn(
+                      "px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground",
+                      index === 0 ? "pt-1" : "pt-4"
+                    )}
+                  >
+                    {item.section}
+                  </div>
+                )}
+                <Button
+                  variant={isActive ? "secondary" : "ghost"}
+                  className={cn("w-full justify-start text-sm py-2", isActive && "bg-secondary")}
+                  asChild
+                  onClick={onLinkClick}
+                >
+                  <Link href={item.href}>
+                    <item.icon className="mr-2 h-4 w-4" />
+                    {item.title}
+                  </Link>
+                </Button>
+              </div>
             )
           })}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   )
 }

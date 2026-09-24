@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useGameStore } from "@/lib/stores/game-store"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, ChevronsLeftIcon, ChevronsRightIcon, Music2Icon, RefreshCwIcon, SeparatorVertical } from "lucide-react"
+import { ChevronsLeftIcon, ChevronsRightIcon, LayoutGrid, RefreshCwIcon, Trophy, Users } from "lucide-react"
 // import { useWebSocketEvents } from "@/lib/hooks/websockets/use-websocket-events"
 import { userStore } from "@/lib/stores/user-store"
 import { CardInfo, GameStatus } from "@/lib/types"
@@ -12,6 +12,7 @@ import { CountdownTimer } from "../common/countdown-timer"
 import { useRoomStore } from "@/lib/stores/room-store"
 import { Badge } from "../ui/badge"
 import { GameControls } from "./game-controls"
+import { currency } from "@/lib/constant"
 // import { useMusicPlayer } from "@/lib/contexts/music-player-context"
 
 interface CardSelectionGridProps {
@@ -36,7 +37,6 @@ export function CardSelectionGrid({ roomId, capacity, disabled }: CardSelectionG
   const allSelectedCardsIds = useGameStore(state => state.game.allSelectedCardsIds)
   const selectCardOptimistically  = useGameStore(state => state.selectCardOptimistically)
   const deselectCardOptimistically  = useGameStore(state => state.releaseCardOptimistically)
-  const game = useGameStore(state => state.game)
 
   // const { toggle, isPlaying } = useMusicPlayer();
 
@@ -121,66 +121,78 @@ export function CardSelectionGrid({ roomId, capacity, disabled }: CardSelectionG
 
   
 
+  const prize = allSelectedCardsIds.length * entryFee * (1 - commissionRate)
+
   return (
     <Card>
-      <CardHeader className="">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-          <div className="flex flex-col gap-4 text-xs sm:text-sm">
-            {/* Status Legend - horizontal items */}
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-green-500 rounded-full" />
-                  <span className="text-foreground">Available</span>
-                </div>
-
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full" />
-                  <span className="text-foreground">Selected</span>
-                </div>
-
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 border-red-300 bg-red-300 dark:bg-red-950 rounded-full" />
-                  <span className="text-foreground">Taken</span>
-                </div>
-
-                {/* <Badge variant="outline" className="flex items-center gap-1">
-                  <Music2Icon onClick={toggle}/>
-                </Badge> */}
-              </div>
-              {/* Game Info - horizontal items */}
-              <div className="flex items-center gap-4 flex-wrap">
-                <div className="flex items-center gap-2 text-xs sm:text-sm">
-                  {/* Active Players */}
-                  <span className="text-[var(--foreground)]">
-                    Players: {joinedPlayers.length}
-                  </span>
-
-                  {/* Separator */}
-                  <span className="text-[var(--muted-foreground)]">|</span>
-
-                  {/* Prize */}
-                  <span className="text-[var(--foreground)]">
-                    Prize: {allSelectedCardsIds.length * entryFee * (1 - commissionRate)} Br
-                  </span>
-
-                  {/* Separator */}
-                  <span className="text-[var(--muted-foreground)]">|</span>
-
-                  {/* Countdown / Status */}
-                  <span className="flex items-center">
-                    {status === GameStatus.COUNTDOWN ? (
-                      // <CountdownTimerAllGames activeGame={game} gamePage={false} />
-                      <CountdownTimer gamePage={false} />
-                    ) : status === GameStatus.PLAYING ? (
-                      <span className="text-red-500 text-xs">PLAYING...</span>
-                    ) : (
-                      <span className="text-yellow-500 font-bold">Waiting Players...</span>
-                    )}
-                  </span>
-                </div>
-
-            </div>
+      <CardHeader className="space-y-2.5 pb-3">
+        {/* Title + live status */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <LayoutGrid className="h-4 w-4 text-muted-foreground shrink-0" />
+            <h2 className="text-sm sm:text-base font-semibold truncate">Select Your Cards</h2>
+            <Badge variant="secondary" className="text-[10px] sm:text-xs px-1.5">
+              {userSelectedCardsIds.length}/{maxCards}
+            </Badge>
           </div>
+
+          <div className="shrink-0">
+            {status === GameStatus.COUNTDOWN ? (
+              // <CountdownTimerAllGames activeGame={game} gamePage={false} />
+              <CountdownTimer gamePage={false} />
+            ) : status === GameStatus.PLAYING ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/10 px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-red-500">
+                <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse" />
+                LIVE
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-500/10 px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-yellow-600 dark:text-yellow-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-yellow-500 animate-pulse" />
+                Waiting
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div
+            style={{ background: "var(--game-stat-4-bg)" }}
+            className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[var(--game-stat-fg)]"
+          >
+            <Users className="h-3.5 w-3.5" />
+            <span className="text-[11px] sm:text-xs font-medium">
+              {joinedPlayers.length}{capacity > 0 ? `/${capacity}` : ""} Players
+            </span>
+          </div>
+          <div
+            style={{ background: "var(--game-stat-3-bg)" }}
+            className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[var(--game-stat-fg)]"
+          >
+            <Trophy className="h-3.5 w-3.5" />
+            <span className="text-[11px] sm:text-xs font-medium">
+              {prize.toFixed(2)} {currency} Prize
+            </span>
+          </div>
+        </div>
+
+        {/* Status Legend - matches actual card colors */}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] sm:text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-sm bg-[var(--bingo-key-bg-free)] ring-1 ring-inset ring-white/20" />
+            Available
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-sm bg-[var(--bingo-key-bg-selected)] ring-1 ring-inset ring-white/20" />
+            Selected
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded-sm bg-[var(--bingo-key-bg-taken)] opacity-70 ring-1 ring-inset ring-white/20" />
+            Taken
+          </span>
+          <span className="text-muted-foreground/70">
+            · up to {maxCards} card{maxCards > 1 ? "s" : ""}
+          </span>
         </div>
       </CardHeader>
 

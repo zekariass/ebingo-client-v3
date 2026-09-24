@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { userStore } from "@/lib/stores/user-store"
 import { useAgentStore } from "@/lib/stores/agent-store"
 import { DailyAccounting } from "@/lib/stores/agent-store"
@@ -19,6 +19,7 @@ import {
   RefreshCw
 } from "lucide-react"
 import { format } from "date-fns"
+import i18n from "@/i18n"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -41,11 +42,8 @@ function parseLocalDate(dateStr: string) {
 
 export function AdminDailyAccountings({ }: AdminDailyAccountingsProps) {
   const router = useRouter()
-  const { user } = userStore.getState()
+  const user = userStore((state) => state.user)
   const userRole = user?.role
-
-  const searchParams = useSearchParams()
-  const agentId = searchParams.get("agentId")
 
   const {
     dailyAccountings,
@@ -67,7 +65,7 @@ export function AdminDailyAccountings({ }: AdminDailyAccountingsProps) {
   const [selectedRecord, setSelectedRecord] = useState<DailyAccounting | null>(null)
   
   // Format currency
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | null | undefined) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'ETB',
@@ -110,7 +108,7 @@ export function AdminDailyAccountings({ }: AdminDailyAccountingsProps) {
 
   // Handle view agent accounting
   const handleViewAgentAccounting = (targetAgentId: number) => {
-    router.push(`/admin/agent-accounting?targetAgentId=${targetAgentId}&agentId=${agentId}`)
+    router.push(`/${i18n.language}/admin/agent-accounting?agentId=${targetAgentId}`)
   }
 
   // Handle settlement
@@ -138,6 +136,21 @@ export function AdminDailyAccountings({ }: AdminDailyAccountingsProps) {
   const canBeSettled = (accounting: DailyAccounting) => {
     const today = new Date().toISOString().split('T')[0]
     return accounting.accountingDate !== today && !accounting.settledAt
+  }
+
+  // Get settlement tooltip message
+  const getSettlementTooltip = (accounting: DailyAccounting) => {
+    const today = new Date().toISOString().split('T')[0]
+
+    if (accounting.settledAt) {
+      return "This record has already been settled"
+    }
+
+    if (accounting.accountingDate === today) {
+      return "Today's records cannot be settled until tomorrow"
+    }
+
+    return "Click to settle this accounting record"
   }
 
   return (
@@ -288,14 +301,19 @@ export function AdminDailyAccountings({ }: AdminDailyAccountingsProps) {
                             <Eye className="h-4 w-4" />
                             <span className=" sm:inline ml-1">View</span>
                           </Button>
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation()
                               handleSettleClick(accounting.id)
                             }}
-                            className="p-1 sm:p-2"
+                            disabled={!canBeSettled(accounting)}
+                            className={cn(
+                              "p-1 sm:p-2",
+                              !canBeSettled(accounting) && "opacity-50 cursor-not-allowed"
+                            )}
+                            title={getSettlementTooltip(accounting)}
                           >
                             <DollarSign className="h-4 w-4" />
                             <span className=" sm:inline ml-1">Settle</span>

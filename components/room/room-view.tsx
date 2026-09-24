@@ -6,6 +6,7 @@ import { useGameStore } from "@/lib/stores/game-store"
 import { usePaymentStore } from "@/lib/stores/payment-store"
 import { useSystemStore } from "@/lib/stores/system-store"
 import { GameStatus } from "@/lib/types"
+import { AlertCircle } from "lucide-react"
 import { RoomHeader } from "./room-header"
 import { CardSelectionGrid } from "./card-selection-grid"
 import { SelectedCardsPanel } from "./selected-cards-panel"
@@ -100,8 +101,9 @@ export function RoomView({ roomId, agentId }: RoomViewProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-lg text-muted-foreground">Loading room...</div>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3">
+        <div className="animate-spin rounded-full h-10 w-10 border-4 border-primary border-t-transparent" />
+        <div className="text-sm text-muted-foreground">Loading room...</div>
       </div>
     )
   }
@@ -109,33 +111,38 @@ export function RoomView({ roomId, agentId }: RoomViewProps) {
   return (
     <div className="relative min-h-screen bg-background">
       {isJoining && !joinError && (
-        <div className="fixed inset-0 bg-black opacity-50 z-[9999] flex flex-col items-center justify-center gap-4 w-full h-full pointer-events-auto">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent"></div>
-          <span className="text-white text-xl font-semibold">Joining room...</span>
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-4 bg-black/60 backdrop-blur-sm">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-white/30 border-t-white"></div>
+          <span className="text-white text-lg font-semibold">Joining room...</span>
         </div>
       )}
 
       <RoomHeader room={room} />
 
-      <main className="container mx-auto px-2 sm:px-4 py-3 sm:py-6 space-y-3 sm:space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6">
+      <main className="container mx-auto px-2 sm:px-4 py-3 sm:py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6 items-start">
           {/* Left Column - Card Selection */}
-          <div className="lg:col-span-2 space-y-3 sm:space-y-6">
+          <div className="lg:col-span-2 space-y-3 sm:space-y-4">
             <CardSelectionGrid
               roomId={roomId}
               capacity={room?.capacity ?? 0}
               disabled={disableCardSelection}
             />
 
-            {joinError && <div className="text-red-500 text-center">{joinError}</div>}
-
-            {userSelectedCardsIds.length > 0 && (
-              <div className="space-y-3 sm:space-y-4">
-                <SelectedCardsPanel />
-                {/* <GameControls disabled={disableCardSelection} /> */}
+            {joinError && (
+              <div className="flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{joinError}</span>
               </div>
             )}
           </div>
+
+          {/* Right Column - Selected Cards */}
+          {userSelectedCardsIds.length > 0 && (
+            <div className="lg:sticky lg:top-20">
+              <SelectedCardsPanel />
+            </div>
+          )}
         </div>
       </main>
     </div>

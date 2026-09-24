@@ -143,6 +143,7 @@ import { useEffect, useState } from "react"
 import { Trophy, Info, X, DollarSign } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { userStore } from "@/lib/stores/user-store"
+import { useSystemStore } from "@/lib/stores/system-store"
 import type { GameWinner, GamePattern, BingoColumn } from "@/lib/types"
 import { WinnerCardView } from "./winner-card-view"
 
@@ -155,17 +156,27 @@ interface WinnerDialogProps {
 export function WinnerDialog({ showResult, onClose, winner }: WinnerDialogProps) {
   const [open, setOpen] = useState(false)
   const user = userStore(state => state.user)
+  const voiceOn = useSystemStore(state => state.voiceOn)
 
   useEffect(() => {
     if (showResult) {
       setOpen(true)
+      const soundTimer = setTimeout(() => {
+        if (winner.hasWinner && voiceOn) {
+          const audio = new Audio("/audio/bingo.mp3")
+          audio.play().catch(err => console.warn("Audio blocked:", err))
+        }
+      }, 1500)
       const timer = setTimeout(() => {
         setOpen(false)
         onClose?.()
       }, 5000)
-      return () => clearTimeout(timer)
+      return () => {
+        clearTimeout(soundTimer)
+        clearTimeout(timer)
+      }
     }
-  }, [showResult, onClose, winner])
+  }, [showResult, onClose, winner, voiceOn])
 
   const handleWinnerDialogClose = () => {
     setOpen(false)

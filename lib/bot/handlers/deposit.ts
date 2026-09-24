@@ -103,7 +103,9 @@
 import type { Telegraf, Context } from "telegraf";
 import { message } from "telegraf/filters";
 import axios from "axios";
-import { agentsData, renderDepositTemplate, t } from "../utils";
+import { veritas } from "@/lib/veritas";
+import { renderDepositTemplate, t } from "../utils";
+import { getAgentConfig } from "../agent-config";
 import { allowedPaymentHours } from "../translations";
 import { fetchAndSendWallet } from "./wallet-handler";
 
@@ -127,12 +129,12 @@ type CBEVerifyResponse = {
   receiverAccount?: string;
   amount?: number;
   date?: string;
+  paymentDate?: string;
   reference?: string;
   reason?: string;
 };
 
 const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL!;
-const VERIFY_API_KEY = process.env.NEXT_PUBLIC_VERIFY_API_KEY!;
 const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN;
 
 const userState = new Map<string, UserState>(); // key = `${agentId}:${userId}`
@@ -170,8 +172,17 @@ function parseTelebirrRef(text: string): string | null {
   return null;
 }
 
-/** CBE parser (same as your working version) */
+/** CBE parser — accepts full SMS text, the receipt URL, a bare token, or legacy "FT..." refs */
 function parseCBERef(text: string): { ref: string; acc: string } | null {
+  // New receipt format: full URL pasted alone or inside the SMS
+  const link = text.match(/https?:\/\/mbreciept\.cbe\.com\.et\/\S+/i);
+  if (link) return { ref: link[0], acc: "" };
+
+  // New receipt format: bare token — the last segment of the receipt URL (v2-<token>)
+  const token = text.match(/\bv2-[A-Za-z0-9]+\b/i);
+  if (token) return { ref: token[0], acc: "" };
+
+  // Legacy format: FT<reference><8-digit account suffix>
   const m = text.match(/FT[A-Z0-9]+/i);
   if (!m) return null;
   const ft = m[0];
@@ -180,21 +191,27 @@ function parseCBERef(text: string): { ref: string; acc: string } | null {
 }
 
 async function verifyTelebirr(reference: string): Promise<TelebirrVerifyResponse> {
-  const res = await axios.post(
-    "https://verifyapi.leulzenebe.pro/verify-telebirr",
-    { reference },
-    { headers: { "x-api-key": VERIFY_API_KEY } }
-  );
-  return res.data;
+  try {
+    return await veritas<TelebirrVerifyResponse>("/verify-telebirr", {
+      method: "POST",
+      body: JSON.stringify({ reference }),
+    });
+  } catch {
+    return { success: false };
+  }
 }
 
 async function verifyCBE(reference: string, accountSuffix: string): Promise<CBEVerifyResponse> {
-  const res = await axios.post(
-    "https://verifyapi.leulzenebe.pro/verify-cbe",
-    { reference, accountSuffix },
-    { headers: { "x-api-key": VERIFY_API_KEY } }
-  );
-  return res.data;
+  try {
+    // New receipt links/tokens don't require accountSuffix — the API auto-routes on the input
+    const body = accountSuffix ? { reference, accountSuffix } : { reference };
+    return await veritas<CBEVerifyResponse>("/verify-cbe", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  } catch {
+    return { success: false };
+  }
 }
 
 export function parsePaymentDate(dateStr: string): Date {
@@ -261,17 +278,18 @@ async function sendDepositToBackend(
 }
 
 /** Build HTML instructions (keeps your templates) */
-function buildInstructionsHtml(ctx: any, agentId: number, method: DepositMethod): string {
+async function buildInstructionsHtml(ctx: any, agentId: number, method: DepositMethod): Promise<string> {
   const lang = getLang(ctx);
+  const config = await getAgentConfig(agentId);
 
   if (method === "telebirr") {
-    const phone = agentsData[agentId]?.bankDetails?.telebirr?.phoneNumber ?? "";
-    const name = agentsData[agentId]?.bankDetails?.telebirr?.recieverName ?? "";
+    const phone = config?.bankDetails?.telebirr?.phoneNumber ?? "";
+    const name = config?.bankDetails?.telebirr?.recieverName ?? "";
     return renderDepositTemplate(lang, "payTeleInstructions", { phone, name });
   }
 
-  const accountNumber = agentsData[agentId]?.bankDetails?.cbeonline?.accountNumber ?? "";
-  const name = agentsData[agentId]?.bankDetails?.cbeonline?.accountName ?? "";
+  const accountNumber = config?.bankDetails?.cbeonline?.accountNumber ?? "";
+  const name = config?.bankDetails?.cbeonline?.accountName ?? "";
   return renderDepositTemplate(lang, "payCBEInstructions", { accountNumber, name });
 }
 
@@ -297,7 +315,7 @@ export function registerDepositHandler(bot: Telegraf<Context>, agentId: number) 
     userState.set(k, { step: "waiting_notification", method });
 
     // ✅ FIX: send the rendered template directly (no t() around it)
-    const html = buildInstructionsHtml(ctx, agentId, method);
+    const html = await buildInstructionsHtml(ctx, agentId, method);
 
     await ctx.reply(html, {
       parse_mode: "HTML",
@@ -354,8 +372,8 @@ export function registerDepositHandler(bot: Telegraf<Context>, agentId: number) 
     const method = st.method;
 
     try {
-      const agent = agentsData[agentId];
-      if (!agent) {
+      const agent = await getAgentConfig(agentId);
+      if (!agent?.bankDetails) {
         userState.delete(k);
         return ctx.reply("❌ Agent configuration not found.");
       }
@@ -375,8 +393,8 @@ export function registerDepositHandler(bot: Telegraf<Context>, agentId: number) 
         verify = await verifyTelebirr(ref);
         if (!verify.success) return ctx.reply(`❌ ${t(ctx, "telebirrVerificationFailed")}`);
 
-        const expectedName = agent.bankDetails.telebirr.recieverName;
-        const expectedPhone = agent.bankDetails.telebirr.phoneNumber;
+        const expectedName = agent.bankDetails.telebirr?.recieverName ?? "";
+        const expectedPhone = agent.bankDetails.telebirr?.phoneNumber ?? "";
 
         const recv = String(verify.data?.["creditedPartyName"] || "").trim();
         const last4 = String(verify.data?.["creditedPartyAccountNo"] || "").slice(-4);
@@ -411,23 +429,26 @@ export function registerDepositHandler(bot: Telegraf<Context>, agentId: number) 
         verify = await verifyCBE(parsed.ref, parsed.acc);
         if (!verify.success) return ctx.reply(`❌ ${t(ctx, "cbeVerificationFailed")}`);
 
-        const expectedName = agent.bankDetails.cbeonline.accountName;
-        const expectedAcc = agent.bankDetails.cbeonline.accountNumber;
+        const expectedName = agent.bankDetails.cbeonline?.accountName ?? "";
+        const expectedAcc = agent.bankDetails.cbeonline?.accountNumber ?? "";
 
         const recv = String(verify.receiver || "").trim();
-        const last4 = String(verify.receiverAccount || "").slice(-4);
+        const receiverAcc = String(verify.receiverAccount || "");
+        const last4 = receiverAcc.slice(-4);
 
-        const date = String(verify.date || "");
+        const date = String(verify.date || verify.paymentDate || "");
         const cbeDate = parsePaymentDate(date);
 
-        if (!isWithinDays(cbeDate, allowedPaymentHours / 24)) {
+        if (!isNaN(cbeDate.getTime()) && !isWithinDays(cbeDate, allowedPaymentHours / 24)) {
           return ctx.reply(`❌ ${t(ctx, "cbeonlinePaymetExpireMessage")}`);
         }
 
         // Display mismatch
         // await ctx.reply(`Debug: recv='${recv}' last4='${last4}' expectedName='${expectedName}' expectedAcc='${expectedAcc}'`);
 
-        if (normalize(recv) !== normalize(expectedName) || last4 !== expectedAcc.slice(-4)) {
+        // New-format receipts may omit/mask the receiver account — enforce last4 only when present
+        const accMatches = !receiverAcc || last4 === expectedAcc.slice(-4);
+        if (normalize(recv) !== normalize(expectedName) || !accMatches) {
           return ctx.reply("❌ CBE details mismatch.");
         }
 

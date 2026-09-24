@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
         "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
       },
       body: JSON.stringify({ amount, phoneNumber: phone, agentId}),
+      signal: AbortSignal.timeout(30000),
     })
 
     const result = await response.json().catch(() => ({}))
@@ -77,10 +78,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(responseData, { status: 200 })
   } catch (error) {
     console.error("Transfer route error:", error)
+    const isTimeout = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError")
     const response: ApiResponse = {
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
+      error: isTimeout
+        ? "Transfer request timed out. Please try again."
+        : error instanceof Error ? error.message : "Unknown error",
     }
-    return NextResponse.json(response, { status: 500 })
+    return NextResponse.json(response, { status: isTimeout ? 504 : 500 })
   }
 }

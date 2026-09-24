@@ -55,9 +55,9 @@ function parseLocalDate(dateStr: string) {
 }
 
 export function AdminDailyAccounting({ agentId }: AdminDailyAccountingProps) {
-  const { user } = userStore.getState()
+  const user = userStore((state) => state.user)
   const userRole = user?.role
-  const currentAgentId = agentId || user?.agentId
+  const currentAgentId = (agentId && agentId > 0 ? agentId : undefined) || user?.agentId
 
   const {
     dailyAccountings,
@@ -80,7 +80,7 @@ export function AdminDailyAccounting({ agentId }: AdminDailyAccountingProps) {
   const [todayRecord, setTodayRecord] = useState<DailyAccounting | null>(null)
   const [filterError, setFilterError] = useState<string>("")
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | null | undefined) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "ETB",
@@ -105,20 +105,6 @@ export function AdminDailyAccounting({ agentId }: AdminDailyAccountingProps) {
     const record = dailyAccountings.find(r => r.accountingDate === today)
     setTodayRecord(record || null)
   }, [dailyAccountings])
-
-  if (userRole !== "ADMIN" && userRole !== "AGENT") {
-    return (
-      <div className="p-2">
-        <div className="flex items-center gap-3 text-destructive">
-          <AlertCircle className="h-5 w-5" />
-          <h1 className="text-xl font-semibold">Access Denied</h1>
-        </div>
-        <p className="text-muted-foreground mt-2">
-          This page is restricted to users with ADMIN or AGENT role only.
-        </p>
-      </div>
-    )
-  }
 
   // Validate date is not in the future
   const validateDate = (dateStr: string): boolean => {
@@ -207,6 +193,21 @@ export function AdminDailyAccounting({ agentId }: AdminDailyAccountingProps) {
       }
     )
   }, [dailyAccountings])
+
+  // Role gate — must come after all hooks to keep hook order stable
+  if (userRole !== "ADMIN" && userRole !== "AGENT") {
+    return (
+      <div className="p-2">
+        <div className="flex items-center gap-3 text-destructive">
+          <AlertCircle className="h-5 w-5" />
+          <h1 className="text-xl font-semibold">Access Denied</h1>
+        </div>
+        <p className="text-muted-foreground mt-2">
+          This page is restricted to users with ADMIN or AGENT role only.
+        </p>
+      </div>
+    )
+  }
 
   if (!currentAgentId) {
     return (

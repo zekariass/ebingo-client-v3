@@ -34,10 +34,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 
-// interface AdminAgentDailyAccountingProps {
-//   agentId: number
-//   targetAgentId: number
-// }
+interface AdminAgentDailyAccountingProps {
+  targetAgentId?: number
+}
 
 const PAGE_SIZE = 10
 
@@ -48,14 +47,16 @@ function parseLocalDate(dateStr: string) {
   return new Date(y, (m ?? 1) - 1, d ?? 1)
 }
 
-export function AdminAgentDailyAccounting() {
+export function AdminAgentDailyAccounting({ targetAgentId: targetAgentIdProp }: AdminAgentDailyAccountingProps) {
   const router = useRouter()
-  const { user } = userStore.getState()
+  const user = userStore((state) => state.user)
   const userRole = user?.role
 
   const searchParams = useSearchParams()
-  const agentId = Number(searchParams.get("agentId") || 0)
-  const targetAgentId = Number(searchParams.get("targetAgentId") || 0)
+  // The agent whose accounting is being viewed — from prop or query params
+  const queryTargetAgentId = Number(searchParams.get("targetAgentId") || searchParams.get("agentId") || 0)
+  const targetAgentId = targetAgentIdProp ?? queryTargetAgentId
+  const showBack = Boolean(searchParams.get("agentId") || searchParams.get("targetAgentId"))
 
   const {
     dailyAccountings,
@@ -84,7 +85,7 @@ export function AdminAgentDailyAccounting() {
   const [filterError, setFilterError] = useState<string | null>(null)
   
   // Format currency
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | null | undefined) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'ETB',
@@ -104,21 +105,6 @@ export function AdminAgentDailyAccounting() {
     return () => resetDailyAccountings()
   }, [targetAgentId, fetchTodayDailyAccountingForAgent, fetchDailyAccountings, resetDailyAccountings])
 
-  // Check if user has ADMIN role
-  if (userRole !== "ADMIN") {
-    return (
-      <div className="p-1">
-        <div className="flex items-center gap-3 text-destructive">
-          <AlertCircle className="h-5 w-5" />
-          <h1 className="text-xl font-semibold">Access Denied</h1>
-        </div>
-        <p className="text-muted-foreground mt-2">
-          This page is restricted to users with ADMIN role only.
-        </p>
-      </div>
-    )
-  }
-
   // Handle page change
   const handlePageChange = (newPage: number) => {
     setDailyAccountingPage(newPage)
@@ -132,6 +118,15 @@ export function AdminAgentDailyAccounting() {
 
   // Handle search
   const handleSearch = () => {
+    const hasStart = Boolean(startDate)
+    const hasEnd = Boolean(endDate)
+
+    // Backend contract: both dates required for date-range
+    if ((hasStart && !hasEnd) || (!hasStart && hasEnd)) {
+      setFilterError("Please provide both Start Date and End Date")
+      return
+    }
+
     // Validate dates
     if (startDate && endDate) {
       const start = parseLocalDate(startDate)
@@ -209,17 +204,30 @@ export function AdminAgentDailyAccounting() {
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0]
     const record = dailyAccountings.find(r => r.accountingDate === today)
-    if (record && record.agentId === targetAgentId) {
-      setTodayRecord(record)
-    }
+    setTodayRecord(record && record.agentId === targetAgentId ? record : null)
   }, [dailyAccountings, targetAgentId])
+
+  // Role gate — must come after all hooks to keep hook order stable
+  if (userRole !== "ADMIN") {
+    return (
+      <div className="p-1">
+        <div className="flex items-center gap-3 text-destructive">
+          <AlertCircle className="h-5 w-5" />
+          <h1 className="text-xl font-semibold">Access Denied</h1>
+        </div>
+        <p className="text-muted-foreground mt-2">
+          This page is restricted to users with ADMIN role only.
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className="p-1">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-2 sm:gap-4">
-          {searchParams.get("agentId") && (
+          {showBack && (
             <Button 
               variant="ghost" 
               size="sm"

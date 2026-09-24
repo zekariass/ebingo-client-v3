@@ -1,5 +1,6 @@
 import i18n from "@/i18n"
 import { create } from "zustand"
+import { userStore } from "./user-store"
 
 export type DailyAccounting = {
   id: number;
@@ -14,9 +15,11 @@ export type DailyAccounting = {
   netIncome: number;
   dailyPromotionalBonusAmount: number;
   dailyWelcomeBonusAmount: number;
+  dailyReferralBonusAmount?: number;
+  dailyDepositBonusAmount?: number;
   agentId: number;
-  settledAt: string; // LocalDateTime (ISO string)
-  settledAmount: number;
+  settledAt: string | null; // LocalDateTime (ISO string)
+  settledAmount: number | null;
   createdAt: string; // LocalDateTime (ISO string)
   updatedAt: string; // LocalDateTime (ISO string)
 };
@@ -31,11 +34,14 @@ export type TotalAccounting = {
   totalCommissionAmount: number;
   totalBotWinAmount: number;
   totalBotLossAmount: number;
-  totalNetIncome: number;
+  netIncome: number;
   totalPromotionalBonusAmount: number;
   totalWelcomeBonusAmount: number;
-  settledAt: string; // LocalDateTime (ISO string)
-  settledAmount: number;
+  totalReferralBonusAmount?: number;
+  totalDepositBonusAmount?: number;
+  lastSettledAt: string | null; // LocalDateTime (ISO string)
+  lastSettledAmount: number | null;
+  totalSettledAmount: number;
   createdAt: string; // LocalDateTime (ISO string)
   updatedAt: string; // LocalDateTime (ISO string)
 };
@@ -53,6 +59,7 @@ export interface Agent {
   botToken: string | null
   botUsername: string | null
   contactAddress: string | null
+  themeKey?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -98,6 +105,7 @@ interface AgentStore {
   fetchAgents: (page?: number, search?: string, size?: number) => Promise<void>
   searchAgents: (searchTerm: string) => Promise<void>
   updateAgent: (id: number, updates: Partial<Agent>) => Promise<void>
+  updateOwnAgent: (agentId: number, updates: Partial<Agent>) => Promise<Agent>
   setSearchTerm: (term: string) => void
   setCurrentPage: (page: number) => void
   resetAgents: () => void
@@ -261,6 +269,43 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
     }
   },
   
+  // Self-service update for AGENT users — hits the non-admin route which
+  // whitelists safe fields only (name, phone, email, contacts, theme).
+  updateOwnAgent: async (agentId: number, updates: Partial<Agent>) => {
+    const { user, initData } = userStore.getState()
+
+    try {
+        const response = await fetch(`/${i18n.language}/api/agents/${agentId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "x-user-role": user?.role || "",
+                "x-agent-id": String(user?.agentId ?? ""),
+                ...(initData && { "x-init-data": initData }),
+            },
+            body: JSON.stringify(updates),
+        })
+
+        const result = await response.json()
+
+        if (!response.ok || !result.success) {
+            throw new Error(result.error || result.message || `HTTP ${response.status}`)
+        }
+
+        const updated = result.data as Agent
+        set((state) => ({
+            agentDetails: state.agentDetails?.id === updated.id ? updated : state.agentDetails,
+            agents: state.agents.map((a) => (a.id === updated.id ? updated : a)),
+        }))
+        return updated
+    } catch (error) {
+        set({
+            agentsError: error instanceof Error ? error.message : "Failed to update agent",
+        })
+        throw error
+    }
+  },
+
   searchAgents: async (searchTerm: string) => {
     set({ agentsLoading: true, agentsError: null })
 
@@ -438,13 +483,17 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
   },
 
   fetchTodayDailyAccountingForAgent: async (agentId: number) => {
-    set({ dailyAccountingLoading: true, dailyAccountingError: null })
+    set({ dailyAccountingLoading: true })
 
     try {
-      const today = new Date().toISOString().split('T')[0] // YYYY-MM-DD format
-      
       const response = await fetch(`/${i18n.language}/api/accounting/daily/agent/${agentId}/today`)
-      
+
+      // 404 simply means the agent has no record for today — not an error state
+      if (response.status === 404) {
+        set({ dailyAccountingLoading: false })
+        return
+      }
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`)
       }
@@ -452,13 +501,12 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
       const result = await response.json()
 
       if (result.success) {
-        // Store today's record separately or add to the beginning of the list
-        const todayRecord = result.data
+        const todayRecord: DailyAccounting | null = result.data
         if (todayRecord) {
           set((state) => ({
-            // Add today's record to the beginning if it doesn't already exist
-            dailyAccountings: state.dailyAccountings.some(r => r.accountingDate === todayRecord.accountingDate) 
-              ? state.dailyAccountings 
+            // Insert today's record at the top, or refresh it in place if present
+            dailyAccountings: state.dailyAccountings.some(r => r.accountingDate === todayRecord.accountingDate)
+              ? state.dailyAccountings.map(r => r.accountingDate === todayRecord.accountingDate ? todayRecord : r)
               : [todayRecord, ...state.dailyAccountings],
             dailyAccountingLoading: false,
           }))
@@ -466,7 +514,7 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
           set({ dailyAccountingLoading: false })
         }
       } else {
-        throw new Error(result.error || "Failed to fetch today's daily accounting")
+        throw new Error(result.error || result.message || "Failed to fetch today's daily accounting")
       }
     } catch (error) {
       set({
@@ -532,15 +580,18 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
       const result = await response.json()
 
       if (!result.success) {
-        throw new Error(result.error || "Failed to settle daily accounting")
+        throw new Error(result.error || result.message || "Failed to settle daily accounting")
       }
 
-      // Refresh the current list after settlement
-      const { dailyAccountingPage } = get()
-      get().fetchDailyAccountings(get().activeAgentId || 0, dailyAccountingPage)
-      
-      set({ dailyAccountingLoading: false })
-      return result.data
+      // Update the settled record in place — works for both the per-agent
+      // list and the all-agents "today" list without needing a refetch
+      const updated = result.data as DailyAccounting
+      set((state) => ({
+        dailyAccountings: state.dailyAccountings.map(r => r.id === updated.id ? updated : r),
+        dailyAccountingLoading: false,
+      }))
+
+      return updated
     } catch (error) {
       set({
         dailyAccountingError: error instanceof Error ? error.message : "Failed to settle daily accounting",
@@ -585,7 +636,7 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
       })
 
       const response = await fetch(`/${i18n.language}/api/v1/accounting/total/agent/${agentId}?${params.toString()}`)
-      
+
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`)
       }
@@ -593,12 +644,13 @@ export const useAgentStore = create<AgentStore>((set, get) => ({
       const result = await response.json()
 
       if (result.success) {
-        const data = result.data
+        // Backend returns a single TotalAccountingDto for an agent — not paginated
+        const data: TotalAccounting | null = result.data
         set({
-          totalAccountings: data.content || [],
-          totalAccountingPage: data.page || 0,
-          totalAccountingTotalPages: data.totalPages || 0,
-          totalAccountingTotalElements: data.totalElements || 0,
+          totalAccountings: data ? [data] : [],
+          totalAccountingPage: 0,
+          totalAccountingTotalPages: data ? 1 : 0,
+          totalAccountingTotalElements: data ? 1 : 0,
           totalAccountingLoading: false,
         })
       } else {

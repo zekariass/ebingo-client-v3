@@ -42,7 +42,7 @@ const SORT_OPTIONS = [
 ]
 
 export function AdminTotalAccountings({ agentId }: AdminTotalAccountingsProps) {
-  const { user } = userStore.getState()
+  const user = userStore((state) => state.user)
   const userRole = user?.role
   
   const {
@@ -66,7 +66,7 @@ export function AdminTotalAccountings({ agentId }: AdminTotalAccountingsProps) {
   const [detailError, setDetailError] = useState<string | null>(null)
   
   // Format currency
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | null | undefined) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'ETB',
@@ -248,12 +248,12 @@ export function AdminTotalAccountings({ agentId }: AdminTotalAccountingsProps) {
                       <TableCell className=" xl:table-cell">{formatCurrency(accounting.totalCommissionAmount)}</TableCell>
                       <TableCell className={cn(
                         "font-medium",
-                        accounting.totalNetIncome >= 0 ? "text-green-600" : "text-red-600"
+                        accounting.netIncome >= 0 ? "text-green-600" : "text-red-600"
                       )}>
-                        {formatCurrency(accounting.totalNetIncome)}
+                        {formatCurrency(accounting.netIncome)}
                       </TableCell>
                       <TableCell className=" sm:table-cell">
-                        {accounting.settledAt ? (
+                        {accounting.lastSettledAt ? (
                           <Badge variant="default" className="bg-green-600">
                             <CheckCircle className="h-3 w-3 mr-1" />
                             Settled
@@ -358,7 +358,7 @@ export function AdminTotalAccountings({ agentId }: AdminTotalAccountingsProps) {
                 <div>
                   <Label className="text-muted-foreground text-xs sm:text-sm">Status</Label>
                   <p className="text-base sm:text-lg font-semibold">
-                    {selectedRecord.settledAt ? (
+                    {selectedRecord.lastSettledAt ? (
                       <Badge variant="default" className="bg-green-600 text-xs sm:text-sm">
                         <CheckCircle className="h-3 w-3 mr-1" />
                         Settled
@@ -372,9 +372,15 @@ export function AdminTotalAccountings({ agentId }: AdminTotalAccountingsProps) {
                   </p>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground text-xs sm:text-sm">Settled Amount</Label>
+                  <Label className="text-muted-foreground text-xs sm:text-sm">Last Settled Amount</Label>
                   <p className="text-base sm:text-lg font-semibold text-green-600">
-                    {formatCurrency(selectedRecord.settledAmount)}
+                    {formatCurrency(selectedRecord.lastSettledAmount)}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs sm:text-sm">Total Settled Amount</Label>
+                  <p className="text-base sm:text-lg font-semibold text-green-600">
+                    {formatCurrency(selectedRecord.totalSettledAmount)}
                   </p>
                 </div>
               </div>
@@ -413,28 +419,28 @@ export function AdminTotalAccountings({ agentId }: AdminTotalAccountingsProps) {
 
                 <div className={cn(
                   "p-4 sm:p-6 rounded-lg border",
-                  selectedRecord.totalNetIncome >= 0 
-                    ? "bg-green-50 border-green-200" 
+                  selectedRecord.netIncome >= 0
+                    ? "bg-green-50 border-green-200"
                     : "bg-red-50 border-red-200"
                 )}>
                   <div className="flex items-center justify-between mb-2">
-                    {selectedRecord.totalNetIncome >= 0 ? (
+                    {selectedRecord.netIncome >= 0 ? (
                       <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                     ) : (
                       <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-red-600" />
                     )}
                     <span className={cn(
                       "text-xs font-medium",
-                      selectedRecord.totalNetIncome >= 0 ? "text-green-600" : "text-red-600"
+                      selectedRecord.netIncome >= 0 ? "text-green-600" : "text-red-600"
                     )}>
                       NET INCOME
                     </span>
                   </div>
                   <p className={cn(
                     "text-xl sm:text-3xl font-bold",
-                    selectedRecord.totalNetIncome >= 0 ? "text-green-700" : "text-red-700"
+                    selectedRecord.netIncome >= 0 ? "text-green-700" : "text-red-700"
                   )}>
-                    {formatCurrency(selectedRecord.totalNetIncome)}
+                    {formatCurrency(selectedRecord.netIncome)}
                   </p>
                 </div>
               </div>
@@ -466,11 +472,11 @@ export function AdminTotalAccountings({ agentId }: AdminTotalAccountingsProps) {
                   <div className="space-y-1">
                     <div className="flex justify-between text-xs sm:text-sm">
                       <span className="text-gray-600">Wins:</span>
-                      <span className="font-medium text-green-600">{(selectedRecord as any)?.totalWins || 0}</span>
+                      <span className="font-medium text-green-600">{formatCurrency(selectedRecord.totalBotWinAmount)}</span>
                     </div>
                     <div className="flex justify-between text-xs sm:text-sm">
                       <span className="text-gray-600">Losses:</span>
-                      <span className="font-medium text-red-600">{(selectedRecord as any)?.totalLosses || 0}</span>
+                      <span className="font-medium text-red-600">{formatCurrency(selectedRecord.totalBotLossAmount)}</span>
                     </div>
                   </div>
                 </div>
@@ -506,10 +512,10 @@ export function AdminTotalAccountings({ agentId }: AdminTotalAccountingsProps) {
                     <div className="break-all">{format(new Date(selectedRecord.updatedAt), "MMM dd, yyyy 'at' h:mm a")}</div>
                   </div>
                   <div>
-                    <span className="font-medium">Settled:</span>
+                    <span className="font-medium">Last settled:</span>
                     <div className="break-all">
-                      {selectedRecord.settledAt 
-                        ? format(new Date(selectedRecord.settledAt), "MMM dd, yyyy 'at' h:mm a")
+                      {selectedRecord.lastSettledAt
+                        ? format(new Date(selectedRecord.lastSettledAt), "MMM dd, yyyy 'at' h:mm a")
                         : "Not settled yet"
                       }
                     </div>

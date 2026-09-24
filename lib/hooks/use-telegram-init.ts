@@ -26,6 +26,6 @@ export const useTelegramInit = () => {
     if (telegramId && activeAgentId) {
       fetchUserProfile(telegramId, activeAgentId);
     }
-  }, [setInitData, setInitDataUnsafe, fetchUserProfile]);
+  }, [setInitData, setInitDataUnsafe, fetchUserProfile, activeAgentId]);
 };
 

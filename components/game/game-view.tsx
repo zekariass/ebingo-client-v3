@@ -1,21 +1,25 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRoomStore } from "@/lib/stores/room-store"
 // import { useWebSocketEvents } from "@/lib/hooks/websockets/use-websocket-events"
 import { GameHeader } from "./game-header"
 import { NumberGrid } from "./number-grid"
 import { GameCards } from "./game-cards"
+import { transformCardData } from "./game-bingo-card"
 import { useGameStore } from "@/lib/stores/game-store"
 import { Button } from "../ui/button"
 import { userStore } from "@/lib/stores/user-store"
 import { CountdownTimer } from "../common/countdown-timer"
 import { useRouter } from "next/navigation"
+import { LogOut } from "lucide-react"
 import i18n from "@/i18n"
 // import { useSystemStore } from "@/lib/stores/system-store"
 // import { motion } from "framer-motion";
 import { useRoomSocket } from "@/lib/hooks/websockets/use-room-socket"
 import { useAgentStore } from "@/lib/stores/agent-store"
+import { GamePattern } from "@/lib/types"
+import { checkCardPatternWin } from "@/lib/utils/bingo"
 
 interface GameViewProps {
   roomId: number
@@ -24,6 +28,9 @@ interface GameViewProps {
 export function GameView({ roomId }: GameViewProps) {
   const {activeAgentId} = useAgentStore();
   const gameId = useGameStore(state => state.game.gameId)
+  const drawnNumbers = useGameStore(state => state.game.drawnNumbers)
+  const userSelectedCards = useGameStore(state => state.game.userSelectedCards)
+  const started = useGameStore(state => state.game.started)
   // const [currentLetter, setCurrentLetter] = useState<string>("")
   const selectedCardIds = useGameStore(state => state.game.userSelectedCardsIds)
   // const countdownEndTime = useGameStore(state => state.game.countdownEndTime)
@@ -34,9 +41,76 @@ export function GameView({ roomId }: GameViewProps) {
   // const localeChanged = useSystemStore(state => state.localeChanged)
 
   const telegramId = userStore(state => state.user?.telegramId)
+  const userDbId = userStore(state => state.user?.id)
+  const userName = userStore(state => `${state.user?.nickname ?? state.user?.firstName}`.trim())
+  const roomPattern = useRoomStore(state => state.room?.pattern)
+  const claiming = useGameStore(state => state.claiming)
   // const { leaveGame, connected, connect } = useWebSocketEvents({ roomId, enabled: true })
-  const { leaveGame, connected, connect } = useRoomSocket({ roomId, enabled: true })
+  const { leaveGame, connected, connect, markNumber, claimBingo } = useRoomSocket({ roomId, enabled: true })
   const router = useRouter()
+
+  const [autoPlay, setAutoPlay] = useState(false)
+
+  useEffect(() => {
+    setAutoPlay(localStorage.getItem("auto-play-enabled") === "true")
+  }, [])
+
+  const handleAutoPlayToggle = (checked: boolean) => {
+    setAutoPlay(checked)
+    localStorage.setItem("auto-play-enabled", String(checked))
+  }
+
+  useEffect(() => {
+    if (!autoPlay || !connected || !started || !gameId) return
+
+    for (const card of userSelectedCards) {
+      const cardNumbers = transformCardData(card.numbers).flat()
+      for (const num of cardNumbers) {
+        if (num > 0 && drawnNumbers.includes(num) && !(card.marked ?? []).includes(num)) {
+          markNumber(gameId, card.cardId, num)
+        }
+      }
+    }
+  }, [autoPlay, connected, started, gameId, drawnNumbers, userSelectedCards, markNumber])
+
+  const claimedCardsRef = useRef<Set<string>>(new Set())
+
+  // Reset claimed cards when a new game starts
+  useEffect(() => {
+    claimedCardsRef.current.clear()
+  }, [gameId, started])
+
+  useEffect(() => {
+    if (!autoPlay || !connected || !started || !gameId || claiming || !telegramId) return
+
+    const pattern = roomPattern ?? GamePattern.LINE_AND_CORNERS
+
+    for (const card of userSelectedCards) {
+      if (claimedCardsRef.current.has(card.cardId)) continue
+
+      // Also count drawn numbers on the card that are still being marked so the
+      // claim payload always includes the last called number
+      const cardNumbers = transformCardData(card.numbers).flat()
+      const markedNumbers = Array.from(new Set([
+        ...(card.marked ?? []),
+        ...drawnNumbers.filter((n) => cardNumbers.includes(n)),
+      ]))
+
+      if (!checkCardPatternWin(card.numbers, markedNumbers, pattern)) continue
+
+      claimedCardsRef.current.add(card.cardId)
+      claimBingo({
+        gameId,
+        cardId: card.cardId,
+        pattern,
+        playerId: telegramId.toString(),
+        userProfileId: userDbId,
+        playerName: userName,
+        markedNumbers,
+        card,
+      })
+    }
+  }, [autoPlay, connected, started, gameId, claiming, telegramId, userDbId, userName, userSelectedCards, drawnNumbers, roomPattern, claimBingo])
 
   router.prefetch(`/${i18n.language}`)
   //useAutoRefreshGameState(roomId, 3000);
@@ -114,8 +188,9 @@ export function GameView({ roomId }: GameViewProps) {
 
   if (gameId === null || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg text-muted-foreground">Loading game...</div>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-3">
+        <div className="animate-spin rounded-full h-10 w-10 border-4 border-primary border-t-transparent" />
+        <div className="text-sm text-muted-foreground">Loading game...</div>
       </div>
     )
   }
@@ -124,50 +199,43 @@ export function GameView({ roomId }: GameViewProps) {
     <div className="min-h-screen bg-background">
       <GameHeader room={room} connected={connected} />
 
-      <div className="m-3 flex justify-center">
-        <div className="flex flex-wrap gap-3 text-xs sm:text-sm">
+      {/* Legend + auto-mark bar */}
+      <div className="flex flex-wrap items-center justify-center gap-2 px-3 pt-3 text-xs sm:text-sm">
 
-          {/* BEFORE CALL (Disabled / not called) */}
-          <div className="flex items-center gap-2 rounded-md bg-card px-3 py-1.5 border border-border opacity-60">
-            <span className="text-muted-foreground">ያልተጠራ</span>
-            <button
-              disabled
-              className="
-                inline-flex h-6 w-6 items-center justify-center rounded-sm
-                bg-[var(--bingo-card-key-legend-before-call-bg)]
-                text-[var(--bingo-card-key-legend-before-call-fg)]
-                border border-[var(--bingo-card-key-legend-before-call-border)]
-                cursor-not-allowed
-              "
-            />
-          </div>
+        {/* BEFORE CALL (Disabled / not called) */}
+        <div className="flex items-center gap-1.5 rounded-md bg-card px-2.5 py-1.5 border border-border opacity-60">
+          <span
+            className="
+              inline-flex h-3.5 w-3.5 rounded-sm
+              bg-[var(--bingo-card-key-legend-before-call-bg)]
+              border border-[var(--bingo-card-key-legend-before-call-border)]
+            "
+          />
+          <span className="text-muted-foreground">ያልተጠራ</span>
+        </div>
 
-          {/* AFTER CALL (unmarked) */}
-          <div className="flex items-center gap-2 rounded-md bg-card px-3 py-1.5 border border-border">
-            <span className="text-foreground">የተጠራ</span>
-            <button
-              className="
-                inline-flex h-6 w-6 items-center justify-center rounded-sm
-                bg-[var(--bingo-card-key-legend-after-call-unmarked-bg)]
-                text-[var(--bingo-card-key-legend-after-call-unmarked-fg)]
-                border border-white
-              "
-            />
-          </div>
+        {/* AFTER CALL (unmarked) */}
+        <div className="flex items-center gap-1.5 rounded-md bg-card px-2.5 py-1.5 border border-border">
+          <span
+            className="
+              inline-flex h-3.5 w-3.5 rounded-sm
+              bg-[var(--bingo-card-key-legend-after-call-unmarked-bg)]
+              border border-white/60
+            "
+          />
+          <span className="text-foreground">የተጠራ</span>
+        </div>
 
-          {/* MARKED */}
-          <div className="flex items-center gap-2 rounded-md bg-card px-3 py-1.5 border border-border">
-            <span className="text-foreground">ማርክ የተደረገ</span>
-            <button
-              className="
-                inline-flex h-6 w-6 items-center justify-center rounded-sm
-                bg-[var(--bingo-card-key-legend-after-call-marked-bg)]
-                text-[var(--bingo-card-key-legend-after-call-marked-fg)]
-                border border-white
-              "
-            />
-          </div>
-
+        {/* MARKED */}
+        <div className="flex items-center gap-1.5 rounded-md bg-card px-2.5 py-1.5 border border-border">
+          <span
+            className="
+              inline-flex h-3.5 w-3.5 rounded-sm
+              bg-[var(--bingo-card-key-legend-after-call-marked-bg)]
+              border border-white/60
+            "
+          />
+          <span className="text-foreground">ማርክ የተደረገ</span>
         </div>
       </div>
 
@@ -192,7 +260,11 @@ export function GameView({ roomId }: GameViewProps) {
               </div>
             </div>
             
-            <GameCards selectedCardIds={selectedCardIds} />
+            <GameCards
+              selectedCardIds={selectedCardIds}
+              autoPlay={autoPlay}
+              onAutoPlayChange={handleAutoPlayToggle}
+            />
           </div>
         </div>
 
@@ -208,8 +280,9 @@ export function GameView({ roomId }: GameViewProps) {
           <Button
             onClick={handleLeaveGame}
             disabled={isLeaving}
-            className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-4 text-lg rounded-xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+            className="w-full max-w-md inline-flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold py-4 text-lg rounded-xl transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
           >
+            <LogOut className="h-5 w-5" />
             {isLeaving ? "Leaving..." : "Leave Game"}
           </Button>
         </div>

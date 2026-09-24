@@ -5,7 +5,7 @@ const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKE
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     if (!BACKEND_BASE_URL) {
@@ -16,30 +16,29 @@ export async function PUT(
       )
     }
 
-    const id = params.id
+    const { id } = await params
+    const { searchParams } = new URL(request.url)
+    const agentId = searchParams.get("agentId")
 
-    if (!id) {
+    if (!id || !agentId) {
       return NextResponse.json(
-        { success: false, error: "id is required" },
+        { success: false, error: "id and agentId are required" },
         { status: 400 }
       )
     }
 
     const initData = request.headers.get("x-init-data")
-    const backendUrl = `${BACKEND_BASE_URL}/external-games/golden-eggs/accounting/daily/${id}/settle`
+    const backendUrl = `${BACKEND_BASE_URL}/external-games/golden-eggs/accounting/daily/${id}/settle?agentId=${agentId}`
     
-    console.log("Settling daily accounting:", backendUrl)
-
     const response = await fetch(backendUrl, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN,
+        ...(initData && { "x-init-data": initData }),
       },
       cache: "no-store",
     })
-
-    console.log("Backend response status:", response.status)
 
     const result = await response.json()
 

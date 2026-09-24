@@ -73,12 +73,12 @@ interface ExternalGameStore {
 
   getGoldenEggsTotalAccounting: (agentId: number) => Promise<void>
   getGoldenEggsDailyAccounting: (agentId: number) => Promise<void>
-  getGoldenEggsDailyAccountingById: (id: number) => Promise<void>
+  getGoldenEggsDailyAccountingById: (id: number, agentId: number) => Promise<void>
   getGoldenEggsDailyAccountingByDate: (agentId: number, date: string) => Promise<void>
   getGoldenEggsDailyAccountingByRange: (agentId: number, startDate: string, endDate: string) => Promise<void>
   getGoldenEggsUnsettledDailyAccounting: (agentId: number) => Promise<void>
-  settleGoldenEggsDailyAccounting: (id: number) => Promise<void>
-  unsettleGoldenEggsDailyAccounting: (id: number) => Promise<void>
+  settleGoldenEggsDailyAccounting: (id: number, agentId: number) => Promise<void>
+  unsettleGoldenEggsDailyAccounting: (id: number, agentId: number) => Promise<void>
   getAgentGames: (agentId: number, enabledOnly?: boolean) => Promise<void>
   getAgentGameById: (id: number) => Promise<void>
   createAgentGame: (payload: CreateAgentGameRequest) => Promise<void>
@@ -284,7 +284,7 @@ export const useExternalGameStore = create<ExternalGameStore>((set) => ({
     }
   },
 
-  getGoldenEggsDailyAccountingById: async (id: number) => {
+  getGoldenEggsDailyAccountingById: async (id: number, agentId: number) => {
     set({ accountingLoading: true, accountingError: null })
     
     try {
@@ -296,7 +296,7 @@ export const useExternalGameStore = create<ExternalGameStore>((set) => ({
         ? (localStorage.getItem("i18nextLng") || "en")
         : "en"
 
-      const response = await fetch(`/${lang}/api/external-games/golden-eggs/accounting/daily/by-id/${id}`, {
+      const response = await fetch(`/${lang}/api/external-games/golden-eggs/accounting/daily/by-id/${id}?agentId=${agentId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -444,7 +444,7 @@ export const useExternalGameStore = create<ExternalGameStore>((set) => ({
     }
   },
 
-  settleGoldenEggsDailyAccounting: async (id: number) => {
+  settleGoldenEggsDailyAccounting: async (id: number, agentId: number) => {
     set({ accountingLoading: true, accountingError: null })
     
     try {
@@ -456,7 +456,7 @@ export const useExternalGameStore = create<ExternalGameStore>((set) => ({
         ? (localStorage.getItem("i18nextLng") || "en")
         : "en"
 
-      const response = await fetch(`/${lang}/api/external-games/golden-eggs/accounting/daily/settle/${id}`, {
+      const response = await fetch(`/${lang}/api/external-games/golden-eggs/accounting/daily/settle/${id}?agentId=${agentId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -492,7 +492,7 @@ export const useExternalGameStore = create<ExternalGameStore>((set) => ({
     }
   },
 
-  unsettleGoldenEggsDailyAccounting: async (id: number) => {
+  unsettleGoldenEggsDailyAccounting: async (id: number, agentId: number) => {
     set({ accountingLoading: true, accountingError: null })
     
     try {
@@ -504,7 +504,7 @@ export const useExternalGameStore = create<ExternalGameStore>((set) => ({
         ? (localStorage.getItem("i18nextLng") || "en")
         : "en"
 
-      const response = await fetch(`/${lang}/api/external-games/golden-eggs/accounting/daily/unsettle/${id}`, {
+      const response = await fetch(`/${lang}/api/external-games/golden-eggs/accounting/daily/unsettle/${id}?agentId=${agentId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

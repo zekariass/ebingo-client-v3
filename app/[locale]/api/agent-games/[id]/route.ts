@@ -5,7 +5,7 @@ const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKE
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     if (!BACKEND_BASE_URL) {
@@ -16,7 +16,7 @@ export async function GET(
       )
     }
 
-    const id = params.id
+    const { id } = await params
 
     if (!id) {
       return NextResponse.json(
@@ -57,7 +57,7 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: result.data,
+      data: result.data ?? result,
       message: result.message,
     })
   } catch (err) {
@@ -76,7 +76,7 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     if (!BACKEND_BASE_URL) {
@@ -87,7 +87,7 @@ export async function DELETE(
       )
     }
 
-    const id = params.id
+    const { id } = await params
 
     if (!id) {
       return NextResponse.json(
@@ -135,7 +135,7 @@ export async function DELETE(
 
     return NextResponse.json({
       success: true,
-      data: result.data,
+      data: result.data ?? result,
       message: result.message,
     })
   } catch (err) {

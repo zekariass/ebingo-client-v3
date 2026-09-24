@@ -17,16 +17,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!initData) {
-        console.error("======> Add deposit bonus error: Missing initData");
-      return NextResponse.json(
-        { error: "Missing initData" },
-        { status: 400 }
-      );
-    }
-
-
-
     const { telegramId, amount, paymentProviderRef, paymentMethodCode, agentId } = await request.json();
 
     // Validate required fields
@@ -66,7 +56,8 @@ export async function POST(request: NextRequest) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-init-data": initData,
+          "x-user-role": role,
+          ...(initData && { "x-init-data": initData }),
           "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
 
         },
@@ -76,10 +67,11 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json();
 
-    if (!response.ok) {
+    if (!response.ok || data?.success === false) {
+      console.error("Offline deposit backend error:", data);
       return NextResponse.json(
-        { error: data?.error || "Backend error" },
-        { status: response.status }
+        { error: data?.message || data?.error || "Backend error" },
+        { status: response.ok ? 500 : response.status }
       );
     }
 

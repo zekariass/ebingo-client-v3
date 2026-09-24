@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { locale: string; agentId: string } }
+  { params }: { params: Promise<{ locale: string; agentId: string }> }
 ) {
   try {
     const { searchParams } = new URL(request.url)
@@ -11,7 +11,7 @@ export async function GET(
     const startDate = searchParams.get("startDate")
     const endDate = searchParams.get("endDate")
     
-    const agentId = params.agentId
+    const { agentId } = await params
     
     const backendUrl = process.env.BACKEND_BASE_URL
     const apiKey = process.env.INTERNAL_API_KEY

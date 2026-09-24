@@ -1,12 +1,14 @@
-import { AdminTotalAccountings } from "@/components/admin/admin-total-accountings"
+import { redirect } from "next/navigation"
 
-interface AdminTotalAccountingsPageProps {
-  searchParams: Promise<{
-    agentId?: number
-  }>
+interface PageProps {
+  params: Promise<{ locale: string }>
+  searchParams: Promise<{ agentId?: string }>
 }
 
-export default async function AdminTotalAccountingsPage({ searchParams }: AdminTotalAccountingsPageProps) {
-  const resolvedSearchParams = await searchParams
-  return <AdminTotalAccountings agentId={resolvedSearchParams.agentId} />
+export default async function TotalAccountingsRedirect({ params, searchParams }: PageProps) {
+  const { locale } = await params
+  const sp = await searchParams
+  const q = new URLSearchParams({ tab: "total" })
+  if (sp.agentId) q.set("agentId", String(sp.agentId))
+  redirect(`/${locale}/admin/accountings?${q}`)
 }

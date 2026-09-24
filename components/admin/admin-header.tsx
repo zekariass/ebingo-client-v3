@@ -50,12 +50,12 @@ export function AdminHeader({ onMenuToggle }: AdminHeaderProps) {
         </Link>
 
         <div className="flex items-center gap-1 sm:gap-2">
-          <Button variant="outline" size="sm" onClick={() => refreshData(activeAgentId!)} className="hidden sm:flex bg-transparent">
+          <Button variant="outline" size="sm" onClick={() => activeAgentId && refreshData(activeAgentId)} disabled={!activeAgentId} className="hidden sm:flex bg-transparent">
             <RefreshCw className="h-4 w-4 mr-2" />
             {t("refresh", "Refresh")}
           </Button>
 
-          <Button variant="outline" size="sm" onClick={() => refreshData(activeAgentId!)} className="sm:hidden bg-transparent">
+          <Button variant="outline" size="sm" onClick={() => activeAgentId && refreshData(activeAgentId)} disabled={!activeAgentId} className="sm:hidden bg-transparent">
             <RefreshCw className="h-4 w-4" />
           </Button>
 

@@ -1,5 +1,6 @@
 import axios from "axios"
 import { Markup, type Telegraf, session } from "telegraf"
+import { getAgentConfig } from "./agent-config"
 
 const registeredUsersCache = new Map<string, boolean>()
 const CACHE_TTL_MS = 5 * 60 * 1000 // 5 minutes
@@ -40,7 +41,18 @@ export function registerMiddleware(bot: Telegraf, agentId: number) {
       }
     }
 
+    // Agent admins may not be registered players — let their commands through
     if (!isRegistered && !isStart && !isContact) {
+      const config = await getAgentConfig(agentId)
+      const adminIds = (config?.adminIds || "")
+        .split(",")
+        .map((x: string) => Number(x.trim()))
+        .filter((n: number) => Number.isFinite(n) && n > 0)
+      if (adminIds.includes(userId)) {
+        ctx.session = ctx.session || {}
+        return next()
+      }
+
       await ctx.reply(
         "📌 Please share your phone number first to register.",
         Markup.keyboard([[Markup.button.contactRequest("📱 Share Phone Number To Register")]])

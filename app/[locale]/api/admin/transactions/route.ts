@@ -5,9 +5,8 @@ const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL!;
 const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN;
 
 /**
- * GET /[lang]/api/admin/transactions/by-status
- * Query Params: status, type, page, size, sortBy
- * Header: x-init-data
+ * GET /[lang]/api/admin/transactions
+ * Query Params: agentId, status, type, page, size, sortBy
  */
 export async function GET(request: NextRequest) {
   try {
@@ -15,27 +14,31 @@ export async function GET(request: NextRequest) {
       throw new Error("BACKEND_BASE_URL is not defined");
     }
 
-    // Read initData from headers
     const initData = request.headers.get("x-init-data");
-    if (!initData) {
+
+    // Extract query params from request
+    const { searchParams } = new URL(request.url);
+    const agentId = searchParams.get("agentId");
+    const page = searchParams.get("page") || "0";
+    const size = searchParams.get("size") || "10";
+    const status = searchParams.get("status");
+    const type = searchParams.get("type");
+    const sortBy = searchParams.get("sortBy");
+
+    if (!agentId) {
       return NextResponse.json(
-        { success: false, error: "Missing x-init-data header" },
+        { success: false, error: "agentId is required" },
         { status: 400 }
       );
     }
 
-    // Extract query params from request
-    const { searchParams } = new URL(request.url);
-    const status = searchParams.get("status") || "";
-    const type = searchParams.get("type") || "";
-    const page = searchParams.get("page") || "0";
-    const size = searchParams.get("size") || "10";
-    const sortBy = searchParams.get("sortBy") || "createdat";
-    const agentId = searchParams.get("agentId");
-
     // Construct backend URL with encoded params
-    const backendUrl = `${BACKEND_BASE_URL}/api/v1/secured/transactions/by-status?` +
-      new URLSearchParams({ status, type, page, size, sortBy }).toString();
+    const params = new URLSearchParams({ agentId, page, size });
+    if (status) params.set("status", status);
+    if (type) params.set("type", type);
+    if (sortBy) params.set("sortBy", sortBy);
+
+    const backendUrl = `${BACKEND_BASE_URL}/api/v1/secured/transactions?${params.toString()}`;
 
     // Call backend
     const response = await fetch(backendUrl, {
@@ -43,7 +46,7 @@ export async function GET(request: NextRequest) {
       headers: {
         "Content-Type": "application/json",
         "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
-        // "x-init-data": initData,
+        ...(initData && { "x-init-data": initData }),
       },
       cache: "no-store",
     });
@@ -52,7 +55,7 @@ export async function GET(request: NextRequest) {
 
     if (!response.ok) {
       return NextResponse.json(
-        { success: false, error: result?.error || "Backend transactions fetch failed" },
+        { success: false, error: result?.error || result?.message || "Backend transactions fetch failed" },
         { status: response.status }
       );
     }

@@ -186,6 +186,16 @@ export function useRoomSocket({ roomId, enabled = true }: UseRoomSocketOptions) 
           case "game.ended":
             // if (p.gameId === gameStore.game?.gameId) {
             if (p.roomId === roomStore.room?.id) {
+              // For our own win, merge locally known marks so the winner card
+              // shows the full pattern even if the server missed the last mark
+              if (user && p.hasWinner && Number(p.playerId) === user.telegramId && p.cardId) {
+                const myCard = gameStore.game.userSelectedCards?.find((c) => c.cardId === p.cardId)
+                if (myCard) {
+                  const cardNumbers = new Set(Object.values(myCard.numbers ?? {}).flat())
+                  const drawableMarks = (gameStore.game.drawnNumbers ?? []).filter((n) => cardNumbers.has(n))
+                  p.markedNumbers = Array.from(new Set([...(p.markedNumbers ?? []), ...(myCard.marked ?? []), ...drawableMarks]))
+                }
+              }
               gameStore.setWinner(p)
               router.push(`/${i18n.language}/rooms/${roomId}?agentId=${activeAgentId}`)
               gameStore.resetGameState()
@@ -224,6 +234,10 @@ export function useRoomSocket({ roomId, enabled = true }: UseRoomSocketOptions) 
             if (p.roomId !== roomStore.room?.id) break
             gameStore.resetGameState()
             gameStore.setGameState(p.gameState)
+            break
+
+          case "card.markNumberResponse":
+            if (p.cardId && Array.isArray(p.numbers)) gameStore.setMarkedNumbersForACard(p.cardId, p.numbers)
             break
 
           case "game.notEnoughPlayers":
@@ -323,12 +337,12 @@ export function useRoomSocket({ roomId, enabled = true }: UseRoomSocketOptions) 
 
     markNumber: (gameId: number, cardId: string, number: number) => {
       gameStore.addMarkedNumberToCard(cardId, number)
-      send?.({ type: "card.markNumberRequest", payload: { gameId, cardId, number } })
+      send?.({ type: "card.markNumberRequest", payload: { gameId: gameId.toString(), playerId: user?.telegramId?.toString(), cardId, number } })
     },
 
     unmarkNumber: (gameId: number, cardId: string, number: number) => {
       gameStore.removeMarkedNumberFromCard(cardId, number)
-      send?.({ type: "card.unmarkNumberRequest", payload: { gameId, cardId, number } })
+      send?.({ type: "card.unmarkNumberRequest", payload: { gameId: gameId.toString(), playerId: user?.telegramId?.toString(), cardId, number } })
     },
 
     claimBingo: (request: BingoClaimRequestPayloadType) => {

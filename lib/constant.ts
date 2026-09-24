@@ -1,5 +1,8 @@
 export const currency = "Birr"
 
+// System config names visible/editable by ADMIN only — hidden from AGENT users
+export const ADMIN_ONLY_SYSTEM_CONFIGS = new Set(["AGENT_SETTLEMENT_CYCLE"])
+
 // lib/constants.ts
 
 export function getStatusColor(status: string) {

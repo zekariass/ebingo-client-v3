@@ -1,6 +1,7 @@
 import { Telegraf } from "telegraf"
 import { registerMiddleware } from "./bot/middleware"
 import { registerHandlers } from "./bot/handlers"
+import { enableAdminCommandsOnStart } from "./bot/setup-webhooks"
 
 // Store bot instances per agent
 const botInstances = new Map<number, Telegraf>()
@@ -16,14 +17,18 @@ export function getOrCreateBot(agentId: number, botToken: string): Telegraf {
     return botInstances.get(agentId)!
   }
 
-  // Create new bot instance
-  const bot = new Telegraf(botToken)
+  // Create new bot instance (default handlerTimeout is 90s — too short for broadcasts)
+  const bot = new Telegraf(botToken, { handlerTimeout: 900_000 })
 
   // Install middleware with agent context
   registerMiddleware(bot, agentId)
 
   // Register handlers with agent context
   registerHandlers(bot, agentId)
+
+  // Push admin command list (incl. /theme) when an admin sends /start —
+  // covers admins who start the bot after webhook setup already ran
+  enableAdminCommandsOnStart(bot, agentId)
 
   // console.log(`>>>>>>>>>>: Received webhook for agentId: ${agentId}`)
 

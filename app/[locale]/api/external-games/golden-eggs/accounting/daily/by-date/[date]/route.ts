@@ -5,7 +5,7 @@ const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKE
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { date: string } }
+  { params }: { params: Promise<{ date: string }> }
 ) {
   try {
     if (!BACKEND_BASE_URL) {
@@ -18,7 +18,7 @@ export async function GET(
 
     const { searchParams } = new URL(request.url)
     const agentId = searchParams.get("agentId")
-    const date = params.date
+    const { date } = await params
 
     if (!agentId || !date) {
       return NextResponse.json(
@@ -30,18 +30,15 @@ export async function GET(
     const initData = request.headers.get("x-init-data")
     const backendUrl = `${BACKEND_BASE_URL}/external-games/golden-eggs/accounting/daily/${date}?agentId=${agentId}`
     
-    console.log("Fetching daily accounting by date from:", backendUrl)
-
     const response = await fetch(backendUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN,
+        ...(initData && { "x-init-data": initData }),
       },
       cache: "no-store",
     })
-
-    console.log("Backend response status:", response.status)
 
     const result = await response.json()
 

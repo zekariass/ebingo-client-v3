@@ -5,6 +5,7 @@ import { Trophy, ChevronDown, ChevronUp, ArrowLeftIcon } from "lucide-react";
 import { useAdminStore } from "@/lib/stores/admin-store";
 import Link from "next/link";
 import { useAgentStore } from "@/lib/stores/agent-store";
+import i18n from "@/i18n";
 
 const trophyColors = ["text-yellow-400", "text-gray-400", "text-orange-500"];
 const top3BgColors = ["bg-yellow-900/40", "bg-gray-700/40", "bg-orange-900/40"];
@@ -26,12 +27,14 @@ const top3BgColors = ["bg-yellow-900/40", "bg-gray-700/40", "bg-orange-900/40"];
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
   useEffect(() => {
-    fetchDailyLeaderboard(activeAgentId!, 1, 10, sortBy, includeBots);
-  }, [sortBy, includeBots]);
+    if (activeAgentId) {
+      fetchDailyLeaderboard(activeAgentId, 0, 10, sortBy, includeBots);
+    }
+  }, [sortBy, includeBots, activeAgentId]);
 
   const handlePageChange = (newPage: number) => {
-    if (newPage > 0 && newPage <= dailyLeaderboardTotalPages) {
-      fetchDailyLeaderboard(activeAgentId!, newPage, 10, sortBy, includeBots);
+    if (activeAgentId && newPage >= 0 && newPage < dailyLeaderboardTotalPages) {
+      fetchDailyLeaderboard(activeAgentId, newPage, 10, sortBy, includeBots);
       setExpandedRows(new Set());
     }
   };
@@ -45,7 +48,7 @@ const top3BgColors = ["bg-yellow-900/40", "bg-gray-700/40", "bg-orange-900/40"];
   return (
     <div className="p-4 bg-[var(--background)] min-h-screen text-white">
       <Link
-        href={`/admin/rooms?agentId=${activeAgentId}`}
+        href={`/${i18n.language}/admin/rooms?agentId=${activeAgentId}`}
         className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium"
       >
         <ArrowLeftIcon className="w-4 h-4 mr-2" />
@@ -107,8 +110,9 @@ const top3BgColors = ["bg-yellow-900/40", "bg-gray-700/40", "bg-orange-900/40"];
                       />
                     )}
 
-                    {player.userProfile.nickname ||
-                      `${player.userProfile.firstName} ${player.userProfile.lastName}`}
+                    {player.userProfile?.nickname ||
+                      `${player.userProfile?.firstName ?? ""} ${player.userProfile?.lastName ?? ""}`.trim() ||
+                      "Unknown Player"}
 
                     {player.isBot && (
                       <span className="ml-1 text-gray-400">(Bot)</span>
@@ -131,7 +135,7 @@ const top3BgColors = ["bg-yellow-900/40", "bg-gray-700/40", "bg-orange-900/40"];
                         <div className="icon-wrap">📞</div>
                         <div className="label">Phone</div>
                         <div className="value !text-xs">
-                          {player.userProfile.phoneNumber || "-"}
+                          {player.userProfile?.phoneNumber || "-"}
                         </div>
                       </div>
 
@@ -182,21 +186,27 @@ const top3BgColors = ["bg-yellow-900/40", "bg-gray-700/40", "bg-orange-900/40"];
             );
           })}
 
+          {dailyLeaderboard.length === 0 && (
+            <div className="text-center py-10 text-gray-400">
+              No leaderboard data found
+            </div>
+          )}
+
           {/* Pagination */}
           <div className="flex justify-between items-center mt-4 px-2">
             <button
               onClick={() => handlePageChange(dailyLeaderboardPage - 1)}
-              disabled={dailyLeaderboardPage === 1}
+              disabled={dailyLeaderboardPage === 0}
               className="px-4 py-2 bg-[var(--btn-default-bg)] rounded disabled:opacity-50"
             >
               Previous
             </button>
             <span>
-              Page {dailyLeaderboardPage} of {Math.max(1, dailyLeaderboardTotalPages)}
+              Page {dailyLeaderboardPage + 1} of {Math.max(1, dailyLeaderboardTotalPages)}
             </span>
             <button
               onClick={() => handlePageChange(dailyLeaderboardPage + 1)}
-              disabled={dailyLeaderboardPage === dailyLeaderboardTotalPages}
+              disabled={dailyLeaderboardPage >= dailyLeaderboardTotalPages - 1}
               className="px-4 py-2 bg-[var(--btn-default-bg)] rounded disabled:opacity-50"
             >
               Next

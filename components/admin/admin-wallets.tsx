@@ -1,15 +1,42 @@
 "use client";
 
-import { act, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAdminStore } from "@/lib/stores/admin-store";
 import Link from "next/link";
-import { ArrowLeftIcon } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import {
+  AlertCircle,
+  ArrowLeftIcon,
+  Gift,
+  Loader2,
+  PlusCircle,
+  Search,
+  User,
+  Wallet,
+} from "lucide-react";
+import { toast } from "sonner";
 import { useAgentStore } from "@/lib/stores/agent-store";
-import { Card } from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import { Skeleton } from "../ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import { cn } from "@/lib/utils";
+import i18n from "@/i18n";
 
 export default function WalletDetailsPage() {
-  const { activeAgentId, agentDetails } = useAgentStore();
+  const { activeAgentId, agentDetails, setActiveAgentId } = useAgentStore();
+  const searchParams = useSearchParams();
+  const agentId = Number(searchParams.get("agentId")) || activeAgentId;
+
   const {
     fetchWalletDetails,
     WalletDetails,
@@ -20,326 +47,422 @@ export default function WalletDetailsPage() {
   } = useAdminStore();
 
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [searchedPhone, setSearchedPhone] = useState("");
   const [showPromoModal, setShowPromoModal] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [promoAmount, setPromoAmount] = useState("");
   const [depositAmount, setDepositAmount] = useState("");
   const [txnRef, setTxnRef] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    const urlAgentId = Number(searchParams.get("agentId"));
+    if (urlAgentId && urlAgentId !== activeAgentId) {
+      setActiveAgentId(urlAgentId);
+    }
+  }, [searchParams, activeAgentId, setActiveAgentId]);
 
   const handleFetch = async () => {
-    if (!phoneNumber.trim()) return;
-    await fetchWalletDetails(phoneNumber.trim(), activeAgentId!);
+    const phone = phoneNumber.trim();
+    if (!phone || !agentId) return;
+    setSearchedPhone(phone);
+    await fetchWalletDetails(phone, agentId);
+  };
+
+  const refetch = async () => {
+    if (searchedPhone && agentId) {
+      await fetchWalletDetails(searchedPhone, agentId);
+    }
   };
 
   const handleOfferPromo = async () => {
-    if (!promoAmount || isNaN(Number(promoAmount))) return;
+    const amount = Number(promoAmount);
+    if (!promoAmount || isNaN(amount) || amount <= 0 || !agentId || !WalletDetails) return;
 
-    if (WalletDetails) {
-      await addPromoBonus(
-        activeAgentId!,
-        WalletDetails.userProfile.telegramId,
-        Number(promoAmount)
-      );
-      setShowPromoModal(false);
-      setPromoAmount("");
+    setSubmitting(true);
+    const ok = await addPromoBonus(agentId, WalletDetails.userProfile.telegramId, amount);
+    setSubmitting(false);
 
-      await fetchWalletDetails(WalletDetails.userProfile.phoneNumber, activeAgentId!);
+    if (!ok) {
+      toast.error(useAdminStore.getState().error || "Failed to add promotional bonus");
+      return;
     }
+
+    toast.success(`Added ${amount} promotional bonus`);
+    setShowPromoModal(false);
+    setPromoAmount("");
+    await refetch();
   };
 
   const handleAddDeposit = async () => {
-    if (!depositAmount || isNaN(Number(depositAmount))) return;
+    const amount = Number(depositAmount);
+    if (
+      !depositAmount ||
+      isNaN(amount) ||
+      amount <= 0 ||
+      !txnRef.trim() ||
+      !agentId ||
+      !WalletDetails
+    )
+      return;
 
-    if (WalletDetails) {
-      await addDeposit(activeAgentId!, WalletDetails.userProfile.telegramId, Number(depositAmount), txnRef);
-      setShowDepositModal(false);
-      setDepositAmount("");
-      setTxnRef("");
+    setSubmitting(true);
+    const ok = await addDeposit(
+      agentId,
+      WalletDetails.userProfile.telegramId,
+      amount,
+      txnRef.trim()
+    );
+    setSubmitting(false);
 
-      await fetchWalletDetails(WalletDetails.userProfile.phoneNumber, activeAgentId!);
+    if (!ok) {
+      toast.error(useAdminStore.getState().error || "Failed to record deposit");
+      return;
     }
+
+    toast.success(`Recorded deposit of ${amount}`);
+    setShowDepositModal(false);
+    setDepositAmount("");
+    setTxnRef("");
+    await refetch();
   };
 
+  const wallet = WalletDetails;
+  const profile = wallet?.userProfile;
+  const showInitialSkeleton = isLoading && !wallet;
+
   return (
-    <div className="min-h-screen bg-[var(--background)] text-white p-6">
+    <div className="w-full px-3 sm:px-4 py-4 space-y-4 max-w-7xl mx-auto">
       <Link
-        href={`/admin/rooms?agentId=${activeAgentId}`}
-        className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200 font-medium"
+        href={`/${i18n.language}/admin/rooms?agentId=${agentId}`}
+        className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
       >
         <ArrowLeftIcon className="w-4 h-4 mr-2" />
         Back To Dashboard
-    </Link>
-      <h1 className="text-3xl font-bold mb-6">Wallet Details</h1>
+      </Link>
 
-      {/* Search Input */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6 items-start sm:items-center">
-        <input
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Wallet Details</h1>
+      </div>
+
+      {/* Search */}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleFetch();
+        }}
+        className="flex flex-col sm:flex-row gap-2"
+      >
+        <Input
           type="text"
           value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
           placeholder="Enter phone number"
-          className="px-4 py-2 rounded bg-[var(--card)] text-white w-full sm:w-auto flex-1"
+          className="flex-1 sm:max-w-sm"
         />
-
-        <Button
-          onClick={handleFetch}
-          className="px-4 py-2 text-black rounded"
-        >
-          Fetch
+        <Button type="submit" disabled={isLoading || !phoneNumber.trim()}>
+          {isLoading && !wallet ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Search className="h-4 w-4 mr-2" />
+          )}
+          Search
         </Button>
-      </div>
+      </form>
 
       {/* Loading */}
-      {isLoading && (
-        <div className="text-gray-400 py-4">Fetching wallet details...</div>
+      {showInitialSkeleton && (
+        <div className="space-y-4">
+          <Card className="p-4 sm:p-5 space-y-3">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-9 w-56" />
+          </Card>
+          {[0, 1].map((i) => (
+            <Card key={i} className="p-4 space-y-3">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+            </Card>
+          ))}
+        </div>
       )}
 
       {/* Error */}
-      {error && <div className="text-red-400 py-2">{error}</div>}
+      {error && !showInitialSkeleton && !wallet && (
+        <Card className="py-10 flex flex-col items-center gap-3 text-center">
+          <AlertCircle className="w-8 h-8 text-red-400" />
+          <p className="font-medium text-gray-600 dark:text-gray-300">{error}</p>
+        </Card>
+      )}
 
-      {/* WALLET DETAILS FOUND */}
-      {WalletDetails && typeof WalletDetails !== "number" && (
-        <div className="space-y-6">
+      {/* Empty state */}
+      {!isLoading && !wallet && !error && (
+        <Card className="py-12 flex flex-col items-center gap-3 text-center">
+          <Wallet className="w-10 h-10 text-gray-400" />
+          <p className="font-medium text-gray-600 dark:text-gray-300">No wallet loaded</p>
+          <p className="text-sm text-gray-400">
+            Enter a phone number above and click Search.
+          </p>
+        </Card>
+      )}
 
-          {/* USER PROFILE CARD */}
-          <div className="bg-[var(--card)] rounded-xl shadow p-6">
-            <h2 className="text-2xl font-semibold mb-4">User Profile</h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <ProfileItem label="ID" value={WalletDetails.userProfile.id} />
-              <ProfileItem label="Telegram ID" value={WalletDetails.userProfile.telegramId} />
-              <ProfileItem label="Nickname" value={WalletDetails.userProfile.nickname} />
-              <ProfileItem
-                label="Full Name"
-                value={`${WalletDetails.userProfile.firstName} ${WalletDetails.userProfile.lastName}`}
-              />
-              <ProfileItem label="Phone" value={WalletDetails.userProfile.phoneNumber} />
-              <ProfileItem
-                label="Is Bot"
-                value={WalletDetails.userProfile.isBot ? "Yes" : "No"}
-              />
+      {wallet && (
+        <div className="space-y-4">
+          {/* Summary */}
+          <Card className="p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="font-semibold">
+                {profile?.firstName} {profile?.lastName}
+                {profile?.nickname ? (
+                  <span className="text-gray-500 dark:text-gray-400 font-normal">
+                    {" "}
+                    (@{profile.nickname})
+                  </span>
+                ) : null}
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{profile?.phoneNumber}</p>
             </div>
-          </div>
+            <div className="text-right">
+              <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                Total Balance
+              </p>
+              <p className="text-2xl sm:text-3xl font-bold tabular-nums">
+                {wallet.totalAvailableBalance}
+              </p>
+            </div>
+          </Card>
 
-          {/* WALLET INFORMATION CARD */}
-          <div className="bg-[var(--card)] rounded-xl shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">Wallet Information</h2>
+          {/* User profile */}
+          <SectionCard icon={User} title="User Profile">
+            <DetailItem label="ID" value={profile?.id} />
+            <DetailItem label="Telegram ID" value={profile?.telegramId} mono />
+            <DetailItem label="Nickname" value={profile?.nickname} />
+            <DetailItem
+              label="Full Name"
+              value={`${profile?.firstName ?? ""} ${profile?.lastName ?? ""}`.trim() || "-"}
+            />
+            <DetailItem label="Phone" value={profile?.phoneNumber} />
+            <DetailItem label="Is Bot" value={profile?.isBot ? "Yes" : "No"} />
+          </SectionCard>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Item label="Welcome Bonus" value={WalletDetails.welcomeBonus} />
-              <Item
-                label="Available Welcome Bonus"
-                value={WalletDetails.availableWelcomeBonus}
-              />
-
-              <Item label="Referral Bonus" value={WalletDetails.referralBonus} />
-              <Item
-                label="Available Referral Bonus"
-                value={WalletDetails.availableReferralBonus}
-              />
-
-              <Item
-                label="Total Prize Amount"
-                value={WalletDetails.totalPrizeAmount}
-              />
-              <Item
-                label="Pending Withdrawal"
-                value={WalletDetails.pendingWithdrawal}
-              />
-
-              <Item
+          {/* Wallet info */}
+          <Card className="overflow-hidden">
+            <CardHeader className="flex flex-row items-center gap-2 py-3 border-b border-gray-100 dark:border-gray-800">
+              <Wallet className="w-4 h-4 text-blue-500" />
+              <CardTitle className="text-base">Wallet Information</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 py-2">
+              <DetailItem
                 label="Total Available Balance"
-                value={WalletDetails.totalAvailableBalance}
+                value={<span className="font-semibold">{wallet.totalAvailableBalance}</span>}
               />
-              <Item
-                label="Available to Withdraw"
-                value={WalletDetails.availableToWithdraw}
+              <DetailItem label="Available to Withdraw" value={wallet.availableToWithdraw} />
+              <DetailItem label="Pending Withdrawal" value={wallet.pendingWithdrawal} />
+              <DetailItem label="Locked Amount" value={wallet.lockedAmount} />
+              <DetailItem label="Welcome Bonus" value={wallet.welcomeBonus} />
+              <DetailItem
+                label="Available Welcome Bonus"
+                value={wallet.availableWelcomeBonus}
               />
-
-              <Item label="Locked Amount" value={WalletDetails.lockedAmount} />
-              <Item label="Deposit Bonus" value={WalletDetails.depositBonus} />
-
-              <Item
-                label="Promotional Bonus"
-                value={WalletDetails.promotionalBonus}
+              <DetailItem label="Referral Bonus" value={wallet.referralBonus} />
+              <DetailItem
+                label="Available Referral Bonus"
+                value={wallet.availableReferralBonus}
               />
+              <DetailItem label="Total Prize Amount" value={wallet.totalPrizeAmount} />
+              <DetailItem label="Deposit Bonus" value={wallet.depositBonus} />
+              <DetailItem label="Promotional Bonus" value={wallet.promotionalBonus} />
+              <DetailItem label="Last Payment From" value={wallet.lastPaymentFrom || "-"} />
+            </CardContent>
 
-              <Item
-                label="Last Payment From"
-                value={WalletDetails.lastPaymentFrom || "-"}
-              />
-            </div>
-
-            {/* ACTION BUTTONS */}
-            <div className="flex gap-4 pt-4">
+            {/* Actions */}
+            <div className="flex flex-wrap gap-2 px-4 sm:px-6 py-4 border-t border-gray-100 dark:border-gray-800">
               {agentDetails?.isMaster && (
-                <button
-                  onClick={() => setShowPromoModal(true)}
-                  className="px-4 py-2 rounded-lg bg-[var(--btn-default-bg)] hover:bg-blue-500"
-                >
+                <Button variant="outline" onClick={() => setShowPromoModal(true)}>
+                  <Gift className="h-4 w-4 mr-2" />
                   Add Promo Bonus
-                </button>
+                </Button>
               )}
-
-              <button
-                onClick={() => setShowDepositModal(true)}
-                className="px-4 py-2 rounded-lg bg-[var(--btn-default-bg)]/80 hover:bg-green-500"
-              >
+              <Button onClick={() => setShowDepositModal(true)}>
+                <PlusCircle className="h-4 w-4 mr-2" />
                 Add Deposit
-              </button>
+              </Button>
+              {isLoading && (
+                <span className="inline-flex items-center text-sm text-gray-400 ml-auto">
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Refreshing…
+                </span>
+              )}
             </div>
-          </div>
+          </Card>
         </div>
       )}
 
-      {/* DEFAULT MESSAGE */}
-      {!isLoading && !WalletDetails && !error && (
-        <div className="text-gray-500 py-4">
-          Enter a phone number and click Fetch.
-        </div>
-      )}
-
-      {/* MODALS */}
-      {showPromoModal && (
-        <Modal
-          title="Add Promo Bonus"
-          amount={promoAmount}
-          txnRef={undefined}
-          setAmount={setPromoAmount}
-          setTxnRef={() => {}}
-          addRefField={false}
-          onCancel={() => setShowPromoModal(false)}
-          onSubmit={handleOfferPromo}
-          color="blue"
-        />
-      )}
-
-      {showDepositModal && (
-        <Modal
-          title="Add Manual Deposit"
-          amount={depositAmount}
-          txnRef={txnRef}
-          addRefField={true}
-          setAmount={setDepositAmount}
-          setTxnRef={setTxnRef}
-          onCancel={() => setShowDepositModal(false)}
-          onSubmit={handleAddDeposit}
-          color="green"
-        />
-      )}
-    </div>
-  );
-}
-
-/* ---------------------------------------- */
-/* Helper Components */
-/* ---------------------------------------- */
-
-function Item({ label, value }: { label: string; value: any }) {
-  return (
-    <div className="flex justify-between border-b border-gray-700 pb-2">
-      <span className="font-medium">{label}:</span>
-      <span>{value}</span>
-    </div>
-  );
-}
-
-function ProfileItem({ label, value }: { label: string; value: any }) {
-  return (
-    <div>
-      <span className="font-medium">{label}:</span> {value}
-    </div>
-  );
-}
-
-function Modal({
-  title,
-  amount,
-  txnRef,
-  setAmount,
-  setTxnRef,
-  addRefField,
-  onCancel,
-  onSubmit,
-  color,
-}: {
-  title: string;
-  amount: string;
-  txnRef: string | undefined;
-  setAmount: (v: string) => void;
-  setTxnRef: (v: string) => void;
-  addRefField: boolean;
-  onCancel: () => void;
-  onSubmit: () => void;
-  color: "blue" | "green";
-}) {
-  const colorMap = {
-    blue: {
-      ring: "focus:ring-blue-400",
-      btn: "bg-blue-500 hover:bg-blue-400",
-      border: "border-blue-500",
-    },
-    green: {
-      ring: "focus:ring-green-400",
-      btn: "bg-green-500 hover:bg-green-400",
-      border: "border-green-500",
-    },
-  };
-
-  const c = colorMap[color];
-
-  return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-      <Card className="p-2">
-        <div className={`p-6 rounded-xl shadow-xl w-80 border ${c.border}`}>
-          <h3 className="text-xl font-semibold mb-4">{title}</h3>
-
+      {/* Promo bonus dialog */}
+      <Dialog
+        open={showPromoModal}
+        onOpenChange={(open) => {
+          if (!submitting) setShowPromoModal(open);
+        }}
+      >
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Add Promo Bonus</DialogTitle>
+            <DialogDescription>
+              Credit a promotional bonus to {profile?.firstName} {profile?.lastName} (
+              {profile?.phoneNumber}).
+            </DialogDescription>
+          </DialogHeader>
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              onSubmit(); // your existing submit handler
+              handleOfferPromo();
             }}
+            className="space-y-4"
           >
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="Enter amount"
-              className={`w-full px-4 py-2 mb-4 bg-[var(--background)] rounded-lg outline-none focus:ring-2 ${c.ring}`}
-              required
-            />
-
-            {addRefField && (
-              <input
-                type="text"
-                value={txnRef}
-                onChange={(e) => setTxnRef(e.target.value)}
-                placeholder="Enter Txn Ref"
-                className={`w-full px-4 py-2 mb-4 bg-[var(--background)] rounded-lg outline-none focus:ring-2 ${c.ring}`}
+            <div className="space-y-2">
+              <Label htmlFor="promo-amount">Amount</Label>
+              <Input
+                id="promo-amount"
+                type="number"
+                min="0"
+                step="any"
+                value={promoAmount}
+                onChange={(e) => setPromoAmount(e.target.value)}
+                placeholder="Enter amount"
                 required
+                autoFocus
               />
-            )}
-
-            <div className="flex justify-end gap-3">
+            </div>
+            <DialogFooter>
               <Button
                 type="button"
-                onClick={onCancel}
-                className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-400"
+                variant="outline"
+                onClick={() => setShowPromoModal(false)}
+                disabled={submitting}
               >
                 Cancel
               </Button>
-
-              <Button
-                type="submit"
-                className={`px-4 py-2 text-white rounded-lg ${c.btn}`}
-              >
+              <Button type="submit" disabled={submitting || !promoAmount}>
+                {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Submit
               </Button>
-            </div>
+            </DialogFooter>
           </form>
-        </div>
-      </Card>
+        </DialogContent>
+      </Dialog>
+
+      {/* Deposit dialog */}
+      <Dialog
+        open={showDepositModal}
+        onOpenChange={(open) => {
+          if (!submitting) setShowDepositModal(open);
+        }}
+      >
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Add Manual Deposit</DialogTitle>
+            <DialogDescription>
+              Record an offline deposit for {profile?.firstName} {profile?.lastName} (
+              {profile?.phoneNumber}).
+            </DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleAddDeposit();
+            }}
+            className="space-y-4"
+          >
+            <div className="space-y-2">
+              <Label htmlFor="deposit-amount">Amount</Label>
+              <Input
+                id="deposit-amount"
+                type="number"
+                min="0"
+                step="any"
+                value={depositAmount}
+                onChange={(e) => setDepositAmount(e.target.value)}
+                placeholder="Enter amount"
+                required
+                autoFocus
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="txn-ref">Transaction Reference</Label>
+              <Input
+                id="txn-ref"
+                type="text"
+                value={txnRef}
+                onChange={(e) => setTxnRef(e.target.value)}
+                placeholder="e.g. bank slip / transfer ref"
+                required
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowDepositModal(false)}
+                disabled={submitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={submitting || !depositAmount || !txnRef.trim()}>
+                {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Submit
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
+}
 
+function SectionCard({
+  icon: Icon,
+  title,
+  children,
+}: {
+  icon: React.ElementType;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader className="flex flex-row items-center gap-2 py-3 border-b border-gray-100 dark:border-gray-800">
+        <Icon className="w-4 h-4 text-blue-500" />
+        <CardTitle className="text-base">{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-x-8 py-2">
+        {children}
+      </CardContent>
+    </Card>
+  );
+}
+
+function DetailItem({
+  label,
+  value,
+  mono,
+}: {
+  label: string;
+  value: React.ReactNode;
+  mono?: boolean;
+}) {
+  return (
+    <div className="flex justify-between items-start gap-4 py-2 border-b border-gray-100 dark:border-gray-800 last:border-b-0">
+      <span className="text-sm text-gray-500 dark:text-gray-400 shrink-0">{label}</span>
+      <span
+        className={cn(
+          "text-sm font-medium text-right break-all tabular-nums",
+          mono && "font-mono text-xs sm:text-sm"
+        )}
+      >
+        {value ?? "-"}
+      </span>
+    </div>
+  );
 }

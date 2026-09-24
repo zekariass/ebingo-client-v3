@@ -1,109 +1,56 @@
-import type { BingoCard, BingoPattern } from "@/lib/types"
+import { BingoColumn, GamePattern } from "@/lib/types"
 
-// Generate a standard 75-ball bingo card
-export function generateBingoCard(id: number): BingoCard {
-  const numbers: number[][] = []
-  const marked: boolean[][] = []
+// Check if a live game card (column-keyed numbers + flat marked list) satisfies the room pattern
+export function checkCardPatternWin(
+  numbers: Partial<Record<BingoColumn, number[]>> | undefined,
+  markedNumbers: number[] | undefined,
+  pattern: GamePattern,
+): boolean {
+  if (!numbers || !markedNumbers) return false
 
-  // B: 1-15, I: 16-30, N: 31-45, G: 46-60, O: 61-75
-  const ranges = [
-    [1, 15], // B
-    [16, 30], // I
-    [31, 45], // N
-    [46, 60], // G
-    [61, 75], // O
-  ]
+  const columns = [BingoColumn.B, BingoColumn.I, BingoColumn.N, BingoColumn.G, BingoColumn.O]
+  const size = 5
 
-  for (let col = 0; col < 5; col++) {
-    const colNumbers: number[] = []
-    const colMarked: boolean[] = []
-    const [min, max] = ranges[col]
+  // Build row-major 5x5 grid; center cell is FREE
+  const grid = Array.from({ length: size }, (_, row) =>
+    columns.map((col) => numbers[col]?.[row] ?? 0),
+  )
+  grid[2][2] = 0
 
-    // Generate 5 unique numbers for this column
-    const availableNumbers = Array.from({ length: max - min + 1 }, (_, i) => min + i)
+  const isMarked = (num: number) => num === 0 || markedNumbers.includes(num)
 
-    for (let row = 0; row < 5; row++) {
-      if (col === 2 && row === 2) {
-        // Center square is FREE
-        colNumbers.push(0)
-        colMarked.push(true)
-      } else {
-        const randomIndex = Math.floor(Math.random() * availableNumbers.length)
-        const number = availableNumbers.splice(randomIndex, 1)[0]
-        colNumbers.push(number)
-        colMarked.push(false)
-      }
+  const cornersMarked = () =>
+    isMarked(grid[0][0]) &&
+    isMarked(grid[0][size - 1]) &&
+    isMarked(grid[size - 1][0]) &&
+    isMarked(grid[size - 1][size - 1])
+
+  const lineMarked = () => {
+    // Horizontal
+    if (grid.some((row) => row.every(isMarked))) return true
+    // Vertical
+    for (let c = 0; c < size; c++) {
+      if (grid.every((row) => isMarked(row[c]))) return true
     }
-
-    numbers.push(colNumbers)
-    marked.push(colMarked)
+    // Diagonals
+    return (
+      grid.every((row, i) => isMarked(row[i])) ||
+      grid.every((row, i) => isMarked(row[size - 1 - i]))
+    )
   }
-
-  // Transpose to get row-major order
-  const transposedNumbers = Array.from({ length: 5 }, (_, row) =>
-    Array.from({ length: 5 }, (_, col) => numbers[col][row]),
-  )
-
-  const transposedMarked = Array.from({ length: 5 }, (_, row) =>
-    Array.from({ length: 5 }, (_, col) => marked[col][row]),
-  )
-
-  return {
-    id,
-    numbers: transposedNumbers,
-    marked: transposedMarked,
-  }
-}
-
-// Check if a card has a winning pattern
-export function checkWinningPattern(card: BingoCard, pattern: BingoPattern): boolean {
-  const { marked } = card
 
   switch (pattern) {
-    case "line":
-      return checkLines(marked)
-    case "four-corners":
-      return checkFourCorners(marked)
-    case "full-house":
-      return checkFullHouse(marked)
-    case "x-pattern":
-      return checkXPattern(marked)
+    case GamePattern.LINE:
+      return lineMarked()
+    case GamePattern.LINE_AND_CORNERS:
+      return lineMarked() || cornersMarked()
+    case GamePattern.CORNERS:
+      return cornersMarked()
+    case GamePattern.FULL_HOUSE:
+      return grid.every((row) => row.every(isMarked))
     default:
       return false
   }
-}
-
-function checkLines(marked: boolean[][]): boolean {
-  // Check rows
-  for (let row = 0; row < 5; row++) {
-    if (marked[row].every((cell) => cell)) return true
-  }
-
-  // Check columns
-  for (let col = 0; col < 5; col++) {
-    if (marked.every((row) => row[col])) return true
-  }
-
-  // Check diagonals
-  if (marked.every((row, i) => row[i])) return true
-  if (marked.every((row, i) => row[4 - i])) return true
-
-  return false
-}
-
-function checkFourCorners(marked: boolean[][]): boolean {
-  return marked[0][0] && marked[0][4] && marked[4][0] && marked[4][4]
-}
-
-function checkFullHouse(marked: boolean[][]): boolean {
-  return marked.every((row) => row.every((cell) => cell))
-}
-
-function checkXPattern(marked: boolean[][]): boolean {
-  // Check both diagonals
-  const mainDiagonal = marked.every((row, i) => row[i])
-  const antiDiagonal = marked.every((row, i) => row[4 - i])
-  return mainDiagonal && antiDiagonal
 }
 
 // Get the column letter for a number (B, I, N, G, O)

@@ -25,6 +25,7 @@ import React, { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
 import { AdminHeader } from "@/components/admin/admin-header"
+import { Toaster } from "@/components/ui/sonner"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -71,6 +72,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <AdminHeader onMenuToggle={handleMenuToggle} />
         <main className="flex-1 overflow-auto p-6">{children}</main>
       </div>
+
+      <Toaster richColors position="top-right" />
     </div>
   )
 }

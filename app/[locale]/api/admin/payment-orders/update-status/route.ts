@@ -15,7 +15,7 @@ export async function PUT(req: Request) {
     const body = await req.json()
     const { adminUserId, agentId, orderId, approve, reason } = body
 
-    if (!orderId || approve === undefined) {
+    if (!orderId || approve === undefined || !adminUserId) {
       return NextResponse.json({ success: false, message: "Missing required fields" }, { status: 400 })
     }
 
@@ -26,8 +26,8 @@ export async function PUT(req: Request) {
       {
         headers: {
           "Content-Type": "application/json",
-          // "x-init-data": initData || "",
           "x-user-role": role,
+          ...(initData && { "x-init-data": initData }),
           "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
         },
       }

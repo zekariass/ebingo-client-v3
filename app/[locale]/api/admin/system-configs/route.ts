@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 
+import { ADMIN_ONLY_SYSTEM_CONFIGS } from "@/lib/constant"
+
 const BACKEND_URL = process.env.BACKEND_BASE_URL!;
 const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN;
 
@@ -15,16 +17,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden: Admins only" }, { status: 403 });
     }
 
-    // if (!initData) {
-    //   return NextResponse.json({ error: "Missing initData" }, { status: 400 });
-    // }
-
     const response = await fetch(
       `${BACKEND_URL}/api/v1/system-configs?agentId=${agentId}`,
       {
         headers: {
           "x-user-role": userRole,
-          // "x-init-data": initData,
+          ...(initData && { "x-init-data": initData }),
           "X-Access-Token": BACKEND_ENDPOINTS_ACCESS_TOKEN ?? "",
         },
         cache: "no-store",
@@ -40,9 +38,15 @@ export async function GET(req: NextRequest) {
 
     const data = await response.json()
 
+    const configs: any[] = Array.isArray(data.data) ? data.data : []
+    const visible =
+      userRole === "ADMIN"
+        ? configs
+        : configs.filter((c) => !ADMIN_ONLY_SYSTEM_CONFIGS.has(c?.name))
+
     return NextResponse.json({
       success: true,
-      data: data.data,
+      data: visible,
     })
   } catch (error) {
     console.error("GET system configs error:", error)
