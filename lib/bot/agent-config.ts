@@ -15,6 +15,7 @@ export interface AgentBotConfig {
   supportUsername: string | null
   supportChannel: string | null
   bankDetails: Record<string, any> | null
+  hideName: boolean
 }
 
 const cache = new Map<number, { config: AgentBotConfig; fetchedAt: number }>()
@@ -31,6 +32,7 @@ function fromLegacy(agentId: number): AgentBotConfig | null {
     supportUsername: legacy.supportUsername ?? null,
     supportChannel: legacy.supportChannel ?? null,
     bankDetails: legacy.bankDetails ?? null,
+    hideName: legacy.hideName === true,
   }
 }
 

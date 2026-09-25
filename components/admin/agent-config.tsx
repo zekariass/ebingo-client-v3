@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Landmark, Loader2, Palette, RefreshCw } from "lucide-react"
 import { SelectField } from "@/components/ui/form-fields"
 import { SelectItem } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 import { AGENT_THEMES, DEFAULT_THEME_KEY, isThemeKey } from "@/lib/themes"
 import i18n from "@/i18n"
 
@@ -25,6 +26,7 @@ interface AgentBotConfig {
   supportChannel: string | null
   bankDetails: Record<string, Record<string, any>> | null
   themeKey?: string | null
+  hideName: boolean
 }
 
 interface AgentConfigProps {
@@ -49,7 +51,8 @@ export function AgentConfig({ agentId }: AgentConfigProps) {
   const [notFound, setNotFound] = useState(false)
   const [config, setConfig] = useState<AgentBotConfig | null>(null)
   const [themeKey, setThemeKey] = useState<string>(DEFAULT_THEME_KEY)
-  const [savingTheme, setSavingTheme] = useState(false)
+  const [hideName, setHideName] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   const fetchConfig = async () => {
     setLoading(true)
@@ -73,6 +76,7 @@ export function AgentConfig({ agentId }: AgentConfigProps) {
       setThemeKey(
         isThemeKey(result.data?.themeKey) ? result.data.themeKey : DEFAULT_THEME_KEY
       )
+      setHideName(result.data?.hideName === true)
     } catch (error) {
       toast({
         title: "Error",
@@ -89,8 +93,8 @@ export function AgentConfig({ agentId }: AgentConfigProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [agentId])
 
-  const saveTheme = async () => {
-    setSavingTheme(true)
+  const saveConfig = async (title: string, description: string) => {
+    setSaving(true)
     try {
       // PUT has replace semantics on the backend — send the full config.
       const response = await fetch(`/${i18n.language}/api/admin/agents/${agentId}/config`, {
@@ -105,24 +109,25 @@ export function AgentConfig({ agentId }: AgentConfigProps) {
           supportChannel: config?.supportChannel ?? null,
           bankDetails: config?.bankDetails ?? null,
           themeKey,
+          hideName,
         }),
       })
       const result = await response.json()
 
       if (!response.ok || !result.success) {
-        throw new Error(result.message || result.error || "Failed to save theme")
+        throw new Error(result.message || result.error || "Failed to save config")
       }
 
       setConfig(result.data as AgentBotConfig)
-      toast({ title: "Theme saved", description: "Players will see it on next page load." })
+      toast({ title, description })
     } catch (error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save theme",
+        description: error instanceof Error ? error.message : "Failed to save config",
         variant: "destructive",
       })
     } finally {
-      setSavingTheme(false)
+      setSaving(false)
     }
   }
 
@@ -187,10 +192,10 @@ export function AgentConfig({ agentId }: AgentConfigProps) {
             </SelectField>
           </div>
           <Button
-            onClick={saveTheme}
-            disabled={savingTheme || themeKey === (isThemeKey(config?.themeKey) ? config.themeKey : DEFAULT_THEME_KEY)}
+            onClick={() => saveConfig("Theme saved", "Players will see it on next page load.")}
+            disabled={saving || themeKey === (isThemeKey(config?.themeKey) ? config.themeKey : DEFAULT_THEME_KEY)}
           >
-            {savingTheme ? (
+            {saving ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 Saving...
@@ -226,6 +231,31 @@ export function AgentConfig({ agentId }: AgentConfigProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="flex items-center justify-between gap-4 rounded-lg border p-4">
+            <div className="flex items-center gap-3">
+              <Switch id="hide-name" checked={hideName} onCheckedChange={setHideName} />
+              <div className="space-y-1">
+                <Label htmlFor="hide-name">Hide receiver name</Label>
+                <p className="text-sm text-muted-foreground">
+                  Don&apos;t show the receiver/account name in Telebirr and CBE deposit instructions.
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={() => saveConfig("Setting saved", "Applies to the next deposit instructions the bot sends.")}
+              disabled={saving || hideName === (config?.hideName === true)}
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save"
+              )}
+            </Button>
+          </div>
+
           {Object.entries(bankDetails).map(([method, fields]) => (
             <div key={method} className="rounded-lg border p-4 space-y-3">
               <Badge variant="secondary" className="font-mono">{method}</Badge>

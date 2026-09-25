@@ -281,16 +281,31 @@ async function sendDepositToBackend(
 async function buildInstructionsHtml(ctx: any, agentId: number, method: DepositMethod): Promise<string> {
   const lang = getLang(ctx);
   const config = await getAgentConfig(agentId);
+  const hideName = config?.hideName === true;
+
+  // When the name is hidden, `name` is omitted so the {name} placeholder stays
+  // literal — the line containing it is then dropped from the rendered html.
+  const dropNameLine = (html: string) =>
+    html
+      .split("\n")
+      .filter((line) => !line.includes("{name}"))
+      .join("\n");
 
   if (method === "telebirr") {
     const phone = config?.bankDetails?.telebirr?.phoneNumber ?? "";
-    const name = config?.bankDetails?.telebirr?.recieverName ?? "";
-    return renderDepositTemplate(lang, "payTeleInstructions", { phone, name });
+    const html = renderDepositTemplate(lang, "payTeleInstructions", {
+      phone,
+      ...(hideName ? {} : { name: config?.bankDetails?.telebirr?.recieverName ?? "" }),
+    });
+    return hideName ? dropNameLine(html) : html;
   }
 
   const accountNumber = config?.bankDetails?.cbeonline?.accountNumber ?? "";
-  const name = config?.bankDetails?.cbeonline?.accountName ?? "";
-  return renderDepositTemplate(lang, "payCBEInstructions", { accountNumber, name });
+  const html = renderDepositTemplate(lang, "payCBEInstructions", {
+    accountNumber,
+    ...(hideName ? {} : { name: config?.bankDetails?.cbeonline?.accountName ?? "" }),
+  });
+  return hideName ? dropNameLine(html) : html;
 }
 
 export function registerDepositHandler(bot: Telegraf<Context>, agentId: number) {

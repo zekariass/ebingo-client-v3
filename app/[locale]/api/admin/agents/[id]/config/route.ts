@@ -22,6 +22,7 @@ export interface AgentConfig {
   supportChannel: string | null
   bankDetails: Record<string, Record<string, any>> | null
   themeKey?: string | null
+  hideName: boolean
 }
 
 type AgentConfigUpdateDto = {
@@ -33,6 +34,7 @@ type AgentConfigUpdateDto = {
   supportChannel?: string | null
   bankDetails?: Record<string, Record<string, any>> | null
   themeKey?: string | null
+  hideName?: boolean | null
 }
 
 function backendBase() {
@@ -131,6 +133,7 @@ export async function PUT(
       supportChannel: body?.supportChannel ?? null,
       bankDetails: body?.bankDetails ?? null,
       themeKey: body?.themeKey ?? null,
+      hideName: body?.hideName ?? false,
     }
 
     const response = await fetch(`${backendBase()}/api/v1/admin/agents/${agentId}/config`, {
