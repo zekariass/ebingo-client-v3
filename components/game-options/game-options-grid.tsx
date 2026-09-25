@@ -850,9 +850,9 @@ function SectionHeader({
           fontSize: "12px",
           fontWeight: 600,
           letterSpacing: "0.1em",
-          color: "rgba(255,255,255,0.3)",
-          background: "rgba(255,255,255,0.06)",
-          border: "1px solid rgba(255,255,255,0.08)",
+          color: "color-mix(in oklab, var(--ink) 45%, transparent)",
+          background: "color-mix(in oklab, var(--ink) 6%, transparent)",
+          border: "1px solid color-mix(in oklab, var(--ink) 12%, transparent)",
           borderRadius: "999px",
           padding: "2px 10px",
         }}
@@ -1054,7 +1054,7 @@ function Divider({ delay }: { delay: number }) {
       style={{
         height: "1px",
         background:
-          "linear-gradient(90deg, transparent, rgba(255,255,255,0.1) 30%, rgba(255,255,255,0.1) 70%, transparent)",
+          "linear-gradient(90deg, transparent, color-mix(in oklab, var(--ink) 15%, transparent) 30%, color-mix(in oklab, var(--ink) 15%, transparent) 70%, transparent)",
         marginBottom: "40px",
         transformOrigin: "left",
       }}

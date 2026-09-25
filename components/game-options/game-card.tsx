@@ -24,7 +24,7 @@ export function GameCard({ game, isHovered, onSelect, index }: GameCardProps) {
       title={game.title}
     >
       <div
-        className="relative aspect-square overflow-hidden rounded-xl cursor-pointer border-2 border-transparent hover:border-purple-400 dark:hover:border-purple-600 transition-all duration-300 shadow-md hover:shadow-xl bg-white dark:bg-gray-800"
+        className="relative aspect-square overflow-hidden rounded-xl cursor-pointer border-2 border-transparent hover:border-primary transition-all duration-300 shadow-md hover:shadow-xl bg-card"
         onClick={() => onSelect(game)}
       >
         {/* {isBingo && (

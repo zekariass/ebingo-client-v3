@@ -145,12 +145,12 @@ export default function ExternalGamePage() {
 
   if (isLoading || launching) {
     return (
-      <div className="fixed inset-0 bg-gray-900">
+      <div className="fixed inset-0 bg-background">
         <LobbyHeader />
         <div className="flex items-center justify-center" style={{ height: 'calc(100vh - 80px)' }}>
           <div className="text-center">
-            <Loader2 className="w-16 h-16 animate-spin text-purple-500 mx-auto mb-4" />
-            <p className="text-white text-lg">Loading game...</p>
+            <Loader2 className="w-16 h-16 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-foreground text-lg">Loading game...</p>
           </div>
         </div>
       </div>
@@ -159,16 +159,16 @@ export default function ExternalGamePage() {
 
   if (error || loadError) {
     return (
-      <div className="fixed inset-0 bg-gray-900">
+      <div className="fixed inset-0 bg-background">
         <LobbyHeader />
         <div className="flex items-center justify-center p-4" style={{ height: 'calc(100vh - 80px)' }}>
           <div className="text-center max-w-md">
-            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h2 className="text-white text-2xl font-bold mb-2">Failed to Load Game</h2>
-            <p className="text-gray-300 mb-6">{error || loadError}</p>
+            <AlertCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
+            <h2 className="text-foreground text-2xl font-bold mb-2">Failed to Load Game</h2>
+            <p className="text-muted-foreground mb-6">{error || loadError}</p>
             <button
               onClick={handleGoBack}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               Go Back
@@ -181,12 +181,12 @@ export default function ExternalGamePage() {
 
   if (!gameUrl) {
     return (
-      <div className="fixed inset-0 bg-gray-900">
+      <div className="fixed inset-0 bg-background">
         <LobbyHeader />
         <div className="flex items-center justify-center" style={{ height: 'calc(100vh - 80px)' }}>
           <div className="text-center">
-            <Loader2 className="w-16 h-16 animate-spin text-purple-500 mx-auto mb-4" />
-            <p className="text-white text-lg">Preparing game...</p>
+            <Loader2 className="w-16 h-16 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-foreground text-lg">Preparing game...</p>
           </div>
         </div>
       </div>
@@ -208,7 +208,7 @@ export default function ExternalGamePage() {
     // </div>
 
 
-    <div className="fixed inset-0 bg-gray-900 flex flex-col">
+    <div className="fixed inset-0 bg-background flex flex-col">
       <LobbyHeader />
       <iframe
         src={gameUrl}
