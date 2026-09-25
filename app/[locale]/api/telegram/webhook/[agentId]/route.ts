@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getOrCreateBot } from "@/lib/agent-bot-manager"
+import { waitUntil } from "@vercel/functions"
 import axios from "axios"
 
 const BACKEND_ENDPOINTS_ACCESS_TOKEN = process.env.BACKEND_ENDPOINTS_ACCESS_TOKEN
@@ -33,9 +34,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ loc
     )
 
     // Respond immediately — long-running handlers (e.g. broadcast) continue in
-    // the background. Awaiting here would make Telegram retry the update and
-    // can hit serverless/handler timeouts.
-    bot.handleUpdate(update).catch((err) => console.error("handleUpdate error:", err))
+    // the background. On Vercel, a plain fire-and-forget promise is killed as
+    // soon as the response is sent; waitUntil keeps the function alive until
+    // the update has been processed.
+    waitUntil(bot.handleUpdate(update).catch((err) => console.error("handleUpdate error:", err)))
 
     return NextResponse.json({ ok: true })
   } catch (error) {
